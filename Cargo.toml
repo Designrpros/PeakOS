@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    #"peak-compositor",
+    "peak-desktop/src-tauri", "peak-intelligence",
+]
+resolver = "2"

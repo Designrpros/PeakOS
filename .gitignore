@@ -1,0 +1,35 @@
+# Rust
+/target/
+**/*.rs.bk
+
+# Node/JS
+/node_modules/
+/dist/
+/.next/
+/out/
+
+# Tauri
+/peak-desktop/src-tauri/target/
+/peak-desktop/src-tauri/bin/*.exe
+/peak-desktop/src-tauri/bin/*.app
+/peak-desktop/src-tauri/bin/peak-intelligence-*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build Artifacts
+peak-deploy/iso/work/
+peak-deploy/iso/out/*.iso
+/tmp/

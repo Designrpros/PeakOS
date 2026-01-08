@@ -1,0 +1,69 @@
+# Base System
+base
+linux
+linux-firmware
+intel-ucode
+amd-ucode
+mkinitcpio-archiso
+openssh
+base-devel
+git
+syslinux
+grub
+pacman-mirrorlist
+archlinux-keyring
+
+# Drivers & Hardware
+linux-headers
+broadcom-wl-dkms
+mesa
+vulkan-intel
+vulkan-radeon
+seatd
+
+# Networking
+networkmanager
+iwd
+
+# Display / WM
+wayland
+cage
+xorg-xwayland
+pixman
+
+# Dependencies for Tauri App
+webkit2gtk-4.1
+openssl
+glib2
+libsoup3
+appmenu-gtk-module
+libappindicator-gtk3
+librsvg
+
+# Fonts
+ttf-dejavu
+noto-fonts
+noto-fonts-emoji
+
+# Tools for debugging
+zsh
+pciutils
+usbutils
+
+# Required for releng hooks (PXE/NFS)
+mkinitcpio-nfs-utils
+nbd
+
+# User Applications
+firefox
+chromium
+vlc
+code
+wireshark-qt
+gimp
+inkscape
+obs-studio
+discord
+htop
+fastfetch
+libreoffice-fresh

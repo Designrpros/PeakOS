@@ -1,0 +1,12 @@
+NAME="PeakOS"
+PRETTY_NAME="PeakOS"
+ID=peakos
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;23;147;209"
+HOME_URL="https://peakos.dev/"
+DOCUMENTATION_URL="https://peakos.dev/docs"
+SUPPORT_URL="https://peakos.dev/support"
+BUG_REPORT_URL="https://peakos.dev/bugs"
+PRIVACY_POLICY_URL="https://peakos.dev/privacy"
+LOGO=peakos

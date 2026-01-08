@@ -1,0 +1,125 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "default",
+    "description": "Capability for the main window",
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "core:default",
+        {
+            "identifier": "shell:allow-execute",
+            "allow": [
+                {
+                    "name": "bin/peak-intelligence",
+                    "cmd": "",
+                    "args": true,
+                    "sidecar": true
+                },
+                {
+                    "name": "open",
+                    "cmd": "open",
+                    "args": true
+                },
+                {
+                    "name": "firefox",
+                    "cmd": "firefox",
+                    "args": true
+                },
+                {
+                    "name": "chromium",
+                    "cmd": "chromium",
+                    "args": true
+                },
+                {
+                    "name": "vlc",
+                    "cmd": "vlc",
+                    "args": true
+                },
+                {
+                    "name": "code",
+                    "cmd": "code",
+                    "args": true
+                },
+                {
+                    "name": "wireshark",
+                    "cmd": "wireshark-qt",
+                    "args": true
+                },
+                {
+                    "name": "gimp",
+                    "cmd": "gimp",
+                    "args": true
+                },
+                {
+                    "name": "inkscape",
+                    "cmd": "inkscape",
+                    "args": true
+                },
+                {
+                    "name": "obs",
+                    "cmd": "obs-studio",
+                    "args": true
+                },
+                {
+                    "name": "discord",
+                    "cmd": "discord",
+                    "args": true
+                },
+                {
+                    "name": "htop",
+                    "cmd": "htop",
+                    "args": true
+                },
+                {
+                    "name": "fastfetch",
+                    "cmd": "fastfetch",
+                    "args": true
+                },
+                {
+                    "name": "libreoffice",
+                    "cmd": "libreoffice",
+                    "args": true
+                },
+                {
+                    "name": "antigravity",
+                    "cmd": "antigravity",
+                    "args": true
+                }
+            ]
+        },
+        {
+            "identifier": "shell:allow-spawn",
+            "allow": [
+                {
+                    "name": "bin/peak-intelligence",
+                    "cmd": "",
+                    "args": true,
+                    "sidecar": true
+                }
+            ]
+        },
+        {
+            "identifier": "shell:allow-kill",
+            "allow": [
+                {
+                    "name": "bin/peak-intelligence",
+                    "cmd": "",
+                    "args": true,
+                    "sidecar": true
+                }
+            ]
+        },
+        {
+            "identifier": "shell:allow-stdin-write",
+            "allow": [
+                {
+                    "name": "bin/peak-intelligence",
+                    "cmd": "",
+                    "args": true,
+                    "sidecar": true
+                }
+            ]
+        }
+    ]
+}
