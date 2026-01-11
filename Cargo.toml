@@ -1,6 +1,6 @@
 [workspace]
 members = [
     #"peak-compositor",
-    "peak-desktop/src-tauri", "peak-intelligence",
+    "peak-intelligence", "peak-native",
 ]
 resolver = "2"

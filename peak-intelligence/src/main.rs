@@ -8,9 +8,11 @@ use crate::mcp::{
 };
 use crate::terminal::TerminalManager;
 use once_cell::sync::Lazy;
+use peak_intelligence::kernel;
 use serde_json::json;
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc;
+use tokio::time::{Duration, sleep};
 
 static TERMINAL: Lazy<TerminalManager> = Lazy::new(|| TerminalManager::new());
 
@@ -31,6 +33,26 @@ async fn main() -> anyhow::Result<()> {
                 .write_all(format!("{}\n", msg).as_bytes())
                 .await;
             let _ = io::stdout().flush().await;
+        }
+    });
+
+    // --- DEEP CORE TELEMETRY LOOP ---
+    let telemetry_tx = tx.clone();
+    tokio::spawn(async move {
+        loop {
+            // "The Deep Core Pulse" - 2 seconds
+            sleep(Duration::from_secs(2)).await;
+
+            let snapshot = kernel::SystemTelemetry::snapshot();
+            let notification = json!({
+                "jsonrpc": "2.0",
+                "method": "system/telemetry",
+                "params": snapshot
+            });
+
+            if let Ok(msg) = serde_json::to_string(&notification) {
+                let _ = telemetry_tx.send(msg).await;
+            }
         }
     });
 

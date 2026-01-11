@@ -33,3 +33,7 @@ Thumbs.db
 peak-deploy/iso/work/
 peak-deploy/iso/out/*.iso
 /tmp/
+target/
+out/
+peak-deploy/alpine/rootfs/
+peak-deploy/alpine/iso/
