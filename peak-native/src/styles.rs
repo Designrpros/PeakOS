@@ -136,3 +136,43 @@ pub fn style_secondary_button(
         ..Default::default()
     }
 }
+
+pub const WAVEFORM_PINK: iced::Color = iced::Color::from_rgb(1.0, 0.2, 0.45);
+pub const WAVEFORM_ACCENT: iced::Color = iced::Color::from_rgb(0.0, 1.0, 0.8);
+
+pub fn style_jukebox_glass(is_light: bool) -> iced::widget::container::Style {
+    iced::widget::container::Style {
+        background: Some(if is_light {
+            iced::Color::from_rgba(1.0, 1.0, 1.0, 0.4).into()
+        } else {
+            iced::Color::from_rgba(0.0, 0.0, 0.0, 0.4).into()
+        }),
+        border: iced::Border {
+            radius: 20.0.into(),
+            width: 1.0,
+            color: if is_light {
+                iced::Color::from_rgba(0.0, 0.0, 0.0, 0.1)
+            } else {
+                iced::Color::from_rgba(1.0, 1.0, 1.0, 0.1)
+            },
+        },
+        ..Default::default()
+    }
+}
+
+pub fn style_genre_card(color: iced::Color) -> iced::widget::container::Style {
+    iced::widget::container::Style {
+        background: Some(color.into()),
+        border: iced::Border {
+            radius: 16.0.into(),
+            width: 0.0,
+            color: iced::Color::TRANSPARENT,
+        },
+        shadow: iced::Shadow {
+            color: iced::Color::from_rgba(0.0, 0.0, 0.0, 0.3),
+            offset: iced::Vector::new(0.0, 4.0),
+            blur_radius: 12.0,
+        },
+        ..Default::default()
+    }
+}

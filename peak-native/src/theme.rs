@@ -40,6 +40,10 @@ impl Theme {
             },
         }
     }
+
+    pub fn as_iced(&self) -> NativeTheme {
+        (*self).into()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

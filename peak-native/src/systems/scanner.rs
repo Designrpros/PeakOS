@@ -7,32 +7,92 @@ pub struct AppScanner;
 impl AppScanner {
     pub fn scan() -> Vec<MediaItem> {
         let mut apps = Vec::new();
-        // Check for Stremio
-        if Path::new("/Applications/Stremio.app").exists() {
-            apps.push(MediaItem {
-                id: "stremio".into(),
-                title: "Stremio".into(),
-                cover_image: "stremio_icon.png".into(), // Needs asset
-                launch_command: "open /Applications/Stremio.app".into(),
-                kind: MediaKind::Movie,
-                status: MediaStatus::Ready,
-                image_handle: None,
-            });
+
+        // Scan for system binaries (Alpine/Linux apps)
+        apps.extend(Self::scan_system_binaries());
+
+        // Scan for macOS apps (development environment)
+        apps.extend(Self::scan_macos_apps());
+
+        apps
+    }
+
+    fn scan_macos_apps() -> Vec<MediaItem> {
+        let mut apps = Vec::new();
+
+        // Check if /Applications exists (macOS only)
+        let app_dir = Path::new("/Applications");
+        if !app_dir.exists() {
+            return apps;
         }
-        // Check for VLC
-        if Path::new("/Applications/VLC.app").exists() {
-            apps.push(MediaItem {
-                id: "vlc".into(),
-                title: "VLC Media Player".into(),
-                cover_image: "vlc_icon.png".into(),
-                launch_command: "open /Applications/VLC.app".into(),
-                kind: MediaKind::Movie,
-                status: MediaStatus::Ready,
-                image_handle: None,
-            });
+
+        // Scan all .app bundles in /Applications
+        if let Ok(entries) = std::fs::read_dir(app_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if let Some(ext) = path.extension() {
+                    if ext == "app" {
+                        if let Some(app_name) = path.file_stem() {
+                            let name = app_name.to_string_lossy().to_string();
+                            let id = name.to_lowercase().replace(' ', "_");
+
+                            apps.push(MediaItem {
+                                id,
+                                title: name.clone(),
+                                cover_image: format!("{}_icon.png", name.to_lowercase()),
+                                launch_command: format!("open \"{}\"", path.display()),
+                                kind: MediaKind::App,
+                                status: MediaStatus::Ready,
+                                image_handle: None,
+                            });
+                        }
+                    }
+                }
+            }
         }
 
         apps
+    }
+
+    fn scan_system_binaries() -> Vec<MediaItem> {
+        let mut apps = Vec::new();
+
+        // List of known apps to detect
+        let known_apps = [
+            ("firefox", "Firefox", "Fast, private browser."),
+            ("chromium", "Chromium", "Open source web browser."),
+            ("brave", "Brave", "Privacy-focused browser."),
+            ("gimp", "GIMP", "GNU Image Manipulation Program."),
+            ("inkscape", "Inkscape", "Vector graphics editor."),
+            ("vlc", "VLC", "Media player."),
+            ("code", "VS Code", "Code editor."),
+            ("blender", "Blender", "3D creation suite."),
+        ];
+
+        for (binary, name, _description) in known_apps {
+            if Self::check_binary_installed(binary) {
+                apps.push(MediaItem {
+                    id: binary.to_string(),
+                    title: name.to_string(),
+                    cover_image: format!("{}_icon.png", binary),
+                    launch_command: binary.to_string(),
+                    kind: MediaKind::App,
+                    status: MediaStatus::Ready,
+                    image_handle: None,
+                });
+            }
+        }
+
+        apps
+    }
+
+    fn check_binary_installed(binary: &str) -> bool {
+        // Check if binary exists in PATH
+        std::process::Command::new("which")
+            .arg(binary)
+            .output()
+            .map(|output| output.status.success())
+            .unwrap_or(false)
     }
 }
 

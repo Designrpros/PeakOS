@@ -1,4 +1,4 @@
-use crate::app::ShellMode;
+use crate::registry::ShellMode;
 use chrono::Local;
 use iced::widget::{button, container, horizontal_space, row, svg, text};
 use iced::{Alignment, Background, Color, Element, Length};
@@ -12,6 +12,7 @@ pub enum MenubarMessage {
     ToggleRealityMenu,
     ToggleSystemMenu,
     ToggleWifiMenu,
+    ToggleInspector,
 }
 
 impl fmt::Display for ShellMode {
@@ -44,12 +45,7 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
         ),
     };
 
-    let logo_file = if is_light {
-        "peak_logo.png"
-    } else {
-        "peak_logo_dark.png"
-    };
-    let icon_theme = if is_light { "black" } else { "white" };
+    let icon_color_hex = if is_light { "#000000" } else { "#FFFFFF" };
 
     let switcher = button(text(mode.to_string()).size(13))
         .on_press(MenubarMessage::ToggleRealityMenu)
@@ -58,6 +54,12 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
             text_color,
             ..Default::default()
         });
+
+    let logo_file = if is_light {
+        "peak_logo.png"
+    } else {
+        "peak_logo_dark.png"
+    };
 
     // 4. The Left Menu (System & App)
     let left_menu = row![
@@ -73,74 +75,54 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
         .padding(0),
         switcher, // The Dropdown
     ]
-    .spacing(15)
+    .spacing(10)
     .align_y(Alignment::Center);
+
+    // --- Right Menu Icons ---
 
     // 5. The Right Menu (Status)
     let right_menu = row![
         // Search
         button(
-            svg(svg::Handle::from_path(
-                crate::utils::assets::get_asset_path(&format!(
-                    "icons/menubar/{}/search.svg",
-                    icon_theme
-                ))
-            ))
-            .width(Length::Fixed(16.0))
-            .height(Length::Fixed(16.0)),
+            svg(crate::icons::get_ui_icon("search", icon_color_hex))
+                .width(Length::Fixed(16.0))
+                .height(Length::Fixed(16.0)),
         )
         .on_press(MenubarMessage::ToggleOmnibar)
         .padding(0)
         .style(button::text),
         // WiFi (Full)
-        // WiFi (Full)
         button(
-            svg(svg::Handle::from_path(
-                crate::utils::assets::get_asset_path(&format!(
-                    "icons/menubar/{}/wifi_full.svg",
-                    icon_theme
-                ))
-            ))
-            .width(Length::Fixed(16.0))
-            .height(Length::Fixed(16.0)),
+            svg(crate::icons::get_status_icon("wifi", icon_color_hex))
+                .width(Length::Fixed(16.0))
+                .height(Length::Fixed(16.0)),
         )
         .on_press(MenubarMessage::ToggleWifiMenu)
         .padding(0)
         .style(button::text),
         // Robot (AI)
-        svg(svg::Handle::from_path(
-            crate::utils::assets::get_asset_path(&format!(
-                "icons/menubar/{}/robot.svg",
-                icon_theme
-            ))
-        ))
-        .width(Length::Fixed(16.0))
-        .height(Length::Fixed(16.0)),
-        // Settings
+        button(
+            svg(crate::icons::get_avatar_handle("robot", icon_color_hex))
+                .width(Length::Fixed(16.0))
+                .height(Length::Fixed(16.0)),
+        )
+        .on_press(MenubarMessage::ToggleInspector)
+        .padding(0)
+        .style(button::text),
         // Settings
         button(
-            svg(svg::Handle::from_path(
-                crate::utils::assets::get_asset_path(&format!(
-                    "icons/menubar/{}/settings.svg",
-                    icon_theme
-                ))
-            ))
-            .width(Length::Fixed(16.0))
-            .height(Length::Fixed(16.0))
+            svg(crate::icons::get_ui_icon("settings", icon_color_hex))
+                .width(Length::Fixed(16.0))
+                .height(Length::Fixed(16.0))
         )
         .on_press(MenubarMessage::ToggleSettings)
         .padding(0)
         .style(button::text),
         // Command
         button(
-            svg(svg::Handle::from_path(
-                crate::utils::assets::get_asset_path(&format!(
-                    "icons/menubar/{}/cmd.svg",
-                    icon_theme
-                ))
-            ))
-            .width(Length::Fixed(16.0))
-            .height(Length::Fixed(16.0))
+            svg(crate::icons::get_ui_icon("cmd", icon_color_hex))
+                .width(Length::Fixed(16.0))
+                .height(Length::Fixed(16.0))
         )
         .on_press(MenubarMessage::ToggleSpaces)
         .padding(0)

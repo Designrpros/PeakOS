@@ -39,79 +39,96 @@ impl AppSwitcher {
         }
     }
 
-    pub fn view(&self) -> Element<'_, SwitcherMessage> {
+    pub fn view(&self, is_light: bool) -> Element<'_, SwitcherMessage> {
+        let text_color = if is_light { Color::BLACK } else { Color::WHITE };
+        let card_bg = if is_light {
+            Color::from_rgba(1.0, 1.0, 1.0, 0.7)
+        } else {
+            Color::from_rgba(0.05, 0.05, 0.08, 0.8)
+        };
+
         let content = row(self.apps.iter().enumerate().map(|(i, app)| {
             let is_selected = i == self.selected_index;
 
             let bg = if is_selected {
-                Color::from_rgba(1.0, 1.0, 1.0, 0.15)
+                if is_light {
+                    Color::from_rgba(0.0, 0.0, 0.0, 0.1)
+                } else {
+                    Color::from_rgba(1.0, 1.0, 1.0, 0.15)
+                }
             } else {
                 Color::TRANSPARENT
             };
 
             let border_color = if is_selected {
-                Color::from_rgba(1.0, 1.0, 1.0, 0.3)
+                if is_light {
+                    Color::from_rgba(0.0, 0.0, 0.0, 0.1)
+                } else {
+                    Color::from_rgba(1.0, 1.0, 1.0, 0.2)
+                }
             } else {
                 Color::TRANSPARENT
             };
 
+            let icon_color = if is_light { "#000000" } else { "#FFFFFF" };
+            let icon = crate::icons::get_app_icon(app.id, icon_color);
+
             container(
                 column![
-                    // Placeholder for App Icon
-                    container(
-                        text(app.name.chars().next().unwrap_or('?'))
-                            .size(32)
-                            .color(Color::WHITE)
-                    )
-                    .width(48)
-                    .height(48)
-                    .center_x(Length::Fill)
-                    .center_y(Length::Fill)
-                    .style(|_| container::Style {
-                        background: Some(Background::Color(Color::from_rgba(1.0, 1.0, 1.0, 0.05))),
-                        border: Border {
-                            radius: 10.0.into(),
+                    container(iced::widget::svg(icon).width(40).height(40))
+                        .width(60)
+                        .height(60)
+                        .center_x(Length::Fill)
+                        .center_y(Length::Fill)
+                        .style(|_| container::Style {
+                            background: Some(Background::Color(Color::from_rgba(
+                                1.0, 1.0, 1.0, 0.03
+                            ))),
+                            border: Border {
+                                radius: 14.0.into(),
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
-                    }),
-                    text(app.name)
-                        .size(10)
-                        .color(Color::from_rgba(1.0, 1.0, 1.0, 0.8))
+                        }),
+                    text(app.name).size(11).color(text_color)
                 ]
-                .spacing(10)
+                .spacing(12)
                 .align_x(Alignment::Center),
             )
-            .padding(15)
+            .padding(12)
             .width(100)
-            .height(110)
+            .height(115)
             .style(move |_| container::Style {
                 background: Some(Background::Color(bg)),
                 border: Border {
                     color: border_color,
                     width: 1.0,
-                    radius: 12.0.into(),
+                    radius: 16.0.into(),
                 },
                 ..Default::default()
             })
             .into()
         }))
-        .spacing(10)
+        .spacing(15)
         .align_y(Alignment::Center);
 
         container(content)
-            .padding(10)
+            .padding(15)
             .style(move |_| container::Style {
-                background: Some(Background::Color(Color::from_rgba(0.1, 0.1, 0.15, 0.85))),
+                background: Some(Background::Color(card_bg)),
                 border: Border {
-                    color: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
+                    color: if is_light {
+                        Color::from_rgba(0.0, 0.0, 0.0, 0.1)
+                    } else {
+                        Color::from_rgba(1.0, 1.0, 1.0, 0.1)
+                    },
                     width: 1.0,
-                    radius: 20.0.into(),
+                    radius: 24.0.into(),
                 },
                 shadow: Shadow {
-                    color: Color::from_rgba(0.0, 0.0, 0.0, 0.5),
-                    offset: Vector::new(0.0, 15.0),
-                    blur_radius: 40.0,
+                    color: Color::from_rgba(0.0, 0.0, 0.0, 0.4),
+                    offset: Vector::new(0.0, 20.0),
+                    blur_radius: 50.0,
                 },
                 ..Default::default()
             })

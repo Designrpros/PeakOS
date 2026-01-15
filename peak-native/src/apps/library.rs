@@ -1,4 +1,4 @@
-use crate::models::{MediaItem, MediaKind, MediaStatus};
+use crate::models::{MediaItem, MediaStatus};
 use iced::widget::{button, column, container, row, scrollable, text};
 use iced::{Alignment, Color, Element, Length};
 
@@ -20,19 +20,16 @@ impl LibraryApp {
     }
 
     pub fn view<'a>(&self, items: &'a [MediaItem]) -> Element<'a, LibraryMessage> {
-        // Just show Games for now
-        let mut filtered_items = items
-            .iter()
-            .filter(|i| i.kind == MediaKind::Game)
-            .peekable();
+        // Show all items (Games, Apps, etc.)
+        let mut filtered_items = items.iter().peekable();
 
         if filtered_items.peek().is_none() {
             return container(
                 column![
-                    text("NO TITLES DETECTED")
+                    text("NO APPS DETECTED")
                         .size(18)
                         .color(Color::from_rgb(1.0, 0.4, 0.7)),
-                    text("LOCATE STEAM OR SCAN MANUALLY")
+                    text("INSTALL APPS FROM THE APP STORE")
                         .size(12)
                         .color(Color::WHITE),
                 ]

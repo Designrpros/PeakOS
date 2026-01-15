@@ -5,6 +5,7 @@ pub fn view<'a, Message>(
     title: &str,
     content: Element<'a, Message>,
     on_close: Message,
+    on_maximize: Option<Message>,
 ) -> Element<'a, Message>
 where
     Message: 'a + Clone,
@@ -17,8 +18,7 @@ where
                 .color(Color::from_rgb(0.5, 0.5, 0.5)),
             iced::widget::horizontal_space(),
             row![
-                window_control(Color::from_rgb(0.9, 0.9, 0.2)), // Min
-                window_control(Color::from_rgb(0.2, 0.9, 0.2)), // Max
+                // Red (Close)
                 button(window_control(Color::from_rgb(0.9, 0.2, 0.2)))
                     .on_press(on_close)
                     .padding(0)
@@ -34,8 +34,27 @@ where
                         },
                         ..Default::default()
                     }),
+                // Yellow (Minimize - Placeholder)
+                window_control(Color::from_rgb(0.9, 0.7, 0.2)),
+                // Green (Maximize)
+                if let Some(msg) = on_maximize {
+                    button(window_control(Color::from_rgb(0.2, 0.8, 0.2)))
+                        .on_press(msg)
+                        .padding(0)
+                        .style(|_theme, _status| button::Style {
+                            background: None,
+                            ..Default::default()
+                        })
+                } else {
+                    button(window_control(Color::from_rgb(0.2, 0.8, 0.2)))
+                        .padding(0)
+                        .style(|_theme, _status| button::Style {
+                            background: None,
+                            ..Default::default()
+                        })
+                }
             ]
-            .spacing(6)
+            .spacing(8),
         ]
         .width(Length::Fill)
         .align_y(Alignment::Center),

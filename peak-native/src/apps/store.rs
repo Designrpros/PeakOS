@@ -12,6 +12,7 @@ pub struct StoreApp {
     pub search_results: Vec<AppPackage>,
     pub all_apps: Vec<AppPackage>,
     pub selected_category: Option<AppCategory>,
+    pub installing_apps: Vec<String>, // Track which apps are currently installing
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -40,13 +41,13 @@ impl AppCategory {
 
     pub fn icon(&self) -> &'static str {
         match self {
-            AppCategory::Web => "icons/browser.svg",
-            AppCategory::Creative => "icons/palette.svg",
-            AppCategory::Development => "icons/terminal.svg",
-            AppCategory::Media => "icons/media.svg",
-            AppCategory::Utility => "icons/settings.svg",
-            AppCategory::Games => "icons/library.svg", // Recycle existing or new
-            AppCategory::System => "icons/settings.svg",
+            AppCategory::Web => "browser",
+            AppCategory::Creative => "palette",
+            AppCategory::Development => "terminal",
+            AppCategory::Media => "media",
+            AppCategory::Utility => "settings",
+            AppCategory::Games => "console",
+            AppCategory::System => "settings",
         }
     }
 }
@@ -56,6 +57,7 @@ pub struct AppPackage {
     pub name: String,
     pub description: String,
     pub category: AppCategory,
+    #[allow(dead_code)]
     pub version: String,
     pub is_installed: bool,
 }
@@ -69,6 +71,8 @@ pub enum StoreMessage {
     #[allow(dead_code)]
     UninstallApp(String),
     SelectCategory(Option<AppCategory>),
+    SearchResultsReceived(Vec<AppPackage>),
+    InstallationComplete(String, bool), // (app_name, success)
 }
 
 impl StoreApp {
@@ -79,6 +83,7 @@ impl StoreApp {
             search_results: crate::apps::store::get_initial_apps(), // Start with all/featured
             selected_category: None,
             all_apps: crate::apps::store::get_initial_apps(),
+            installing_apps: Vec::new(),
         }
     }
 
@@ -86,12 +91,22 @@ impl StoreApp {
         match message {
             StoreMessage::SearchChanged(query) => {
                 self.search_query = query;
-                // Auto-filter as you type if desired, or wait for submit
-                // Let's filter immediately for responsiveness
                 self.filter_apps();
+                Task::none()
             }
             StoreMessage::SearchSubmit => {
-                self.filter_apps();
+                if self.search_query.trim().is_empty() {
+                    self.filter_apps();
+                    Task::none()
+                } else {
+                    let query = self.search_query.clone();
+                    Task::perform(search_apk(query), StoreMessage::SearchResultsReceived)
+                        .map(Message::Store)
+                }
+            }
+            StoreMessage::SearchResultsReceived(results) => {
+                self.search_results = results;
+                Task::none()
             }
             StoreMessage::SelectCategory(cat) => {
                 // Toggle if same category selected
@@ -101,41 +116,70 @@ impl StoreApp {
                     self.selected_category = cat;
                 }
                 self.filter_apps();
+                Task::none()
             }
             StoreMessage::InstallApp(name) => {
                 let pkg_name = name.to_lowercase();
-                self.is_loading = true; // Optimistic UI update
 
-                // Spawn background installation
-                std::thread::spawn(move || {
-                    // Try Alpine APK first
-                    let _ = std::process::Command::new("apk")
-                        .arg("add")
-                        .arg(&pkg_name)
-                        .status();
+                // Add to installing list
+                if !self.installing_apps.contains(&name) {
+                    self.installing_apps.push(name.clone());
+                }
 
-                    // Fallback or other package managers could go here
-                });
+                // Spawn async installation task
+                Task::perform(install_package(pkg_name), move |success| {
+                    Message::Store(StoreMessage::InstallationComplete(name.clone(), success))
+                })
+            }
+            StoreMessage::InstallationComplete(name, success) => {
+                // Remove from installing list
+                self.installing_apps.retain(|app| app != &name);
 
-                // We optimistically mark as installed for immediate feedback,
-                // but real check happens on refresh.
-                self.update_app_status(&name, true);
+                if success {
+                    // Mark as installed
+                    self.update_app_status(&name, true);
+                } else {
+                    // Could show error message here
+                    eprintln!("Failed to install {}", name);
+                }
+
+                Task::none()
             }
             StoreMessage::LaunchApp(name) => {
-                let bin_name = name.to_lowercase();
+                // Check if it's a URL
+                if name.starts_with("http") || name.starts_with("www.") {
+                    let url = if name.starts_with("www.") {
+                        format!("https://{}", name)
+                    } else {
+                        name
+                    };
 
-                // Spawn detached process
-                std::thread::spawn(move || {
-                    let _ = std::process::Command::new(bin_name)
-                        .spawn()
-                        .map_err(|e| eprintln!("Failed to launch app: {}", e));
-                });
+                    return Task::done(Message::LaunchBrowser(url));
+                } else {
+                    let bin_name = name.to_lowercase();
+                    // Intercept browser launches to use internal managed browser
+                    if bin_name.contains("firefox")
+                        || bin_name.contains("chrome")
+                        || bin_name.contains("brave")
+                        || bin_name == "netscape"
+                    {
+                        return Task::done(Message::LaunchBrowser("https://google.com".into()));
+                    }
+
+                    // Spawn detached process
+                    std::thread::spawn(move || {
+                        let _ = std::process::Command::new(bin_name)
+                            .spawn()
+                            .map_err(|e| eprintln!("Failed to launch app: {}", e));
+                    });
+                    Task::none()
+                }
             }
             StoreMessage::UninstallApp(name) => {
                 self.update_app_status(&name, false);
+                Task::none()
             }
         }
-        Task::none()
     }
 
     fn filter_apps(&mut self) {
@@ -156,6 +200,20 @@ impl StoreApp {
             })
             .cloned()
             .collect();
+
+        // Dynamic URL entry
+        if query.starts_with("http") || query.starts_with("www.") {
+            self.search_results.insert(
+                0,
+                AppPackage {
+                    name: self.search_query.clone(),
+                    description: "Go to Website".into(),
+                    category: AppCategory::Web,
+                    version: "Web".into(),
+                    is_installed: true, // "Installed" so it shows "Open" button
+                },
+            );
+        }
     }
 
     fn update_app_status(&mut self, name: &str, installed: bool) {
@@ -231,7 +289,7 @@ impl StoreApp {
             column(
                 self.search_results
                     .iter()
-                    .map(|app| view_app_card(app, is_light))
+                    .map(|app| view_app_card(app, is_light, &self.installing_apps))
                     .collect::<Vec<_>>(),
             )
             .spacing(10)
@@ -255,26 +313,16 @@ impl StoreApp {
     }
 }
 
-fn view_app_card<'a>(app: &'a AppPackage, is_light: bool) -> Element<'a, StoreMessage> {
-    let icon_path = app.category.icon();
-    let theme_dir = if is_light { "black" } else { "white" };
-    let filename = std::path::Path::new(icon_path)
-        .file_name()
-        .unwrap()
-        .to_str()
-        .unwrap();
-
-    let relative_themed = format!("icons/menubar/{}/{}", theme_dir, filename);
-    let abs_themed = crate::utils::assets::get_asset_path(&relative_themed);
-
-    let final_path = if std::path::Path::new(&abs_themed).exists() {
-        abs_themed
-    } else {
-        crate::utils::assets::get_asset_path(icon_path)
-    };
+fn view_app_card<'a>(
+    app: &'a AppPackage,
+    is_light: bool,
+    installing_apps: &'a [String],
+) -> Element<'a, StoreMessage> {
+    let icon_name = app.category.icon();
+    let icon_color = if is_light { "#000000" } else { "#FFFFFF" };
 
     let icon = container(
-        iced::widget::svg(iced::widget::svg::Handle::from_path(final_path))
+        iced::widget::svg(crate::icons::get_ui_icon(icon_name, icon_color))
             .width(Length::Fixed(32.0))
             .height(Length::Fixed(32.0)),
     )
@@ -305,19 +353,21 @@ fn view_app_card<'a>(app: &'a AppPackage, is_light: bool) -> Element<'a, StoreMe
             .style(move |_: &iced::Theme| text::Style {
                 color: Some(if is_light { Color::BLACK } else { Color::WHITE })
             }),
-        text(format!("{} • v{}", app.description, app.version))
-            .size(12)
-            .style(move |_: &iced::Theme| text::Style {
-                color: Some(if is_light {
-                    Color::from_rgb8(100, 100, 100)
-                } else {
-                    Color::from_rgb8(180, 180, 180)
-                })
+        text(&app.description)
+            .size(14)
+            .style(move |_| iced::widget::text::Style {
+                color: Some(Color::from_rgba(0.5, 0.5, 0.5, 1.0)),
             }),
     ]
     .width(Length::Fill);
 
-    let action_btn = if app.is_installed {
+    let is_installing = installing_apps.contains(&app.name);
+
+    let action_btn = if is_installing {
+        button(text("Installing...").size(12))
+            .padding([8, 16])
+            .style(move |_, _| styles::style_secondary_button(button::Status::Disabled, is_light))
+    } else if app.is_installed {
         button(text("Open").size(12))
             .on_press(StoreMessage::LaunchApp(app.name.clone()))
             .padding([8, 16])
@@ -409,13 +459,6 @@ pub fn get_initial_apps() -> Vec<AppPackage> {
         },
         // CREATIVE
         AppPackage {
-            name: "Blender".into(),
-            description: "3D Creation Suite.".into(),
-            category: AppCategory::Creative,
-            version: "4.0".into(),
-            is_installed: check_installed("blender"),
-        },
-        AppPackage {
             name: "GIMP".into(),
             description: "GNU Image Manipulation Program.".into(),
             category: AppCategory::Creative,
@@ -452,32 +495,11 @@ pub fn get_initial_apps() -> Vec<AppPackage> {
             is_installed: check_installed("code"),
         },
         AppPackage {
-            name: "Zed".into(),
-            description: "High-performance editor.".into(),
-            category: AppCategory::Development,
-            version: "0.120".into(),
-            is_installed: check_installed("zed"),
-        },
-        AppPackage {
-            name: "Sublime Text".into(),
-            description: "Sophisticated text editor.".into(),
-            category: AppCategory::Development,
-            version: "4.0".into(),
-            is_installed: check_installed("subl"),
-        },
-        AppPackage {
             name: "Docker".into(),
             description: "Container Platform.".into(),
             category: AppCategory::Development,
             version: "24.0".into(),
             is_installed: check_installed("docker"),
-        },
-        AppPackage {
-            name: "Git".into(),
-            description: "Version Control.".into(),
-            category: AppCategory::Development,
-            version: "2.42".into(),
-            is_installed: check_installed("git"),
         },
         // MEDIA
         AppPackage {
@@ -575,4 +597,89 @@ pub fn get_initial_apps() -> Vec<AppPackage> {
             is_installed: true,
         },
     ]
+}
+
+async fn search_apk(query: String) -> Vec<AppPackage> {
+    if query.len() < 2 {
+        return Vec::new();
+    }
+
+    // Run 'apk search -v -d [query]' for names, versions, and descriptions
+    let output = match std::process::Command::new("apk")
+        .arg("search")
+        .arg("-v")
+        .arg("-d")
+        .arg(&query)
+        .output()
+    {
+        Ok(o) => String::from_utf8_lossy(&o.stdout).to_string(),
+        Err(_) => return Vec::new(),
+    };
+
+    output
+        .lines()
+        .map(|line| {
+            // line format: "name-version - description"
+            let parts: Vec<&str> = line.splitn(2, " - ").collect();
+            let name_ver = parts[0];
+            let description = parts
+                .get(1)
+                .unwrap_or(&"No description available.")
+                .to_string();
+
+            // Try to split name and version (last hyphen usually)
+            let last_hyphen = name_ver.rfind('-');
+            let (name, version) = if let Some(idx) = last_hyphen {
+                (name_ver[..idx].to_string(), name_ver[idx + 1..].to_string())
+            } else {
+                (name_ver.to_string(), "unknown".to_string())
+            };
+
+            AppPackage {
+                name,
+                description,
+                category: AppCategory::Utility, // default for search
+                version,
+                is_installed: false, // will check on status update if we want more detail
+            }
+        })
+        .collect()
+}
+
+async fn install_package(name: String) -> bool {
+    // Check if apk command exists (Alpine Linux)
+    let apk_exists = tokio::process::Command::new("which")
+        .arg("apk")
+        .output()
+        .await
+        .map(|output| output.status.success())
+        .unwrap_or(false);
+
+    if !apk_exists {
+        eprintln!("⚠️  Package installation not available (apk not found)");
+        eprintln!("   Note: Installation only works on Alpine Linux");
+        eprintln!("   Current system: Development environment (macOS)");
+        return false;
+    }
+
+    match tokio::process::Command::new("apk")
+        .arg("add")
+        .arg(&name)
+        .status()
+        .await
+    {
+        Ok(status) => {
+            if status.success() {
+                println!("✓ Successfully installed {}", name);
+                true
+            } else {
+                eprintln!("✗ Installation failed for {}", name);
+                false
+            }
+        }
+        Err(e) => {
+            eprintln!("✗ Failed to run apk: {}", e);
+            false
+        }
+    }
 }
