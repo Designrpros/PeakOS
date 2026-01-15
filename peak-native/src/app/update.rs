@@ -6,10 +6,37 @@ use crate::components::{
     app_switcher::SwitcherMessage, dock, menubar::MenubarMessage, omnibar::OmnibarMessage,
 };
 use crate::pages::Page;
-use crate::registry::ShellMode;
+use crate::registry::{AppId, ShellMode};
 use iced::Task;
 
 impl PeakNative {
+    /// Helper to toggle an app window - handles workspace switching and window lifecycle
+    fn toggle_app(
+        &mut self,
+        app_id: AppId,
+        default_width: f32,
+        default_height: f32,
+    ) -> Task<Message> {
+        self.is_desktop_revealed = false;
+
+        if let Some(state) = self.window_manager.window_states.get(&app_id) {
+            // If window exists but is on different workspace, switch to it
+            if state.reality != self.mode || state.desktop_idx != self.current_desktop {
+                self.mode = state.reality;
+                self.current_desktop = state.desktop_idx;
+                self.window_manager.bring_to_front(app_id);
+            } else {
+                // Otherwise close it
+                self.close_window(app_id);
+            }
+        } else {
+            // Create new window
+            self.ensure_window_state(app_id, default_width, default_height);
+        }
+
+        Task::none()
+    }
+
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::WindowPositionFound(pos_opt) => {
@@ -675,10 +702,7 @@ impl PeakNative {
                 }
                 LibraryMessage::ImageLoadFailed(_url) => Task::none(),
             },
-            Message::Explorer(msg) => {
-                self.explorer.update(msg);
-                Task::none()
-            }
+            Message::Explorer(msg) => self.explorer.update(msg).map(Message::Explorer),
             Message::MenubarAction(action) => match action {
                 MenubarMessage::ToggleSettings => {
                     self.show_settings = !self.show_settings;
@@ -989,71 +1013,15 @@ impl PeakNative {
                 Task::none()
             }
             Message::ToggleSettings => {
-                self.is_desktop_revealed = false;
-                if let Some(state) = self
-                    .window_manager
-                    .window_states
-                    .get(&crate::registry::AppId::Settings)
-                {
-                    if state.reality != self.mode || state.desktop_idx != self.current_desktop {
-                        self.mode = state.reality;
-                        self.current_desktop = state.desktop_idx;
-                        self.window_manager
-                            .bring_to_front(crate::registry::AppId::Settings);
-                        self.show_settings = true;
-                    } else {
-                        self.show_settings = false;
-                        self.close_window(crate::registry::AppId::Settings);
-                    }
-                } else {
-                    self.show_settings = true;
-                    self.ensure_window_state(crate::registry::AppId::Settings, 600.0, 400.0);
-                }
-                Task::none()
+                self.show_settings = !self.show_settings;
+                self.toggle_app(AppId::Settings, 600.0, 400.0)
             }
             Message::ToggleSystemMenu => {
                 self.show_system_menu = !self.show_system_menu;
                 Task::none()
             }
-            Message::ToggleExplorer => {
-                self.is_desktop_revealed = false;
-                if let Some(state) = self
-                    .window_manager
-                    .window_states
-                    .get(&crate::registry::AppId::FileManager)
-                {
-                    if state.reality != self.mode || state.desktop_idx != self.current_desktop {
-                        self.mode = state.reality;
-                        self.current_desktop = state.desktop_idx;
-                        self.window_manager
-                            .bring_to_front(crate::registry::AppId::FileManager);
-                    } else {
-                        self.close_window(crate::registry::AppId::FileManager);
-                    }
-                } else {
-                    self.ensure_window_state(crate::registry::AppId::FileManager, 600.0, 450.0);
-                }
-                Task::none()
-            }
-            Message::ToggleStore => {
-                if let Some(state) = self
-                    .window_manager
-                    .window_states
-                    .get(&crate::registry::AppId::Store)
-                {
-                    if state.reality != self.mode || state.desktop_idx != self.current_desktop {
-                        self.mode = state.reality;
-                        self.current_desktop = state.desktop_idx;
-                        self.window_manager
-                            .bring_to_front(crate::registry::AppId::Store);
-                    } else {
-                        self.close_window(crate::registry::AppId::Store);
-                    }
-                } else {
-                    self.ensure_window_state(crate::registry::AppId::Store, 800.0, 600.0);
-                }
-                Task::none()
-            }
+            Message::ToggleExplorer => self.toggle_app(AppId::FileManager, 600.0, 450.0),
+            Message::ToggleStore => self.toggle_app(AppId::Store, 800.0, 600.0),
             Message::Store(msg) => self.store.update(msg),
             Message::Restart => {
                 std::process::exit(0);
@@ -1084,33 +1052,10 @@ impl PeakNative {
                 Task::none()
             }
             Message::ToggleTerminal => {
-                self.is_desktop_revealed = false;
-                if let Some(state) = self
-                    .window_manager
-                    .window_states
-                    .get(&crate::registry::AppId::Terminal)
-                {
-                    if state.reality != self.mode || state.desktop_idx != self.current_desktop {
-                        // Switch to the app's workspace
-                        self.mode = state.reality;
-                        self.current_desktop = state.desktop_idx;
-                        self.window_manager
-                            .bring_to_front(crate::registry::AppId::Terminal);
-                    } else {
-                        // Already on current workspace, toggle (close)
-                        self.close_window(crate::registry::AppId::Terminal);
-                        self.terminal.is_open = false;
-                    }
-                } else {
-                    self.ensure_window_state(crate::registry::AppId::Terminal, 640.0, 480.0);
-                    self.terminal.is_open = true;
-                }
-                Task::none()
+                self.terminal.is_open = !self.terminal.is_open;
+                self.toggle_app(AppId::Terminal, 640.0, 480.0)
             }
-            Message::Terminal(msg) => {
-                self.terminal.update(msg);
-                Task::none()
-            }
+            Message::Terminal(msg) => self.terminal.update(msg).map(Message::Terminal),
             Message::ToggleAppGrid => {
                 self.show_app_grid = !self.show_app_grid;
                 Task::none()

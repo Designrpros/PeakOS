@@ -39,6 +39,11 @@ fn view_app_grid(is_light: bool) -> Element<'static, Message> {
 impl PeakNative {
     pub fn view_desktop(&self) -> Element<'_, Message> {
         let is_light = self.settings.theme_mode == crate::apps::settings::ThemeMode::Light;
+        let app_theme = if is_light {
+            crate::apps::traits::AppTheme::light()
+        } else {
+            crate::apps::traits::AppTheme::dark()
+        };
         let wallpaper_path = match (self.mode, is_light) {
             (ShellMode::Peak, true) => {
                 crate::utils::assets::get_asset_path("wallpapers/mountain_classic_light.jpg")
@@ -70,7 +75,7 @@ impl PeakNative {
 
                 let content: Element<'_, Message> = match app_id {
                     crate::registry::AppId::Terminal => {
-                        self.terminal.view(is_light).map(Message::Terminal)
+                        self.terminal.view(&app_theme).map(Message::Terminal)
                     }
                     crate::registry::AppId::Library => {
                         self.library.view(&self.games).map(Message::Library)
@@ -80,10 +85,10 @@ impl PeakNative {
                         .view(&self.games, is_light)
                         .map(Message::Jukebox),
                     crate::registry::AppId::Settings => {
-                        self.settings.view(is_light).map(Message::Settings)
+                        self.settings.view(&app_theme).map(Message::Settings)
                     }
                     crate::registry::AppId::FileManager => {
-                        self.explorer.view(is_light).map(Message::Explorer)
+                        self.explorer.view(&app_theme).map(Message::Explorer)
                     }
                     crate::registry::AppId::Store => self.store.view(is_light).map(Message::Store),
                     crate::registry::AppId::Editor => {

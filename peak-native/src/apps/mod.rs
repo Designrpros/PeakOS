@@ -7,4 +7,5 @@ pub mod library;
 pub mod settings;
 pub mod store;
 pub mod terminal;
+pub mod traits;
 pub mod wizard;

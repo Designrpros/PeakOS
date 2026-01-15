@@ -94,7 +94,8 @@ impl SettingsApp {
         }
     }
 
-    pub fn view<'a>(&self, is_light: bool) -> Element<'a, SettingsMessage> {
+    pub fn view<'a>(&self, theme: &crate::apps::traits::AppTheme) -> Element<'a, SettingsMessage> {
+        let is_light = theme.is_light;
         let (text_color, sidebar_bg, content_bg, accent_color, border_color) = if is_light {
             (
                 Color::from_rgb8(35, 30, 30),

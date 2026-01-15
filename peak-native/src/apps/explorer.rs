@@ -1,5 +1,6 @@
+use crate::apps::traits::AppTheme;
 use iced::widget::{button, column, container, row, scrollable, svg, text};
-use iced::{Element, Length};
+use iced::{Element, Length, Task};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
@@ -21,17 +22,12 @@ impl ExplorerApp {
         }
     }
 
-    pub fn view(&self, is_light: bool) -> Element<'_, ExplorerMessage> {
-        let (text_color, icon_color) = if is_light {
-            (
-                iced::Color::from_rgb8(35, 30, 30),
-                iced::Color::from_rgb8(100, 100, 100),
-            )
+    pub fn view(&self, theme: &AppTheme) -> Element<'_, ExplorerMessage> {
+        let text_color = theme.text_color;
+        let icon_color = if theme.is_light {
+            iced::Color::from_rgb8(100, 100, 100)
         } else {
-            (
-                iced::Color::from_rgb8(235, 230, 225),
-                iced::Color::from_rgb8(150, 150, 150),
-            )
+            iced::Color::from_rgb8(150, 150, 150)
         };
 
         let title = text(format!("{}", self.current_path.display()))
@@ -54,7 +50,7 @@ impl ExplorerApp {
 
                 items = items.push(
                     button(
-                        row![view_icon(is_dir, &ext, is_light), text(name).size(12),]
+                        row![view_icon(is_dir, &ext, theme.is_light), text(name).size(12),]
                             .spacing(8)
                             .align_y(iced::Alignment::Center),
                     )
@@ -133,7 +129,7 @@ impl ExplorerApp {
             .into()
     }
 
-    pub fn update(&mut self, message: ExplorerMessage) {
+    pub fn update(&mut self, message: ExplorerMessage) -> Task<ExplorerMessage> {
         match message {
             ExplorerMessage::Navigate(path) => {
                 if path.is_dir() {
@@ -147,6 +143,7 @@ impl ExplorerApp {
                 }
             }
         }
+        Task::none()
     }
 }
 

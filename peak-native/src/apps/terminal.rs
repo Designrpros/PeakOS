@@ -1,7 +1,8 @@
 #![allow(dead_code, unused_imports)]
 
+use crate::apps::traits::AppTheme;
 use iced::widget::{canvas, container, scrollable, text, text_input, Column};
-use iced::{Background, Color, Element, Length, Subscription};
+use iced::{Background, Color, Element, Length, Subscription, Task};
 use portable_pty::{CommandBuilder, NativePtySystem, PtySize, PtySystem};
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
@@ -81,7 +82,7 @@ impl TerminalApp {
         }
     }
 
-    pub fn update(&mut self, message: TerminalMessage) {
+    pub fn update(&mut self, message: TerminalMessage) -> Task<TerminalMessage> {
         match message {
             TerminalMessage::OutputReceived(text) => {
                 // Strip ANSI escape sequences to avoid "square" characters
@@ -105,22 +106,13 @@ impl TerminalApp {
                 }
             }
         }
+        Task::none()
     }
 
-    pub fn view<'a>(&'a self, is_light: bool) -> Element<'a, TerminalMessage> {
-        let (text_color, bg_color, border_color) = if is_light {
-            (
-                Color::from_rgb8(35, 30, 30),
-                Color::from_rgb8(247, 245, 242),
-                Color::from_rgba(0.0, 0.0, 0.0, 0.1),
-            )
-        } else {
-            (
-                Color::from_rgb8(235, 230, 225),
-                Color::from_rgb8(15, 14, 14),
-                Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-            )
-        };
+    pub fn view<'a>(&'a self, theme: &AppTheme) -> Element<'a, TerminalMessage> {
+        let text_color = theme.text_color;
+        let bg_color = theme.bg_color;
+        let border_color = theme.border_color;
 
         let output = text(&self.content)
             .font(iced::Font::MONOSPACE)
