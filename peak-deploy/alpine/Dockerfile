@@ -1,18 +1,18 @@
-FROM alpine:edge
+FROM alpine:3.21
 
 # Install Build Tools and Dependencies
 RUN apk update && apk add --no-cache \
     # Build System
-    bash git make gcc musl-dev pkgconf \
-    rust cargo \
+    bash git make gcc g++ musl-dev pkgconf \
+    rust cargo clang lld cmake perl linux-headers \
     xorriso grub-efi mtools doas \
     # Runtime Deps (for compilation linking)
     alsa-lib-dev wayland-dev wayland-protocols \
-    libxkbcommon-dev fontconfig-dev \
+    libxkbcommon-dev fontconfig-dev freetype-dev \
     gtk+3.0-dev webkit2gtk-4.1-dev \
-    openssl-dev glib-dev \
+    openssl-dev glib-dev mesa-dev zlib-dev libpng-dev jpeg-dev \
     # ISO Creation Tools
-    dosfstools libblkid
+    dosfstools libblkid file
 
 # Setup Build Directory
 WORKDIR /build

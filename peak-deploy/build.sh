@@ -13,13 +13,19 @@ OUT_DIR="$DEPLOY_DIR/out"
 # Ensure directories exist
 mkdir -p "$OUT_DIR"
 
+# Parse arguments
+PLATFORM_FLAG=""
+if [[ "$1" == "--intel" ]] || [[ "$1" == "--x86" ]]; then
+    echo "Building for Intel (x86_64)..."
+    PLATFORM_FLAG="--platform linux/amd64"
+fi
+
 # Build Docker Image
-# We DO NOT force platform here. We let it build for the HOST architecture (ARM64 on M1).
-echo "Building Docker image (Native Architecture)..."
-docker build -t $IMAGE_NAME "$ISO_DIR"
+echo "Building Docker image..."
+docker build --no-cache $PLATFORM_FLAG -t $IMAGE_NAME "$ISO_DIR"
 
 echo "Starting Alpine Build Process..."
-docker run --rm --privileged \
+docker run --rm --privileged $PLATFORM_FLAG \
     -v "$ISO_DIR:/build" \
     -v "$DEPLOY_DIR/../":/project \
     -v "$OUT_DIR:/out" \

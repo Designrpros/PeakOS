@@ -1,4 +1,5 @@
 use crate::app::Message;
+use crate::integrations::appimage::{AppImageInfo, AppImageManager};
 use crate::styles;
 use iced::widget::{button, column, container, row, scrollable, text, text_input};
 use iced::Task;
@@ -13,6 +14,8 @@ pub struct StoreApp {
     pub all_apps: Vec<AppPackage>,
     pub selected_category: Option<AppCategory>,
     pub installing_apps: Vec<String>, // Track which apps are currently installing
+    pub appimage_manager: AppImageManager,
+    pub installed_appimages: Vec<AppImageInfo>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,10 +76,16 @@ pub enum StoreMessage {
     SelectCategory(Option<AppCategory>),
     SearchResultsReceived(Vec<AppPackage>),
     InstallationComplete(String, bool), // (app_name, success)
+    InstallAppImage,                    // Open file picker
+    AppImageSelected(Option<std::path::PathBuf>),
+    LaunchAppImage(String), // Launch by name
 }
 
 impl StoreApp {
     pub fn new() -> Self {
+        let appimage_manager = AppImageManager::new();
+        let installed_appimages = appimage_manager.list_installed();
+
         Self {
             search_query: String::new(),
             is_loading: false,
@@ -84,6 +93,8 @@ impl StoreApp {
             selected_category: None,
             all_apps: crate::apps::store::get_initial_apps(),
             installing_apps: Vec::new(),
+            appimage_manager,
+            installed_appimages,
         }
     }
 
@@ -177,6 +188,49 @@ impl StoreApp {
             }
             StoreMessage::UninstallApp(name) => {
                 self.update_app_status(&name, false);
+                Task::none()
+            }
+            StoreMessage::InstallAppImage => {
+                // Open file picker for .AppImage files
+                Task::perform(
+                    async {
+                        rfd::AsyncFileDialog::new()
+                            .add_filter("AppImage", &["AppImage"])
+                            .pick_file()
+                            .await
+                            .map(|handle| handle.path().to_path_buf())
+                    },
+                    StoreMessage::AppImageSelected,
+                )
+                .map(Message::Store)
+            }
+            StoreMessage::AppImageSelected(path) => {
+                if let Some(path) = path {
+                    // Install the AppImage
+                    match self.appimage_manager.install(&path) {
+                        Ok(info) => {
+                            self.installed_appimages.push(info);
+                            println!("✓ AppImage installed successfully");
+                        }
+                        Err(e) => {
+                            eprintln!("✗ Failed to install AppImage: {}", e);
+                        }
+                    }
+                }
+                Task::none()
+            }
+            StoreMessage::LaunchAppImage(name) => {
+                // Find and launch the AppImage
+                if let Some(info) = self.installed_appimages.iter().find(|app| app.name == name) {
+                    match self.appimage_manager.run(info) {
+                        Ok(_) => {
+                            println!("✓ Launched AppImage: {}", name);
+                        }
+                        Err(e) => {
+                            eprintln!("✗ Failed to launch {}: {}", name, e);
+                        }
+                    }
+                }
                 Task::none()
             }
         }

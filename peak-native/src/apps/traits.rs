@@ -10,6 +10,7 @@ pub struct AppTheme {
     pub text_color: Color,
     pub bg_color: Color,
     pub border_color: Color,
+    #[allow(dead_code)]
     pub accent_color: Color,
 }
 
@@ -39,6 +40,7 @@ impl AppTheme {
 
 /// Core trait that all PeakOS apps implement
 /// This provides a standardized interface for app lifecycle management
+#[allow(dead_code)]
 pub trait PeakApp {
     /// The message type this app handles
     type Message: Clone + std::fmt::Debug;

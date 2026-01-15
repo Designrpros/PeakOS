@@ -22,6 +22,7 @@ pub struct Inspector {
     input_content: text_editor::Content,
     messages: Vec<ChatMessage>,
     is_loading: bool,
+    #[allow(dead_code)]
     provider: ModelProvider,
     client: Arc<LlmClient>,
 }
@@ -198,7 +199,7 @@ impl Inspector {
         .height(Length::Fill);
 
         // Input Area (Bottom)
-        let input_container_bg = if is_light {
+        let _input_container_bg = if is_light {
             Color::from_rgba8(0, 0, 0, 0.05)
         } else {
             Color::from_rgba8(30, 30, 30, 1.0) // Darker background for input area
