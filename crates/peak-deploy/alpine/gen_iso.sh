@@ -30,9 +30,9 @@ mkdir -p /build/rootfs
 mkdir -p /build/iso/boot/grub
 mkdir -p /build/out
 
-# 1. Compile Peak Native
-echo "--- Compiling Peak Native ---"
-cd /project/peak-native
+# 1. Compile Peak Desktop
+echo "--- Compiling Peak Desktop ---"
+cd /project/crates/peak-desktop
 # Force MUSL target if needed, but on Alpine it's default
 # Generate a lockfile if missing so we can pin dependencies
 if [ ! -f Cargo.lock ]; then
@@ -46,17 +46,17 @@ cargo update -p dlopen2_derive --precise 0.4.1 || true
 cargo update -p async-lock --precise 3.4.1 || true
 # Use architecture-specific build directory to avoid conflicts
 export CARGO_TARGET_DIR=/build/target/$ARCH
-cargo build --release
+cargo build --release -p peak-desktop
 echo "Searching for binary..."
-find $CARGO_TARGET_DIR -name "peak-native" -type f
-BIN_PATH=$(find $CARGO_TARGET_DIR -name "peak-native" -type f | head -n 1)
-cp "$BIN_PATH" /build/rootfs/peak-native
-chmod +x /build/rootfs/peak-native
+find $CARGO_TARGET_DIR -name "peak-desktop" -type f
+BIN_PATH=$(find $CARGO_TARGET_DIR -name "peak-desktop" -type f | head -n 1)
+cp "$BIN_PATH" /build/rootfs/peak-desktop
+chmod +x /build/rootfs/peak-desktop
 
 # Copy assets directory for icons, fonts, etc.
 echo "Copying assets..."
 mkdir -p /build/rootfs/usr/share/peakos/assets
-cp -r /project/peak-native/assets/* /build/rootfs/usr/share/peakos/assets/
+cp -r /project/assets/* /build/rootfs/usr/share/peakos/assets/
 # Exclude legacy binaries
 rm -rf /build/rootfs/usr/share/peakos/assets/bin
 
@@ -171,7 +171,7 @@ done
 echo "Launching PeakOS..."
 # Export display explicitly just in case
 export WAYLAND_DISPLAY=wayland-0
-/peak-native &
+/peak-desktop &
 
 # Prevent script from exiting so init doesn't respawn it immediately (if using respawn)
 # Or just let it exit if OpenRC expects it to. OpenRC 'start' should exit.
