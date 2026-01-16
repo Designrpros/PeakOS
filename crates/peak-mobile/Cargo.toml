@@ -1,0 +1,10 @@
+[package]
+name = "peak-mobile"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = { version = "0.13", features = ["advanced", "svg", "image"] }
+peak-core = { path = "../peak-core" }
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }

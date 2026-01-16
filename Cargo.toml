@@ -1,6 +1,10 @@
 [workspace]
+
 members = [
-    #"peak-compositor",
-    "peak-intelligence", "peak-native",
+    "crates/peak-intelligence",
+    "crates/peak-core",
+    "crates/peak-desktop",
+    "crates/peak-mobile",
 ]
+
 resolver = "2"

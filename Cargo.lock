@@ -3995,6 +3995,57 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
+name = "peak-core"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "directories",
+ "dirs 5.0.1",
+ "hex",
+ "iced",
+ "lazy_static",
+ "opener",
+ "peak-intelligence",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sysinfo",
+ "tokio",
+]
+
+[[package]]
+name = "peak-desktop"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "directories",
+ "dirs 5.0.1",
+ "hex",
+ "iced",
+ "lazy_static",
+ "objc",
+ "opener",
+ "peak-core",
+ "peak-intelligence",
+ "portable-pty",
+ "rand 0.8.5",
+ "regex",
+ "reqwest",
+ "rfd",
+ "rodio",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sysinfo",
+ "tao",
+ "tiny-skia",
+ "tokio",
+ "wry",
+]
+
+[[package]]
 name = "peak-intelligence"
 version = "0.1.0"
 dependencies = [
@@ -4012,32 +4063,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "peak-native"
+name = "peak-mobile"
 version = "0.1.0"
 dependencies = [
- "chrono",
- "directories",
- "dirs 5.0.1",
- "hex",
  "iced",
- "lazy_static",
- "objc",
- "opener",
- "peak-intelligence",
- "portable-pty",
- "rand 0.8.5",
- "regex",
- "reqwest",
- "rfd",
- "rodio",
+ "peak-core",
  "serde",
- "serde_json",
- "sha2",
- "sysinfo",
- "tao",
- "tiny-skia",
  "tokio",
- "wry",
 ]
 
 [[package]]
