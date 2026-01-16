@@ -217,19 +217,8 @@ impl PeakNative {
         )
         .map(Message::DockInteraction);
 
-        let background =
-            iced::widget::image(iced::widget::image::Handle::from_path(wallpaper_path))
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .content_fit(iced::ContentFit::Cover);
-
-        let workspace = Stack::new()
-            .push(
-                container(background)
-                    .width(Length::Fill)
-                    .height(Length::Fill),
-            )
-            .push(workspace_stack);
+        let workspace =
+            crate::components::desktop_container::view(&wallpaper_path, workspace_stack.into());
 
         let workspace_and_inspector = iced::widget::row![
             container(workspace)
