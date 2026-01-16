@@ -4006,6 +4006,7 @@ dependencies = [
  "lazy_static",
  "opener",
  "peak-intelligence",
+ "portable-pty",
  "regex",
  "reqwest",
  "serde",
@@ -4066,6 +4067,7 @@ dependencies = [
 name = "peak-mobile"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "iced",
  "peak-core",
  "serde",

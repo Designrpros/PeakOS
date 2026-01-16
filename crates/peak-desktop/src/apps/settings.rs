@@ -1,102 +1,56 @@
-// use peak_core::utils::assets;
-
 use iced::widget::{
     button, column, container, horizontal_space, row, scrollable, text, text_input, vertical_space,
     Rule,
 };
-use iced::{Alignment, Color, Element, Length, Task};
+use iced::{Alignment, Color, Element, Length};
+use peak_core::app_traits::AppTheme;
+pub use peak_core::apps::settings::{SettingsApp, SettingsMessage, SettingsTab, ThemeMode};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ThemeMode {
-    Light,
-    Dark,
-}
-
-impl std::fmt::Display for ThemeMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ThemeMode::Light => write!(f, "Light"),
-            ThemeMode::Dark => write!(f, "Dark"),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SettingsTab {
-    General,
-    WiFi,
-    Bluetooth,
-    Battery,
-    Appearance,
-    Display,
-    Sound,
-    Focus,
-    Privacy,
-}
-
-#[derive(Debug, Clone)]
-pub enum SettingsMessage {
-    ThemeChanged(ThemeMode),
-    VolumeChanged(f32),
-    TabChanged(SettingsTab),
-    SearchChanged(String),
-    ToggleWiFi(bool),
-    ToggleBluetooth(bool),
-}
-
-pub struct SettingsApp {
-    pub theme_mode: ThemeMode,
-    pub current_tab: SettingsTab,
-    pub volume: f32,
-    pub search_query: String,
-    pub wifi_enabled: bool,
-    pub bluetooth_enabled: bool,
-}
-
-impl SettingsApp {
-    pub fn new() -> Self {
-        Self {
-            theme_mode: ThemeMode::Light,
-            current_tab: SettingsTab::General, // Start at General like macOS
-            volume: 0.8,
-            search_query: String::new(),
-            wifi_enabled: true,
-            bluetooth_enabled: true,
-        }
-    }
-
-    pub fn update(&mut self, message: SettingsMessage) -> Task<SettingsMessage> {
-        match message {
-            SettingsMessage::ThemeChanged(mode) => {
-                self.theme_mode = mode;
-                Task::none()
-            }
-            SettingsMessage::VolumeChanged(v) => {
-                self.volume = v;
-                Task::none()
-            }
-            SettingsMessage::TabChanged(tab) => {
-                self.current_tab = tab;
-                Task::none()
-            }
-            SettingsMessage::SearchChanged(q) => {
-                self.search_query = q;
-                Task::none()
-            }
-            SettingsMessage::ToggleWiFi(enabled) => {
-                self.wifi_enabled = enabled;
-                Task::none()
-            }
-            SettingsMessage::ToggleBluetooth(enabled) => {
-                self.bluetooth_enabled = enabled;
-                Task::none()
-            }
-        }
-    }
-
-    pub fn view<'a>(
+pub trait SettingsDesktopView {
+    fn view<'a>(
         &self,
-        theme: &peak_core::app_traits::AppTheme,
+        theme: &AppTheme,
+    ) -> Element<'a, SettingsMessage, iced::Theme, iced::Renderer>;
+
+    fn sidebar_group<'a>(
+        &self,
+        items: Vec<(&'a str, SettingsTab, &str)>,
+        text_color: Color,
+        accent_color: Color,
+        is_light: bool,
+    ) -> Element<'a, SettingsMessage>;
+
+    fn view_tab_content<'a>(
+        &self,
+        is_light: bool,
+        border_color: Color,
+    ) -> Element<'a, SettingsMessage>;
+
+    fn section<'a>(
+        &self,
+        title: &'a str,
+        content: impl Into<Element<'a, SettingsMessage>>,
+        is_light: bool,
+    ) -> Element<'a, SettingsMessage>;
+
+    fn labeled_row<'a>(
+        &self,
+        label: &'a str,
+        widget: impl Into<Element<'a, SettingsMessage>>,
+    ) -> Element<'a, SettingsMessage>;
+
+    fn theme_preview<'a>(
+        &self,
+        label: &'a str,
+        mode: ThemeMode,
+        is_light: bool,
+    ) -> Element<'a, SettingsMessage>;
+}
+
+impl SettingsDesktopView for SettingsApp {
+    fn view<'a>(
+        &self,
+        theme: &AppTheme,
     ) -> Element<'a, SettingsMessage, iced::Theme, iced::Renderer> {
         let is_light = theme.is_light;
         let (text_color, sidebar_bg, content_bg, accent_color, border_color) = if is_light {
@@ -261,7 +215,6 @@ impl SettingsApp {
             .padding(32)
             .max_width(800),
         ))
-        .width(Length::Fill)
         .height(Length::Fill)
         .style(move |_| container::Style {
             background: Some(content_bg.into()),
@@ -319,7 +272,7 @@ impl SettingsApp {
                         Some(if is_light {
                             Color::from_rgba(0.0, 0.0, 0.0, 0.03).into()
                         } else {
-                            Color::from_rgba(1.0, 1.0, 1.0, 0.05).into()
+                            Color::from_rgba(1.0, 1.0, 1.0, 0.1).into()
                         })
                     } else {
                         None

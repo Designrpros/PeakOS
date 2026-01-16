@@ -1,0 +1,90 @@
+use iced::Task;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ThemeMode {
+    Light,
+    Dark,
+}
+
+impl std::fmt::Display for ThemeMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ThemeMode::Light => write!(f, "Light"),
+            ThemeMode::Dark => write!(f, "Dark"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SettingsTab {
+    General,
+    WiFi,
+    Bluetooth,
+    Battery,
+    Appearance,
+    Display,
+    Sound,
+    Focus,
+    Privacy,
+}
+
+#[derive(Debug, Clone)]
+pub enum SettingsMessage {
+    ThemeChanged(ThemeMode),
+    VolumeChanged(f32),
+    TabChanged(SettingsTab),
+    SearchChanged(String),
+    ToggleWiFi(bool),
+    ToggleBluetooth(bool),
+}
+
+pub struct SettingsApp {
+    pub theme_mode: ThemeMode,
+    pub current_tab: SettingsTab,
+    pub volume: f32,
+    pub search_query: String,
+    pub wifi_enabled: bool,
+    pub bluetooth_enabled: bool,
+}
+
+impl SettingsApp {
+    pub fn new() -> Self {
+        Self {
+            theme_mode: ThemeMode::Light,
+            current_tab: SettingsTab::General,
+            volume: 0.8,
+            search_query: String::new(),
+            wifi_enabled: true,
+            bluetooth_enabled: true,
+        }
+    }
+
+    pub fn update(&mut self, message: SettingsMessage) -> Task<SettingsMessage> {
+        match message {
+            SettingsMessage::ThemeChanged(mode) => {
+                self.theme_mode = mode;
+                Task::none()
+            }
+            SettingsMessage::VolumeChanged(v) => {
+                self.volume = v;
+                Task::none()
+            }
+            SettingsMessage::TabChanged(tab) => {
+                self.current_tab = tab;
+                Task::none()
+            }
+            SettingsMessage::SearchChanged(q) => {
+                self.search_query = q;
+                Task::none()
+            }
+            SettingsMessage::ToggleWiFi(enabled) => {
+                self.wifi_enabled = enabled;
+                Task::none()
+            }
+            SettingsMessage::ToggleBluetooth(enabled) => {
+                self.bluetooth_enabled = enabled;
+                Task::none()
+            }
+        }
+    }
+}

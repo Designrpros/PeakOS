@@ -1,4 +1,5 @@
 pub mod app_traits;
+pub mod apps;
 pub mod icons;
 pub mod integrations;
 pub mod models;

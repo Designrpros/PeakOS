@@ -1,6 +1,8 @@
 // Desktop view rendering
 
 use super::{Message, PeakNative};
+use crate::apps::settings::SettingsDesktopView;
+use crate::apps::terminal::TerminalDesktopView;
 use crate::components::{
     dock,
     menubar::{self, MenubarMessage},
