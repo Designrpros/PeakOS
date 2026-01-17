@@ -1,9 +1,12 @@
-use crate::components::dock::DockMessage;
 use iced::widget::{container, text, Column, Row};
 use iced::{Alignment, Element, Length};
-use peak_core::registry::{AppId, AppInfo};
+use peak_core::registry::AppId;
+use peak_shell::dock::DockMessage;
 
-pub fn view<'a>(apps: &[AppId], is_light: bool) -> Element<'a, DockMessage> {
+pub fn view<'a>(
+    apps: &'a [peak_core::models::MediaItem],
+    is_light: bool,
+) -> Element<'a, DockMessage> {
     let mut grid = Column::new()
         .spacing(40)
         .padding(40)
@@ -16,10 +19,17 @@ pub fn view<'a>(apps: &[AppId], is_light: bool) -> Element<'a, DockMessage> {
     for chunk in apps.chunks(chunk_size) {
         let mut row = Row::new().spacing(40).align_y(Alignment::Center);
 
-        for app_id in chunk {
-            // Use the centralized icon loader for correct coloring
-            let icon_handle = peak_core::icons::get_app_icon(*app_id, icon_color);
-            let name = AppInfo::get_info(*app_id).name;
+        for item in chunk {
+            // Try to use app icon if it's a builtin app, otherwise fallback or generic
+            let icon_handle = if let Ok(app_id) = item.launch_command.parse::<AppId>() {
+                peak_core::icons::get_app_icon(app_id, icon_color)
+            } else {
+                // For external apps, we'd ideally load their real icon,
+                // but for now we'll use a generic "app" icon or a fallback.
+                peak_core::icons::get_app_icon(AppId::AppGrid, icon_color)
+            };
+
+            let name = &item.title;
 
             let btn = iced::widget::button(
                 Column::new()
@@ -46,7 +56,7 @@ pub fn view<'a>(apps: &[AppId], is_light: bool) -> Element<'a, DockMessage> {
                             .align_y(Alignment::Center),
                     ),
             )
-            .on_press(DockMessage::Launch(*app_id))
+            .on_press(DockMessage::LaunchMedia(item.clone()))
             .style(move |_, status| {
                 let parse_color = |r, g, b, a| iced::Color { r, g, b, a };
                 if status == iced::widget::button::Status::Hovered {

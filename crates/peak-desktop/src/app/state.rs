@@ -1,13 +1,13 @@
 // State type definitions for PeakNative application
 
-use crate::components::app_switcher::SwitcherMessage;
 use crate::components::inspector::InspectorMessage;
-use crate::components::menubar::MenubarMessage;
 use crate::components::omnibar::OmnibarMessage;
 use peak_apps::explorer::ExplorerMessage;
 use peak_apps::library::LibraryMessage;
 use peak_apps::settings::SettingsMessage;
 use peak_core::registry::ShellMode;
+use peak_shell::app_switcher::SwitcherMessage;
+use peak_shell::menubar::MenubarMessage;
 
 #[derive(Debug, Clone)]
 pub enum AppState {
@@ -26,7 +26,7 @@ pub enum Message {
     Tick,
     Exit,
     GlobalEvent(iced::Event),
-    DockInteraction(crate::components::dock::DockMessage),
+    DockInteraction(peak_shell::dock::DockMessage),
     SwitchMode(ShellMode),
     ToggleMode,
     LogOut,

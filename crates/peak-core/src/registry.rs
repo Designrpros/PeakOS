@@ -25,7 +25,6 @@ pub enum AppId {
     FileManager,
     Store,
     AppGrid, // The Launchpad / App Library
-    Antigravity,
     Editor,
     Desktop,
     #[allow(dead_code)]
@@ -50,6 +49,28 @@ impl std::fmt::Display for AppId {
     }
 }
 
+impl std::str::FromStr for AppId {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Terminal" => Ok(AppId::Terminal),
+            "Browser" => Ok(AppId::Browser),
+            "Library" => Ok(AppId::Library),
+            "Cortex" => Ok(AppId::Cortex),
+            "Settings" => Ok(AppId::Settings),
+            "FileManager" => Ok(AppId::FileManager),
+            "Store" => Ok(AppId::Store),
+            "AppGrid" => Ok(AppId::AppGrid),
+            "Editor" => Ok(AppId::Editor),
+            "Desktop" => Ok(AppId::Desktop),
+            "Spotify" => Ok(AppId::Spotify),
+            "Turntable" => Ok(AppId::Turntable),
+            _ => Err(()),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct AppInfo {
     pub id: AppId,
@@ -67,7 +88,6 @@ impl AppInfo {
             AppId::FileManager => "Files",
             AppId::Store => "Store",
             AppId::AppGrid => "Launchpad",
-            AppId::Antigravity => "Antigravity",
             AppId::Editor => "Text Editor",
             AppId::Desktop => "Desktop",
             AppId::Spotify => "Spotify",
@@ -103,7 +123,6 @@ impl AppInfo {
             AppId::FileManager,
             AppId::Store,
             AppId::AppGrid,
-            AppId::Antigravity,
             AppId::Editor,
             AppId::Desktop,
             AppId::Turntable,
@@ -111,5 +130,20 @@ impl AppInfo {
         .into_iter()
         .map(Self::get_info)
         .collect()
+    }
+
+    pub fn all_as_media() -> Vec<crate::models::MediaItem> {
+        Self::all()
+            .into_iter()
+            .map(|info| crate::models::MediaItem {
+                id: info.id.to_string(),
+                title: info.name.to_string(),
+                cover_image: format!("{}_icon.png", info.id.to_string().to_lowercase()),
+                launch_command: info.id.to_string(),
+                kind: crate::models::MediaKind::App,
+                status: crate::models::MediaStatus::Ready,
+                image_handle: None,
+            })
+            .collect()
     }
 }

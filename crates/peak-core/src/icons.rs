@@ -35,8 +35,6 @@ pub fn get_app_icon(id: crate::registry::AppId, color: &str) -> Handle {
         AppId::Store => "store",
         AppId::Cortex => "cpu",
         AppId::AppGrid => "library",
-
-        AppId::Antigravity => "sparkles",
         AppId::Editor => "editor",
         AppId::Desktop => "monitor",
         AppId::Spotify => "spotify",

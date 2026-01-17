@@ -1,15 +1,14 @@
 // Message handling logic
 
 use super::{AppState, Message, PeakNative};
-use crate::components::{
-    app_switcher::SwitcherMessage, dock, menubar::MenubarMessage, omnibar::OmnibarMessage,
-};
+use crate::components::omnibar::OmnibarMessage;
 use crate::pages::Page;
 use iced::Task;
 use peak_apps::library::LibraryMessage;
 #[allow(unused_imports)]
 use peak_core::app_traits::PeakApp;
 use peak_core::registry::{AppId, ShellMode};
+use peak_shell::{app_switcher::SwitcherMessage, dock, menubar::MenubarMessage};
 
 impl PeakNative {
     /// Helper to toggle an app window - handles workspace switching and window lifecycle
@@ -617,6 +616,28 @@ impl PeakNative {
             }
             Message::DockInteraction(dock_msg) => {
                 match dock_msg {
+                    dock::DockMessage::LaunchMedia(item) => {
+                        self.show_app_grid = false;
+                        self.is_desktop_revealed = false;
+
+                        let command = item.launch_command.clone();
+                        #[cfg(target_os = "macos")]
+                        {
+                            if command.contains("/Applications/") || command.contains("open ") {
+                                std::process::Command::new("sh")
+                                    .arg("-c")
+                                    .arg(&command)
+                                    .spawn()
+                                    .ok();
+                            } else {
+                                std::process::Command::new(command).spawn().ok();
+                            }
+                        }
+                        #[cfg(not(target_os = "macos"))]
+                        {
+                            std::process::Command::new(command).spawn().ok();
+                        }
+                    }
                     dock::DockMessage::Launch(app_id) => {
                         self.show_app_grid = false;
                         self.is_desktop_revealed = false;
@@ -657,17 +678,6 @@ impl PeakNative {
                             }
                             peak_core::registry::AppId::AppGrid => {
                                 return Task::done(Message::ToggleAppGrid);
-                            }
-                            peak_core::registry::AppId::Antigravity => {
-                                if cfg!(target_os = "macos") {
-                                    std::process::Command::new("open")
-                                        .arg("-a")
-                                        .arg("Antigravity")
-                                        .spawn()
-                                        .ok();
-                                } else {
-                                    std::process::Command::new("antigravity").spawn().ok();
-                                }
                             }
                             peak_core::registry::AppId::Spotify => {
                                 if cfg!(target_os = "macos") {

@@ -59,7 +59,6 @@ impl AppScanner {
 
         // List of known apps to detect
         let known_apps = [
-            ("firefox", "Firefox", "Fast, private browser."),
             ("chromium", "Chromium", "Open source web browser."),
             ("brave", "Brave", "Privacy-focused browser."),
             ("gimp", "GIMP", "GNU Image Manipulation Program."),

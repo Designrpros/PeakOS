@@ -1,11 +1,11 @@
 // PeakNative application module
 // Refactored from monolithic app.rs into focused sub-modules
 
-use crate::components::app_switcher::AppSwitcher;
 use crate::components::inspector::Inspector;
 use crate::components::omnibar::Omnibar;
 use crate::pages::Page;
 use iced::Theme as IcedTheme;
+use peak_shell::app_switcher::AppSwitcher;
 
 use peak_core::models::MediaItem;
 use peak_core::registry::ShellMode;
@@ -79,6 +79,7 @@ pub struct PeakNative {
     pub quick_look_path: Option<std::path::PathBuf>,
     pub tracked_modifiers: iced::keyboard::Modifiers,
     pub is_mouse_button_pressed: bool, // Track left mouse button state for reliable drag release
+    pub scanned_apps: Vec<MediaItem>,
 }
 
 impl PeakNative {

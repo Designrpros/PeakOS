@@ -1,0 +1,13 @@
+[package]
+name = "peak-shell"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = { version = "0.13", features = ["image", "svg", "advanced"] }
+peak-core = { path = "../peak-core" }
+peak-ui = { path = "../peak-ui" }
+peak-theme = { path = "../peak-theme" }
+peak-system = { path = "../peak-system" }
+serde = { version = "1.0", features = ["derive"] }
+chrono = "0.4"

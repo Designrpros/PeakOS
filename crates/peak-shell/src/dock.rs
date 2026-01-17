@@ -6,6 +6,7 @@ use peak_core::registry::{AppId, AppInfo, ShellMode};
 #[derive(Debug, Clone)]
 pub enum DockMessage {
     Launch(AppId),
+    LaunchMedia(peak_core::models::MediaItem),
     StartDrag(usize),  // index
     UpdateDrag(usize), // current hover index
     EndDrag,

@@ -1,41 +1,28 @@
 // Desktop view rendering
 
 use super::{Message, PeakNative};
-use crate::components::{
-    dock,
-    menubar::{self, MenubarMessage},
-};
 use crate::pages::Page;
 use iced::widget::{button, container, text, text as t, Column, Stack};
 use iced::{Border, Color, Element, Length, Shadow, Vector};
 use peak_core::registry::ShellMode;
-
-// Helper function for app grid
-fn view_app_grid(is_light: bool) -> Element<'static, Message> {
-    let apps = vec![
-        peak_core::registry::AppId::Terminal,
-        peak_core::registry::AppId::Browser,
-        peak_core::registry::AppId::Library,
-        peak_core::registry::AppId::Store,
-        peak_core::registry::AppId::Turntable,
-        peak_core::registry::AppId::Settings,
-        peak_core::registry::AppId::FileManager,
-        peak_core::registry::AppId::Cortex,
-        peak_core::registry::AppId::Editor,
-        peak_core::registry::AppId::Antigravity,
-    ];
-
-    let grid = crate::components::app_grid::view(&apps, is_light).map(Message::DockInteraction);
-
-    container(grid)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .center_x(Length::Fill)
-        .center_y(Length::Fill)
-        .into()
-}
+use peak_shell::{
+    dock,
+    menubar::{self, MenubarMessage},
+};
 
 impl PeakNative {
+    fn view_app_grid(&self, is_light: bool) -> Element<'_, Message> {
+        let grid = crate::components::app_grid::view(&self.scanned_apps, is_light)
+            .map(Message::DockInteraction);
+
+        container(grid)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill)
+            .into()
+    }
+
     pub fn view_desktop(&self) -> Element<'_, Message> {
         let is_light = self.theme == peak_core::theme::Theme::Light;
         let wallpaper_path = if let Some(custom) = &self.custom_wallpaper {
@@ -271,7 +258,7 @@ impl PeakNative {
                     .height(Length::Fill),
                 )
                 .push(
-                    container(view_app_grid(is_light))
+                    container(self.view_app_grid(is_light))
                         .width(Length::Fill)
                         .height(Length::Fill)
                         .center_x(Length::Fill)

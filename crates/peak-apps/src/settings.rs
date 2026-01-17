@@ -1,6 +1,5 @@
 use iced::widget::{
-    button, column, container, horizontal_space, row, scrollable, text, text_input, vertical_space,
-    Rule,
+    Rule, button, column, container, horizontal_space, row, scrollable, text, vertical_space,
 };
 use iced::{Alignment, Color, Element, Length, Task};
 pub use peak_core::apps::settings::{SettingsApp, SettingsMessage, SettingsTab, ThemeMode};
@@ -240,11 +239,13 @@ impl SettingsDesktopView for SettingsApp {
             SettingsTab::Appearance => column![
                 self.section(
                     "Appearance",
-                    column![row![
-                        self.theme_preview("Light", ThemeMode::Light, is_light),
-                        self.theme_preview("Dark", ThemeMode::Dark, is_light),
-                    ]
-                    .spacing(20)],
+                    column![
+                        row![
+                            self.theme_preview("Light", ThemeMode::Light, is_light),
+                            self.theme_preview("Dark", ThemeMode::Dark, is_light),
+                        ]
+                        .spacing(20)
+                    ],
                     is_light
                 ),
                 vertical_space().height(20),
@@ -300,14 +301,16 @@ impl SettingsDesktopView for SettingsApp {
             SettingsTab::WiFi => column![
                 self.section(
                     "Wi-Fi",
-                    column![row![
-                        text("Wi-Fi").size(13),
-                        horizontal_space(),
-                        iced::widget::toggler(self.wifi_enabled)
-                            .on_toggle(SettingsMessage::ToggleWiFi)
-                            .width(Length::Shrink)
-                    ]
-                    .align_y(Alignment::Center)],
+                    column![
+                        row![
+                            text("Wi-Fi").size(13),
+                            horizontal_space(),
+                            iced::widget::toggler(self.wifi_enabled)
+                                .on_toggle(SettingsMessage::ToggleWiFi)
+                                .width(Length::Shrink)
+                        ]
+                        .align_y(Alignment::Center)
+                    ],
                     is_light
                 ),
                 vertical_space().height(10),
@@ -346,14 +349,16 @@ impl SettingsDesktopView for SettingsApp {
             SettingsTab::Bluetooth => column![
                 self.section(
                     "Bluetooth",
-                    column![row![
-                        text("Bluetooth").size(13),
-                        horizontal_space(),
-                        iced::widget::toggler(self.bluetooth_enabled)
-                            .on_toggle(SettingsMessage::ToggleBluetooth)
-                            .width(Length::Shrink)
-                    ]
-                    .align_y(Alignment::Center)],
+                    column![
+                        row![
+                            text("Bluetooth").size(13),
+                            horizontal_space(),
+                            iced::widget::toggler(self.bluetooth_enabled)
+                                .on_toggle(SettingsMessage::ToggleBluetooth)
+                                .width(Length::Shrink)
+                        ]
+                        .align_y(Alignment::Center)
+                    ],
                     is_light
                 ),
                 vertical_space().height(10),
@@ -402,9 +407,11 @@ impl SettingsDesktopView for SettingsApp {
             )]
             .into(),
 
-            _ => column![text("Placeholder for future settings.")
-                .size(13)
-                .color(Color::from_rgb(0.5, 0.5, 0.5))]
+            _ => column![
+                text("Placeholder for future settings.")
+                    .size(13)
+                    .color(Color::from_rgb(0.5, 0.5, 0.5))
+            ]
             .into(),
         }
     }

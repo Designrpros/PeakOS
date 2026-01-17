@@ -2,7 +2,6 @@
 
 use super::{AppState, Message, PeakNative};
 use crate::audio;
-use crate::components::app_switcher::AppSwitcher;
 use crate::components::inspector::Inspector;
 use crate::components::omnibar::Omnibar;
 use crate::pages::Page;
@@ -10,6 +9,7 @@ use iced::Task;
 use peak_apps::library::LibraryMessage;
 use peak_core::models::MediaItem;
 use peak_core::registry::ShellMode;
+use peak_shell::app_switcher::AppSwitcher;
 use sysinfo::System;
 
 impl PeakNative {
@@ -110,6 +110,11 @@ impl PeakNative {
             quick_look_path: None,
             tracked_modifiers: iced::keyboard::Modifiers::default(),
             is_mouse_button_pressed: false,
+            scanned_apps: {
+                let mut apps = peak_core::registry::AppInfo::all_as_media();
+                apps.extend(final_games.clone());
+                apps
+            },
 
             // Initialize Desktop
             desktop: crate::components::desktop::Desktop::new(),

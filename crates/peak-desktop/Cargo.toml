@@ -12,6 +12,7 @@ peak-intelligence = { path = "../peak-intelligence" }
 peak-core = { path = "../peak-core" }
 peak-apps = { path = "../peak-apps" }
 peak-ui = { path = "../peak-ui" }
+peak-shell = { path = "../peak-shell" }
 tokio = { version = "1", features = ["full"] }
 chrono = "0.4"
 sysinfo = "0.30"
