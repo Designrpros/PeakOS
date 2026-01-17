@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Set cargo PATH directly (rustup installs to /root/.cargo/bin)
+export PATH="/root/.cargo/bin:$PATH"
+
 echo "=== PeakOS Builder (Alpine) ==="
 ARCH=$(uname -m)
 echo "Architecture: $ARCH"

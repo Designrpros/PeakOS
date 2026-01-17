@@ -1,8 +1,8 @@
 # PeakOS
 
-**A minimal, modern desktop OS built with Rust — maximum compatibility on minimal footprint.**
+**A Hybrid Operating System built with Rust — One Core, Many Faces.**
 
-Boot in seconds. Run Ubuntu apps. Play games. Your data, your rules.
+Boot seamlessly into Desktop, Console, TV, or Robot mode. Your OS adapts to your hardware context. Infinite possibilities on a minimal footprint.
 
 ---
 
@@ -10,53 +10,47 @@ Boot in seconds. Run Ubuntu apps. Play games. Your data, your rules.
 
 ### The Problem
 Modern operating systems force you to choose:
-- **Ubuntu/Debian:** Bloated, slow, decade-old technologies
-- **Arch:** Minimal but fragile, breaks on updates
-- **Alpine:** Lightweight but poor desktop compatibility
-- **Windows/macOS:** Spyware, forced updates, vendor lock-in
+- **Ubuntu/Windows:** Bloated, slow, and locked to one form factor (Desktop vs Server vs IoT).
+- **Android/ChromeOS:** Excellent for specific devices, but fragmented ecosystems (cannot run Android TV and Desktop on the same OS easily).
+- **ROS (Robot OS):** Not an actual OS, just middleware on top of heavy Linux distros. Hard to manage and secure.
 
 ### The Solution
 **PeakOS gives you everything, sacrifices nothing:**
 
-| Feature | PeakOS | Ubuntu | Arch | Alpine | Windows |
-|---------|--------|--------|------|--------|---------|
-| **Boot Time** | ~5 sec | ~45 sec | ~15 sec | ~8 sec | ~30 sec |
-| **RAM Idle** | ~200 MB | ~1.5 GB | ~400 MB | ~100 MB | ~2 GB |
-| **Ubuntu Apps** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Gaming** | ✅ Native | ✅ | ✅ | ❌ | ✅ |
-| **Modern Stack** | Rust 2024 | C/C++ 2010s | Mixed | C 1990s | Proprietary |
-| **Cross-Platform** | Intel + ARM | Intel + ARM | Intel + ARM | All | Intel + ARM |
-| **Privacy** | 100% | Opt-out | 100% | 100% | 0% |
-| **AI Built-in** | ✅ | ❌ | ❌ | ❌ | ⚠️ Cloud |
+| Feature | PeakOS | Ubuntu | Windows | Android |
+|---------|--------|--------|---------|---------|
+| **Multi-Mode** | ✅ (Desktop/Robot/TV) | ❌ | ❌ | ❌ (Fragmented) |
+| **Boot Time** | ~3 sec | ~45 sec | ~30 sec | ~20 sec |
+| **RAM Idle** | ~200 MB | ~1.5 GB | ~2 GB | ~800 MB |
+| **Safety** | Memory-Safe Rust | Legacy C/C++ | Proprietary C++ | Java/C++ |
+| **Robotics** | Native First-Class | Heavy Overlay | Not Supported | High Latency | 
+| **Privacy** | 100% | Opt-out | 0% | 0% |
 
 ---
 
 ## Key Features
 
-### 🚀 **Blazing Fast**
-- **Native Rust shell** powered by [iced](https://github.com/iced-rs/iced) — GPU-accelerated, memory-safe
-- **Alpine Linux base** — minimal attack surface, instant boot
-- **Zero bloat** — only what you need, nothing you don't
+### 🦎 **Chameleon Architecture**
+- **Desktop Mode:** Clean, glassmorphic productivity environment.
+- **Console Mode:** "PlayStation-like" interface for gaming with controller support.
+- **TV Mode:** "Apple TV-like" 10-foot UI for media consumption.
+- **Robot Mode:** "Face-only" or headless mode for low-latency robotics control.
 
-### 📦 **Maximum Compatibility**
-- **Run any Ubuntu/Debian app** — APK package manager with glibc compatibility
-- **Electron/Tauri apps** — VSCode, Discord, Spotify, Obsidian — all work natively
-- **Steam & Gaming** — Native game support, Proton ready
+### 🚀 **Blazing Fast & Safe**
+- **Native Rust shell** — GPU-accelerated, memory-safe, crash-proof.
+- **Alpine Linux base** — minimal attack surface, instant boot.
+- **Zero bloat** — The OS grows with your needs, stripped down by default.
 
-### 🎨 **Beautiful & Customizable**
-- **Glassmorphic UI** — Modern, translucent design language
-- **Reality Switching** — Toggle between "Peak" (minimal) and "Poolside" (retro) themes
-- **Workspace Management** — Seamless multi-desktop experience
+### 📦 **Universal Compatibility**
+- **Run Linux Apps:** Full support for Wayland/X11 applications.
+- **Gaming Ready:** Native Steam & Proton support.
+- **Dev-to-Bot:** Develop on your PeakOS laptop, deploy the *exact same OS* to your robot.
 
 ### 🤖 **AI-First Computing**
-- **Peak Intelligence** — Built-in AI assistant with local or cloud models
-- **Omnibar** — Instant system-wide search + AI queries
-- **Inspector Panel** — Persistent AI context across all apps
+- **Peak Intelligence** — Built-in AI assistant with local or cloud models.
+- **Omnibar** — Instant system-wide search + AI queries.
+- **Inspector Panel** — Persistent AI context across all apps.
 
-### 🔒 **Privacy by Default**
-- **No telemetry** — Your data stays on your device
-- **Open source** — Audit every line of code
-- **Self-hosted AI** — Use Ollama locally, no cloud required
 
 ---
 
@@ -116,30 +110,23 @@ sudo dd if=peakos.iso of=/dev/sdX bs=1M status=progress
 
 ## Use Cases
 
-### 💻 **Developer Workstation**
-- Rust/Python/Node developers who need minimal overhead
-- Cross-platform: Same experience on Intel laptop + ARM Mac
-- Built-in terminal with full PTY support
+### 🤖 **Robotics Platform**
+- **Unify Dev & Prod:** Stop cross-compiling. Run the same OS on your workstation and your robot.
+- **Safety First:** Rust kernel/shell means your robot won't Segfault into a wall.
+- **Telepresence:** Native support for remote control and "Face" UI rendering.
 
-### 🎮 **Gaming on Legacy Hardware**
-- Breathe new life into old Intel machines
-- Native Steam support, minimal OS overhead
-- More RAM for games, less for the OS
+### 🎮 **Gaming & Media Center**
+- **Retro Gaming:** Revive old hardware with an ultralight OS dedicated to emulation.
+- **Smart TV:** Turn any PC into a privacy-respecting media center.
+
+### 💻 **Developer Workstation**
+- Rust/Python/Node developers who need minimal overhead.
+- Cross-platform: Same experience on Intel laptop + ARM Mac + Raspberry Pi.
+- Built-in terminal with full PTY support.
 
 ### 🏠 **Home Lab / Self-Hosting**
-- Lightweight server OS with GUI on-demand
-- Perfect for Raspberry Pi clusters or old PCs
-- Privacy-first, no corporate telemetry
-
-### 🎓 **Education**
-- Learn OS internals by reading clean Rust code
-- Modify and rebuild your entire desktop
-- Safe experimentation (memory-safe Rust base)
-
-### 🔒 **Privacy-Focused Desktop**
-- No tracking, no forced updates, no cloud lock-in
-- Self-host your AI (Ollama integration)
-- Full control over your computing environment
+- Lightweight server OS with GUI on-demand.
+- Perfect for Raspberry Pi clusters.
 
 ---
 

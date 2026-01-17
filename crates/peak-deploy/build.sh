@@ -29,7 +29,6 @@ docker run --rm --privileged $PLATFORM_FLAG \
     -v "$ISO_DIR:/build" \
     -v "$DEPLOY_DIR/../../":/project \
     -v "$OUT_DIR:/out" \
-    -v "peak-cargo-cache-alpine:/root/.cargo" \
     $IMAGE_NAME
 
 # Fix permissions

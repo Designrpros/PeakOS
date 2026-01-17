@@ -4,7 +4,7 @@ use clap::Parser;
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Initial URL to open
-    #[arg(short, long, default_value = "https://peakos.org")]
+    #[arg(short, long, default_value = "https://duckduckgo.com")]
     url: String,
 
     /// Initial Window X Position

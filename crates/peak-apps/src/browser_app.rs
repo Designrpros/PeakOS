@@ -23,7 +23,7 @@ impl BrowserApp {
     pub fn new() -> Self {
         Self {
             child_process: None,
-            url: String::from("https://wikits.net"),
+            url: String::from("https://duckduckgo.com"),
             window_info: WindowInfo::default(),
             is_open: false,
         }

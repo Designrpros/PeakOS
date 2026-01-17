@@ -8,7 +8,7 @@ mod systems;
 
 use app::PeakNative;
 
-pub fn main() -> iced::Result {
+pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Simple manual parsing to avoid heavy dependencies
     let args: Vec<String> = std::env::args().collect();
 
@@ -31,11 +31,12 @@ pub fn main() -> iced::Result {
             .unwrap_or_else(|| "peak".to_string());
 
         let layer_settings = layer_app::get_menubar_settings();
-        return layer_app::PeakLayerShell::run(iced_layershell::Settings {
+        return layer_app::PeakLayerShell::run(iced_layershell::settings::Settings {
             flags: mode_arg,
             layer_settings,
             ..Default::default()
-        });
+        })
+        .map_err(|e| e.into());
     }
 
     let mode_arg = args
@@ -57,4 +58,5 @@ pub fn main() -> iced::Result {
             ..Default::default()
         })
         .run_with(move || PeakNative::new(mode_arg.clone()))
+        .map_err(|e| e.into())
 }
