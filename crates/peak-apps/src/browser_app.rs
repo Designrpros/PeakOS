@@ -59,6 +59,7 @@ impl BrowserApp {
             .arg(browser_width.to_string())
             .arg("--height")
             .arg(browser_height.to_string())
+            .stdin(std::process::Stdio::piped())
             .spawn()
         {
             Ok(child) => {

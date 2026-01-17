@@ -279,6 +279,28 @@ impl PeakNative {
                                 if state.y < 32.0 {
                                     state.y = 32.0;
                                 }
+
+                                // Sync browser if it's the one being dragged
+                                if app_id == AppId::Browser {
+                                    if let Some(app) =
+                                        self.registry.running_apps.get_mut(&AppId::Browser)
+                                    {
+                                        let context =
+                                            crate::systems::registry::DesktopShellContext::new(
+                                                AppId::Browser,
+                                                (self.window_position.x, self.window_position.y),
+                                            );
+                                        let _ = app.update(
+                                            Message::Browser(
+                                                peak_apps::browser_app::BrowserMessage::LayoutUpdate(
+                                                    self.window_position.x,
+                                                    self.window_position.y,
+                                                ),
+                                            ),
+                                            &context,
+                                        );
+                                    }
+                                }
                             }
                         } else {
                             // If we were dragging and it stopped, we can log it here if needed

@@ -34,7 +34,7 @@ pub enum UserEvent {
 
 impl BrowserApp {
     /// Runs the browser window (must be called from main thread)
-    pub fn run(url: &str) {
+    pub fn run(url: &str, initial_layout: Option<BrowserCommand>) {
         // Use UserEvent for custom events
         let event_loop = EventLoopBuilder::<UserEvent>::with_user_event().build();
         let proxy = event_loop.create_proxy();
@@ -42,44 +42,68 @@ impl BrowserApp {
         // Spawn stdin listener thread
         std::thread::spawn(move || {
             let stdin = std::io::stdin();
-            for line in stdin.lock().lines() {
+            // Use buffered reader for better performance
+            let reader = std::io::BufReader::new(stdin);
+            for line in reader.lines() {
                 if let Ok(line) = line {
                     if let Ok(cmd) = serde_json::from_str::<BrowserCommand>(&line) {
                         let _ = proxy.send_event(UserEvent::BrowserCommand(cmd));
-                    } else {
-                        eprintln!("Failed to parse browser command: {}", line);
                     }
                 }
             }
         });
 
         #[cfg(target_os = "macos")]
-        let window = WindowBuilder::new()
-            .with_title("Netscape")
-            .with_inner_size(tao::dpi::LogicalSize::new(1024.0, 768.0))
-            // On macOS, we make the titlebar transparent and content full-size for a "Peak" look
-            .with_titlebar_transparent(true)
-            .with_fullsize_content_view(true)
-            .with_decorations(false) // Remove titlebar/borders for embedded look
-            .with_has_shadow(false) // Remove drop shadow to blend with PeakOS frame
-            .build(&event_loop)
-            .unwrap();
+        let window = {
+            let mut builder = WindowBuilder::new()
+                .with_title("Netscape")
+                .with_inner_size(tao::dpi::LogicalSize::new(1024.0, 768.0))
+                .with_titlebar_transparent(true)
+                .with_fullsize_content_view(true)
+                .with_decorations(false)
+                .with_has_shadow(false)
+                .with_transparent(true);
+
+            if let Some(BrowserCommand::Layout {
+                x,
+                y,
+                width,
+                height,
+            }) = initial_layout
+            {
+                builder = builder
+                    .with_position(tao::dpi::LogicalPosition::new(x, y))
+                    .with_inner_size(tao::dpi::LogicalSize::new(width, height));
+            }
+
+            builder.build(&event_loop).unwrap()
+        };
 
         #[cfg(not(target_os = "macos"))]
         let window = {
             // Force Wayland and software rendering for VM compatibility
             std::env::set_var("GDK_BACKEND", "wayland");
             std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-            std::env::set_var("WEBKIT_DISABLE_ACCELERATED_2D_CANVAS", "1");
-            std::env::set_var("WEBKIT_FORCE_SANDBOX", "0");
-            std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
 
-            WindowBuilder::new()
+            let mut builder = WindowBuilder::new()
                 .with_title("Netscape")
                 .with_inner_size(tao::dpi::LogicalSize::new(1024.0, 768.0))
-                .with_decorations(false) // Embedded look on Linux too
-                .build(&event_loop)
-                .unwrap()
+                .with_decorations(false)
+                .with_transparent(true);
+
+            if let Some(BrowserCommand::Layout {
+                x,
+                y,
+                width,
+                height,
+            }) = initial_layout
+            {
+                builder = builder
+                    .with_position(tao::dpi::LogicalPosition::new(x, y))
+                    .with_inner_size(tao::dpi::LogicalSize::new(width, height));
+            }
+
+            builder.build(&event_loop).unwrap()
         };
 
         // Create a data directory for the browser to persist cookies and storage
