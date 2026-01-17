@@ -1,4 +1,6 @@
-use iced::Task;
+use crate::app_traits::{PeakApp, ShellContext};
+use crate::theme::Theme;
+use iced::{Element, Task};
 use portable_pty::{CommandBuilder, NativePtySystem, PtySize, PtySystem};
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
@@ -9,6 +11,7 @@ pub enum TerminalMessage {
     OutputReceived(String),
     InputChanged(String),
     InputSubmitted,
+    RunCommand(String),
 }
 
 pub struct TerminalApp {
@@ -70,8 +73,20 @@ impl TerminalApp {
             is_open: false,
         }
     }
+}
 
-    pub fn update(&mut self, message: TerminalMessage) -> Task<TerminalMessage> {
+impl PeakApp for TerminalApp {
+    type Message = TerminalMessage;
+
+    fn title(&self) -> String {
+        String::from("Terminal")
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
         match message {
             TerminalMessage::OutputReceived(text) => {
                 let cleaned = strip_ansi(&text);
@@ -92,11 +107,23 @@ impl TerminalApp {
                     let _ = write!(writer, "{}", cmd);
                 }
             }
+            TerminalMessage::RunCommand(cmd) => {
+                // Execute external command by writing to PTY
+                if let Ok(mut writer) = self.writer.lock() {
+                    let _ = write!(writer, "{}\n", cmd);
+                }
+            }
         }
         Task::none()
     }
 
-    pub fn subscription(&self) -> iced::Subscription<TerminalMessage> {
+    fn view(&self, _theme: &Theme) -> Element<'_, Self::Message> {
+        // Implementation will be handled by peak-desktop for now
+        // until we move all view logic to core
+        iced::widget::text("Terminal View (Stub)").into()
+    }
+
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
         iced::Subscription::run_with_id(
             "terminal_listener",
             iced::futures::stream::unfold(self.receiver.clone(), |receiver| async move {

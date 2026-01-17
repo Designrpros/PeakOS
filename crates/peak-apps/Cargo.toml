@@ -1,5 +1,5 @@
 [package]
-name = "peak-desktop"
+name = "peak-apps"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,7 +10,6 @@ rand = "0.8"
 portable-pty = "0.8"
 peak-intelligence = { path = "../peak-intelligence" }
 peak-core = { path = "../peak-core" }
-peak-apps = { path = "../peak-apps" }
 peak-ui = { path = "../peak-ui" }
 tokio = { version = "1", features = ["full"] }
 chrono = "0.4"
@@ -29,5 +28,5 @@ wry = "0.47"
 tao = "0.30"
 objc = "0.2"
 tiny-skia = "0.11"
-rfd = "0.14"  # File dialogs
+rfd = "0.14"
 open = "5.3.3"

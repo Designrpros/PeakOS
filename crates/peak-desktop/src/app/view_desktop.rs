@@ -1,8 +1,6 @@
 // Desktop view rendering
 
 use super::{Message, PeakNative};
-use crate::apps::settings::SettingsDesktopView;
-use crate::apps::terminal::TerminalDesktopView;
 use crate::components::{
     dock,
     menubar::{self, MenubarMessage},
@@ -39,28 +37,27 @@ fn view_app_grid(is_light: bool) -> Element<'static, Message> {
 
 impl PeakNative {
     pub fn view_desktop(&self) -> Element<'_, Message> {
-        let is_light = self.settings.theme_mode == crate::apps::settings::ThemeMode::Light;
-        let app_theme = if is_light {
-            peak_core::app_traits::AppTheme::light()
+        let is_light = self.theme == peak_core::theme::Theme::Light;
+        let wallpaper_path = if let Some(custom) = &self.custom_wallpaper {
+            peak_core::utils::assets::get_asset_path(&format!("wallpapers/{}", custom))
         } else {
-            peak_core::app_traits::AppTheme::dark()
-        };
-        let wallpaper_path = match (self.mode, is_light) {
-            (ShellMode::Peak, true) => {
-                peak_core::utils::assets::get_asset_path("wallpapers/mountain_classic_light.jpg")
-            }
-            (ShellMode::Peak, false) => {
-                peak_core::utils::assets::get_asset_path("wallpapers/mountain_classic.jpg")
-            }
-            (ShellMode::Poolside, true) => {
-                peak_core::utils::assets::get_asset_path("wallpapers/poolsuite_luxury.jpg")
-            }
-            (ShellMode::Poolside, false) => {
-                peak_core::utils::assets::get_asset_path("wallpapers/poolsuite_luxury_night.jpg")
+            match (self.mode, is_light) {
+                (ShellMode::Peak, true) => peak_core::utils::assets::get_asset_path(
+                    "wallpapers/mountain_classic_light.jpg",
+                ),
+                (ShellMode::Peak, false) => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/mountain_classic.jpg")
+                }
+                (ShellMode::Poolside, true) => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/poolsuite_luxury.jpg")
+                }
+                (ShellMode::Poolside, false) => peak_core::utils::assets::get_asset_path(
+                    "wallpapers/poolsuite_luxury_night.jpg",
+                ),
             }
         };
 
-        use crate::components::window_chrome;
+        use peak_ui::window_chrome;
 
         // Dynamic z-order Workspace Rendering
         let mut workspace_stack = Stack::new().push(self.desktop.view().map(Message::Desktop));
@@ -74,47 +71,29 @@ impl PeakNative {
                     continue;
                 }
 
-                let content: Element<'_, Message> = match app_id {
-                    peak_core::registry::AppId::Terminal => {
-                        self.terminal.view(&app_theme).map(Message::Terminal)
-                    }
-                    peak_core::registry::AppId::Library => {
-                        self.library.view(&self.games).map(Message::Library)
-                    }
-                    peak_core::registry::AppId::Turntable => self
-                        .jukebox
-                        .view(&self.games, is_light)
-                        .map(Message::Jukebox),
-                    peak_core::registry::AppId::Settings => {
-                        self.settings.view(&app_theme).map(Message::Settings)
-                    }
-                    peak_core::registry::AppId::FileManager => {
-                        self.explorer.view(&app_theme).map(Message::Explorer)
-                    }
-                    peak_core::registry::AppId::Store => {
-                        self.store.view(is_light).map(Message::Store)
-                    }
-                    peak_core::registry::AppId::Editor => {
-                        self.editor.view(is_light).map(Message::Editor)
-                    }
-                    peak_core::registry::AppId::Browser => {
-                        // Empty transparent container, as the real browser is overlaying here
-                        container(iced::widget::Space::new(Length::Fill, Length::Fill)).into()
-                    }
-                    _ => container(iced::widget::text("UNSUPPORTED")).into(),
-                };
+                let content: Element<'_, Message> =
+                    if let Some(app) = self.registry.running_apps.get(&app_id) {
+                        app.view(&self.theme)
+                    } else {
+                        container(iced::widget::text("UNSUPPORTED")).into()
+                    };
 
-                let title = match app_id {
-                    peak_core::registry::AppId::Terminal => "System Console",
-                    peak_core::registry::AppId::Library => "The Arcade",
-                    peak_core::registry::AppId::Turntable => "The Jukebox",
-                    peak_core::registry::AppId::Settings => "Core Sync",
-                    peak_core::registry::AppId::FileManager => "File System",
-                    peak_core::registry::AppId::Store => "App Store",
-                    peak_core::registry::AppId::Editor => "Simple Text",
-                    peak_core::registry::AppId::Browser => "Netscape Navigator",
-                    _ => "Application",
+                let title = if let Some(all_app) = self.registry.running_apps.get(&app_id) {
+                    all_app.title()
+                } else {
+                    match app_id {
+                        peak_core::registry::AppId::Terminal => "System Console".to_string(),
+                        peak_core::registry::AppId::Library => "The Arcade".to_string(),
+                        peak_core::registry::AppId::Turntable => "The Jukebox".to_string(),
+                        peak_core::registry::AppId::Settings => "Core Sync".to_string(),
+                        peak_core::registry::AppId::FileManager => "File System".to_string(),
+                        peak_core::registry::AppId::Store => "App Store".to_string(),
+                        peak_core::registry::AppId::Editor => "Simple Text".to_string(),
+                        peak_core::registry::AppId::Browser => "Netscape Navigator".to_string(),
+                        _ => "Application".to_string(),
+                    }
                 };
+                let title = title.as_str();
 
                 let on_close = match app_id {
                     peak_core::registry::AppId::Terminal => Message::ToggleTerminal,
@@ -136,7 +115,7 @@ impl PeakNative {
                 };
 
                 let mut win_x = state.x;
-                let mut win_y = state.y;
+                let mut win_y = state.y.max(40.0); // Safe guard for menubar
 
                 if self.is_desktop_revealed {
                     let screen_center_x = self.window_manager.screen_size.width / 2.0;
@@ -189,7 +168,9 @@ impl PeakNative {
         let mut standard_running = Vec::new();
         let mut repo_running = Vec::new();
 
-        for &id in &self.running_apps {
+        let all_running: Vec<_> = self.window_manager.window_states.keys().cloned().collect();
+
+        for &id in &all_running {
             if id.is_repo() {
                 if !repo_pinned.contains(&id) {
                     repo_running.push(id);
@@ -214,6 +195,7 @@ impl PeakNative {
             &repos,
             self.dragging_app,
             self.context_menu_app,
+            &all_running,
             is_light,
             self.mode,
         )

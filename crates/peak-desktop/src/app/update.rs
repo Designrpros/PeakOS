@@ -1,13 +1,15 @@
 // Message handling logic
 
 use super::{AppState, Message, PeakNative};
-use crate::apps::library::LibraryMessage;
 use crate::components::{
     app_switcher::SwitcherMessage, dock, menubar::MenubarMessage, omnibar::OmnibarMessage,
 };
 use crate::pages::Page;
-use peak_core::registry::{AppId, ShellMode};
 use iced::Task;
+use peak_apps::library::LibraryMessage;
+#[allow(unused_imports)]
+use peak_core::app_traits::PeakApp;
+use peak_core::registry::{AppId, ShellMode};
 
 impl PeakNative {
     /// Helper to toggle an app window - handles workspace switching and window lifecycle
@@ -35,6 +37,19 @@ impl PeakNative {
         }
 
         Task::none()
+    }
+
+    // Helper for registry dispatch
+    fn forward_to_app(&mut self, app_id: AppId, message: Message) -> Task<Message> {
+        if let Some(app) = self.registry.running_apps.get_mut(&app_id) {
+            let context = crate::systems::registry::DesktopShellContext::new(
+                app_id,
+                (self.window_position.x, self.window_position.y),
+            );
+            app.update(message, &context)
+        } else {
+            Task::none()
+        }
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
@@ -65,9 +80,41 @@ impl PeakNative {
                         iced::window::Event::Resized(size) => {
                             self.window_manager.screen_size =
                                 iced::Size::new(size.width as f32, size.height as f32);
+                            // Trigger browser sync
+                            if let Some(app) = self.registry.running_apps.get_mut(&AppId::Browser) {
+                                let context = crate::systems::registry::DesktopShellContext::new(
+                                    AppId::Browser,
+                                    (self.window_position.x, self.window_position.y),
+                                );
+                                let _ = app.update(
+                                    Message::Browser(
+                                        peak_apps::browser_app::BrowserMessage::LayoutUpdate(
+                                            self.window_position.x,
+                                            self.window_position.y,
+                                        ),
+                                    ),
+                                    &context,
+                                );
+                            }
                         }
                         iced::window::Event::Moved(point) => {
                             self.window_position = *point;
+                            // Trigger browser sync
+                            if let Some(app) = self.registry.running_apps.get_mut(&AppId::Browser) {
+                                let context = crate::systems::registry::DesktopShellContext::new(
+                                    AppId::Browser,
+                                    (self.window_position.x, self.window_position.y),
+                                );
+                                let _ = app.update(
+                                    Message::Browser(
+                                        peak_apps::browser_app::BrowserMessage::LayoutUpdate(
+                                            self.window_position.x,
+                                            self.window_position.y,
+                                        ),
+                                    ),
+                                    &context,
+                                );
+                            }
                         }
                         _ => {}
                     }
@@ -352,10 +399,10 @@ impl PeakNative {
                                     ) => {
                                         if let AppState::Setup(ref wizard_state) = self.state {
                                             if wizard_state.current_step
-                                                == crate::apps::wizard::WizardStep::Welcome
+                                                == peak_apps::wizard::WizardStep::Welcome
                                             {
                                                 return Task::done(Message::Wizard(
-                                                    crate::apps::wizard::WizardMessage::NextStep,
+                                                    peak_apps::wizard::WizardMessage::NextStep,
                                                 ));
                                             }
                                         }
@@ -411,38 +458,6 @@ impl PeakNative {
                 // We now rely on iced::window::Event::Moved for passive sync
                 // to avoid freezing the main thread with osascript.
 
-                // Sync Browser Window Logic
-                if let Some(child) = &mut self.browser_process {
-                    if let Some(stdin) = &mut child.stdin {
-                        // Find if browser is open and where it is
-                        if let Some(state) = self
-                            .window_manager
-                            .window_states
-                            .get(&peak_core::registry::AppId::Browser)
-                        {
-                            // Only sync if it's in the z_order (visible/active)
-                            if self
-                                .window_manager
-                                .z_order
-                                .contains(&peak_core::registry::AppId::Browser)
-                            {
-                                use std::io::Write;
-                                // Offset by main window position + titlebar (approx 32px for chrome padding + iced::widget::text(
-                                let titlebar_height = 32.0;
-                                let cmd = crate::apps::browser::BrowserCommand::Layout {
-                                    x: (self.window_position.x + state.x) as f64,
-                                    y: (self.window_position.y + state.y + titlebar_height) as f64,
-                                    width: state.width as f64,
-                                    height: (state.height - titlebar_height).max(1.0) as f64,
-                                };
-                                if let Ok(json) = serde_json::to_string(&cmd) {
-                                    let _ = writeln!(stdin, "{}", json);
-                                }
-                            }
-                        }
-                    }
-                }
-
                 self.vector_bg.clear_cache();
                 if self.last_monitor_update.elapsed() > std::time::Duration::from_millis(500) {
                     // Diagnostic: Disable sysinfo refresh to see if it fixes the freeze
@@ -460,7 +475,24 @@ impl PeakNative {
             }
             Message::Exit => Task::none(),
             Message::LaunchBrowser(url) => {
-                // Check if browser is already running
+                // If we have a modular browser registered, use it!
+                if let Some(_) = self.registry.running_apps.get_mut(&AppId::Browser) {
+                    // We need to send a message to the browser to navigate
+                    // But our registry type-erasure makes it hard to send specific messages
+                    // unless we have a generic 'open(url)' in PeakApp or handle it here.
+                    // For now, let's keep LaunchBrowser as a shell-level command that apps can respond to via context if we want.
+
+                    // Actually, let's just use the toggle/ensure window logic
+                    self.ensure_window_state(AppId::Browser, 1024.0, 768.0);
+
+                    // The browser itself should probably handle the initial URL or we can send a message
+                    // Let's assume for now that if we're here, we just want to show the window.
+                    // If we want to navigate, we should send Message::Browser(BrowserMessage::Navigate(url))
+                    return Task::done(peak_apps::browser_app::BrowserMessage::Navigate(url))
+                        .map(Message::Browser);
+                }
+
+                // Fallback to legacy separate process browser
                 if self.browser_process.is_none() {
                     let current_exe =
                         std::env::current_exe().unwrap_or_else(|_| "peak-native".into());
@@ -480,7 +512,7 @@ impl PeakNative {
                         if let Some(stdin) = &mut child.stdin {
                             use std::io::Write;
                             let cmd =
-                                crate::apps::browser::BrowserCommand::Navigate { url: url.clone() };
+                                peak_apps::browser::BrowserCommand::Navigate { url: url.clone() };
                             if let Ok(json) = serde_json::to_string(&cmd) {
                                 let _ = writeln!(stdin, "{}", json);
                             }
@@ -508,13 +540,30 @@ impl PeakNative {
             }
             Message::CloseBrowser => {
                 self.close_window(peak_core::registry::AppId::Browser);
-                // Optionally kill the process or keep it warm?
-                // For now, let's keep the process running but hide it (via IPC usually, or just move it offscreen)
-                // Sending a 0x0 size layout might be safest to "hide" it visually if the process stays alive.
+
+                // If it's a modular app, we might want to shut it down or just hide it
+                // Registry apps stay alive in the registry but their window state is removed.
+                // But for Browser, we want to kill the process to save resources/prevent zombies.
+                if let Some(app) = self
+                    .registry
+                    .running_apps
+                    .get_mut(&peak_core::registry::AppId::Browser)
+                {
+                    let context = crate::systems::registry::DesktopShellContext::new(
+                        peak_core::registry::AppId::Browser,
+                        (self.window_position.x, self.window_position.y),
+                    );
+                    let _ = app.update(
+                        Message::Browser(peak_apps::browser_app::BrowserMessage::Close),
+                        &context,
+                    );
+                }
+
+                self.close_window(peak_core::registry::AppId::Browser);
                 if let Some(child) = &mut self.browser_process {
                     if let Some(stdin) = &mut child.stdin {
                         use std::io::Write;
-                        let cmd = crate::apps::browser::BrowserCommand::Layout {
+                        let cmd = peak_apps::browser::BrowserCommand::Layout {
                             x: -10000.0,
                             y: -10000.0,
                             width: 0.0,
@@ -555,17 +604,10 @@ impl PeakNative {
                 Task::none()
             }
             Message::ToggleTheme => {
-                self.settings.theme_mode = match self.settings.theme_mode {
-                    crate::apps::settings::ThemeMode::Light => {
-                        crate::apps::settings::ThemeMode::Dark
-                    }
-                    crate::apps::settings::ThemeMode::Dark => {
-                        crate::apps::settings::ThemeMode::Light
-                    }
-                };
-                self.theme = match self.settings.theme_mode {
-                    crate::apps::settings::ThemeMode::Light => peak_core::theme::Theme::Light,
-                    crate::apps::settings::ThemeMode::Dark => peak_core::theme::Theme::Dark,
+                self.theme = match self.theme {
+                    peak_core::theme::Theme::Light => peak_core::theme::Theme::Dark,
+                    peak_core::theme::Theme::Dark => peak_core::theme::Theme::Light,
+                    _ => peak_core::theme::Theme::Light,
                 };
                 Task::none()
             }
@@ -715,15 +757,19 @@ impl PeakNative {
                 Task::none()
             }
             Message::Settings(msg) => match msg {
-                crate::apps::settings::SettingsMessage::ThemeChanged(mode) => {
-                    self.settings.theme_mode = mode;
+                peak_apps::settings::SettingsMessage::ThemeChanged(mode) => {
                     self.theme = match mode {
-                        crate::apps::settings::ThemeMode::Light => peak_core::theme::Theme::Light,
-                        crate::apps::settings::ThemeMode::Dark => peak_core::theme::Theme::Dark,
+                        peak_apps::settings::ThemeMode::Light => peak_core::theme::Theme::Light,
+                        peak_apps::settings::ThemeMode::Dark => peak_core::theme::Theme::Dark,
                     };
                     Task::none()
                 }
-                _ => self.settings.update(msg).map(Message::Settings),
+                peak_apps::settings::SettingsMessage::WallpaperChanged(ref path) => {
+                    self.custom_wallpaper = Some(path.clone());
+                    // Forward to app so it updates its own UI selection state
+                    self.forward_to_app(AppId::Settings, Message::Settings(msg))
+                }
+                _ => self.forward_to_app(AppId::Settings, Message::Settings(msg)),
             },
             Message::SwitchMode(mode) => {
                 self.mode = mode;
@@ -746,19 +792,24 @@ impl PeakNative {
                 Task::none()
             }
 
-            Message::Library(msg) => match msg {
-                LibraryMessage::LaunchItem(cmd) => {
-                    return Task::done(Message::LaunchGame(cmd));
-                }
-                LibraryMessage::ImageLoaded(url, handle) => {
-                    if let Some(game) = self.games.iter_mut().find(|g| g.cover_image == url) {
-                        game.image_handle = Some(handle);
+            Message::Library(msg) => {
+                match &msg {
+                    LibraryMessage::LaunchItem(cmd) => {
+                        let cmd = cmd.clone();
+                        return Task::done(Message::LaunchGame(cmd));
                     }
-                    Task::none()
+                    LibraryMessage::ImageLoaded(url, handle) => {
+                        if let Some(game) = self.games.iter_mut().find(|g| &g.cover_image == url) {
+                            game.image_handle = Some(handle.clone());
+                        }
+                    }
+                    _ => {}
                 }
-                LibraryMessage::ImageLoadFailed(_url) => Task::none(),
-            },
-            Message::Explorer(msg) => self.explorer.update(msg).map(Message::Explorer),
+                self.forward_to_app(AppId::Library, Message::Library(msg))
+            }
+            Message::Explorer(msg) => {
+                self.forward_to_app(AppId::FileManager, Message::Explorer(msg))
+            }
             Message::MenubarAction(action) => match action {
                 MenubarMessage::ToggleSettings => {
                     self.show_settings = !self.show_settings;
@@ -804,10 +855,14 @@ impl PeakNative {
 
                 if let AppState::Setup(ref mut wizard_state) = self.state {
                     match msg {
-                        crate::apps::wizard::WizardMessage::CompleteSetup => {
+                        peak_apps::wizard::WizardMessage::CompleteSetup => {
                             should_complete = true;
-                            theme_pref = self.settings.theme_mode.to_string();
-                            new_profile_opt = Some(crate::apps::auth::UserProfile {
+                            theme_pref = match self.theme {
+                                peak_core::theme::Theme::Light => "Light".to_string(),
+                                peak_core::theme::Theme::Dark => "Dark".to_string(),
+                                _ => "Light".to_string(),
+                            };
+                            new_profile_opt = Some(peak_apps::auth::UserProfile {
                                 username: wizard_state.username_input.clone(),
                                 full_name: wizard_state.full_name_input.clone(),
                                 theme_preference: theme_pref.clone(),
@@ -817,14 +872,14 @@ impl PeakNative {
                             });
                         }
                         _ => {
-                            let _ = crate::apps::wizard::update(wizard_state, msg);
+                            let _ = peak_apps::wizard::update(wizard_state, msg);
                         }
                     }
                 }
 
                 if should_complete {
                     if let Some(profile) = new_profile_opt {
-                        if crate::apps::auth::save_user(&profile) {
+                        if peak_apps::auth::save_user(&profile) {
                             self.user = Some(profile);
                             self.state = AppState::Desktop;
                             if theme_pref == "Riviera" {
@@ -870,17 +925,16 @@ impl PeakNative {
             }
             Message::Jukebox(msg) => {
                 match &msg {
-                    crate::apps::jukebox::JukeboxMessage::PlayTrack(item) => {
+                    peak_apps::jukebox::JukeboxMessage::PlayTrack(item) => {
                         let cmd = item.launch_command.replace("play ", "").replace("\"", "");
                         crate::audio::play_track(cmd);
                     }
-                    crate::apps::jukebox::JukeboxMessage::TogglePlayback => {
+                    peak_apps::jukebox::JukeboxMessage::TogglePlayback => {
                         crate::audio::toggle_playback();
                     }
                     _ => {}
                 }
-                self.jukebox.update(msg.clone());
-                Task::none()
+                self.forward_to_app(AppId::Turntable, Message::Jukebox(msg))
             }
             Message::ToggleOmnibar => {
                 self.show_omnibar = !self.show_omnibar;
@@ -900,12 +954,29 @@ impl PeakNative {
                     crate::components::desktop::DesktopMessage::Open(path) => {
                         self.is_desktop_revealed = false;
                         if path.is_dir() {
-                            self.explorer.current_path = path.clone();
-                            return Task::done(Message::ToggleExplorer);
+                            return Task::batch(vec![
+                                self.forward_to_app(
+                                    AppId::FileManager,
+                                    Message::Explorer(
+                                        peak_apps::explorer::ExplorerMessage::Navigate(
+                                            path.clone(),
+                                        ),
+                                    ),
+                                ),
+                                Task::done(Message::ToggleExplorer),
+                            ]);
                         } else {
-                            self.editor = crate::apps::editor::EditorApp::open(path.clone());
                             self.show_editor = true;
-                            return Task::done(Message::ToggleEditor);
+                            // Send Open(path) message to Editor
+                            return Task::batch(vec![
+                                self.forward_to_app(
+                                    AppId::Editor,
+                                    Message::Editor(peak_apps::editor::EditorMessage::Open(
+                                        path.clone(),
+                                    )),
+                                ),
+                                Task::done(Message::ToggleEditor),
+                            ]);
                         }
                     }
                     crate::components::desktop::DesktopMessage::Select(path, _) => {
@@ -929,10 +1000,7 @@ impl PeakNative {
                 }
                 Task::none()
             }
-            Message::Editor(msg) => {
-                self.editor.update(msg);
-                Task::none()
-            }
+            Message::Editor(msg) => self.forward_to_app(AppId::Editor, Message::Editor(msg)),
             Message::ToggleEditor => {
                 self.is_desktop_revealed = false;
                 self.show_editor = !self.show_editor;
@@ -992,11 +1060,20 @@ impl PeakNative {
                         // Menu items handled in omnibar.update()
                         Task::none()
                     }
-                    OmnibarMessage::SelectApk(_pkg_name) => {
-                        // For now we just close or keep open?
-                        // User might want to stay in search.
-                        // self.show_omnibar = false;
-                        Task::none()
+                    OmnibarMessage::SelectApk(pkg_name) => {
+                        self.show_omnibar = false;
+                        let cmd = format!("sudo apk add {}", pkg_name);
+                        Task::batch(vec![
+                            Task::done(Message::DockInteraction(dock::DockMessage::Launch(
+                                AppId::Terminal,
+                            ))),
+                            self.forward_to_app(
+                                AppId::Terminal,
+                                Message::Terminal(
+                                    peak_core::apps::terminal::TerminalMessage::RunCommand(cmd),
+                                ),
+                            ),
+                        ])
                     }
                     _ => Task::none(),
                 };
@@ -1034,13 +1111,10 @@ impl PeakNative {
                         self.current_desktop = state.desktop_idx;
                         self.window_manager
                             .bring_to_front(peak_core::registry::AppId::Library);
-                        self.library.is_open = true;
                     } else {
-                        self.library.is_open = false;
                         self.close_window(peak_core::registry::AppId::Library);
                     }
                 } else {
-                    self.library.is_open = true;
                     self.ensure_window_state(peak_core::registry::AppId::Library, 800.0, 600.0);
                 }
                 Task::none()
@@ -1057,13 +1131,10 @@ impl PeakNative {
                         self.current_desktop = state.desktop_idx;
                         self.window_manager
                             .bring_to_front(peak_core::registry::AppId::Turntable);
-                        self.jukebox.is_open = true;
                     } else {
-                        self.jukebox.is_open = false;
                         self.close_window(peak_core::registry::AppId::Turntable);
                     }
                 } else {
-                    self.jukebox.is_open = true;
                     self.ensure_window_state(peak_core::registry::AppId::Turntable, 700.0, 600.0);
                 }
                 Task::none()
@@ -1080,7 +1151,32 @@ impl PeakNative {
             }
             Message::ToggleExplorer => self.toggle_app(AppId::FileManager, 600.0, 450.0),
             Message::ToggleStore => self.toggle_app(AppId::Store, 800.0, 600.0),
-            Message::Store(msg) => self.store.update(msg),
+            Message::Store(msg) => {
+                match &msg {
+                    peak_apps::store::StoreMessage::LaunchUrl(url) => {
+                        return Task::done(Message::LaunchBrowser(url.clone()));
+                    }
+                    peak_apps::store::StoreMessage::InstallApp(pkg_name) => {
+                        let cmd = format!("sudo apk add {}", pkg_name.to_lowercase());
+                        // Forward to Store so it updates UI state (even if its internal install fails)
+                        // And launch Terminal for the actual sudo work
+                        return Task::batch(vec![
+                            self.forward_to_app(AppId::Store, Message::Store(msg.clone())),
+                            Task::done(Message::DockInteraction(dock::DockMessage::Launch(
+                                AppId::Terminal,
+                            ))),
+                            self.forward_to_app(
+                                AppId::Terminal,
+                                Message::Terminal(
+                                    peak_core::apps::terminal::TerminalMessage::RunCommand(cmd),
+                                ),
+                            ),
+                        ]);
+                    }
+                    _ => {}
+                }
+                self.forward_to_app(AppId::Store, Message::Store(msg))
+            }
             Message::Restart => {
                 std::process::exit(0);
             }
@@ -1097,27 +1193,24 @@ impl PeakNative {
             }
             Message::FactoryReset => {
                 // Delete user config
-                let config_path = crate::apps::auth::get_config_dir().join("user.json");
+                let config_path = peak_apps::auth::get_config_dir().join("user.json");
                 if config_path.exists() {
                     let _ = std::fs::remove_file(config_path);
                 }
                 // Reset state
                 self.user = None;
-                self.state = AppState::Setup(crate::apps::wizard::WizardState::default());
+                self.state = AppState::Setup(peak_apps::wizard::WizardState::default());
                 self.show_system_menu = false;
-                self.settings.theme_mode = crate::apps::settings::ThemeMode::Light; // Default to light
                 self.theme = peak_core::theme::Theme::Light;
                 Task::none()
             }
-            Message::ToggleTerminal => {
-                self.terminal.is_open = !self.terminal.is_open;
-                self.toggle_app(AppId::Terminal, 640.0, 480.0)
-            }
-            Message::Terminal(msg) => self.terminal.update(msg).map(Message::Terminal),
+            Message::ToggleTerminal => self.toggle_app(AppId::Terminal, 640.0, 480.0),
+            Message::Terminal(msg) => self.forward_to_app(AppId::Terminal, Message::Terminal(msg)),
             Message::ToggleAppGrid => {
                 self.show_app_grid = !self.show_app_grid;
                 Task::none()
             }
+            Message::Browser(msg) => self.forward_to_app(AppId::Browser, Message::Browser(msg)),
         }
     }
 }

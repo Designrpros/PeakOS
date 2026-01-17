@@ -5,6 +5,7 @@ members = [
     "crates/peak-core",
     "crates/peak-desktop",
     "crates/peak-mobile",
+    "crates/peak-browser", "crates/peak-ui", "crates/peak-apps",
 ]
 
 resolver = "2"

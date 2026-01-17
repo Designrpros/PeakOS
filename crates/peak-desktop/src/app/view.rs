@@ -15,7 +15,7 @@ impl PeakNative {
         if let Some((title, body)) = &self.alert {
             iced::widget::stack![
                 content,
-                iced::widget::container(crate::components::alert::SystemAlert::view(
+                iced::widget::container(peak_ui::alert::SystemAlert::view(
                     title,
                     body,
                     Message::CloseAlert,
@@ -51,7 +51,7 @@ impl PeakNative {
 
         let avatar_icon_key = self.user.as_ref().and_then(|u| u.avatar_icon.clone());
 
-        let is_light = self.settings.theme_mode == crate::apps::settings::ThemeMode::Light;
+        let is_light = matches!(self.theme, peak_core::theme::Theme::Light);
         let text_color = if is_light { Color::BLACK } else { Color::WHITE };
 
         // Theme Toggle SVG Handle
@@ -217,19 +217,19 @@ impl PeakNative {
 
         // Vector Background Layer
         Stack::new()
-            .push(self.vector_bg.view(is_light))
+            .push(self.vector_bg.view(self.theme))
             .push(centered_content)
             .push(top_right)
             .into()
     }
 
-    fn view_setup(&self, state: &crate::apps::wizard::WizardState) -> Element<'_, Message> {
-        let is_light = self.settings.theme_mode == crate::apps::settings::ThemeMode::Light;
+    fn view_setup(&self, state: &peak_apps::wizard::WizardState) -> Element<'_, Message> {
+        let is_light = matches!(self.theme, peak_core::theme::Theme::Light);
 
         // --- Steps ---
 
         let content = match state.current_step {
-            crate::apps::wizard::WizardStep::Welcome => iced::widget::column![
+            peak_apps::wizard::WizardStep::Welcome => iced::widget::column![
                 iced::widget::image(iced::widget::image::Handle::from_path(
                     peak_core::utils::assets::get_asset_path(&format!(
                         "icons/menubar/{}",
@@ -263,15 +263,13 @@ impl PeakNative {
                     }),
                 iced::widget::Space::with_height(40.0),
                 iced::widget::button(text("Get Started").size(16))
-                    .on_press(Message::Wizard(
-                        crate::apps::wizard::WizardMessage::NextStep
-                    ))
+                    .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::NextStep))
                     .padding([15, 60])
                     .style(move |_, status| peak_core::styles::style_pill_button(status, is_light))
             ]
             .spacing(10)
             .align_x(iced::Alignment::Center),
-            crate::apps::wizard::WizardStep::Identity => {
+            peak_apps::wizard::WizardStep::Identity => {
                 iced::widget::column![
                     text("Who are you?")
                         .size(24)
@@ -297,7 +295,7 @@ impl PeakNative {
                         }),
                         iced::widget::text_input("John Appleseed", &state.full_name_input)
                             .on_input(|s| Message::Wizard(
-                                crate::apps::wizard::WizardMessage::UpdateFullName(s)
+                                peak_apps::wizard::WizardMessage::UpdateFullName(s)
                             ))
                             .padding(12)
                             .style(move |_, status| peak_core::styles::style_soft_input(
@@ -311,7 +309,7 @@ impl PeakNative {
                         }),
                         iced::widget::text_input("john", &state.username_input)
                             .on_input(|s| Message::Wizard(
-                                crate::apps::wizard::WizardMessage::UpdateUsername(s)
+                                peak_apps::wizard::WizardMessage::UpdateUsername(s)
                             ))
                             .padding(12)
                             .style(move |_, status| peak_core::styles::style_soft_input(
@@ -332,16 +330,12 @@ impl PeakNative {
                     // Buttons
                     iced::widget::row![
                         iced::widget::button(text("Back").size(16))
-                            .on_press(Message::Wizard(
-                                crate::apps::wizard::WizardMessage::PrevStep
-                            ))
+                            .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::PrevStep))
                             .style(move |_, status| peak_core::styles::style_secondary_button(
                                 status, is_light
                             )),
                         iced::widget::button(text("Next").size(16))
-                            .on_press(Message::Wizard(
-                                crate::apps::wizard::WizardMessage::NextStep
-                            ))
+                            .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::NextStep))
                             .padding([12, 40])
                             .style(move |_, status| peak_core::styles::style_pill_button(
                                 status, is_light
@@ -352,7 +346,7 @@ impl PeakNative {
                 .width(Length::Fixed(360.0))
                 .align_x(iced::alignment::Horizontal::Center)
             }
-            crate::apps::wizard::WizardStep::Security => {
+            peak_apps::wizard::WizardStep::Security => {
                 iced::widget::column![
                     text("Secure your account")
                         .size(24)
@@ -376,7 +370,7 @@ impl PeakNative {
                         }),
                         iced::widget::text_input("Required", &state.password_input)
                             .on_input(|s| Message::Wizard(
-                                crate::apps::wizard::WizardMessage::UpdatePassword(s)
+                                peak_apps::wizard::WizardMessage::UpdatePassword(s)
                             ))
                             .padding(12)
                             .secure(true)
@@ -389,7 +383,7 @@ impl PeakNative {
                         }),
                         iced::widget::text_input("Required", &state.password_confirm_input)
                             .on_input(|s| Message::Wizard(
-                                crate::apps::wizard::WizardMessage::UpdatePasswordConfirm(s)
+                                peak_apps::wizard::WizardMessage::UpdatePasswordConfirm(s)
                             ))
                             .padding(12)
                             .secure(true)
@@ -402,7 +396,7 @@ impl PeakNative {
                         }),
                         iced::widget::text_input("Optional", &state.password_hint_input)
                             .on_input(|s| Message::Wizard(
-                                crate::apps::wizard::WizardMessage::UpdatePasswordHint(s)
+                                peak_apps::wizard::WizardMessage::UpdatePasswordHint(s)
                             ))
                             .padding(12)
                             .style(move |_, status| peak_core::styles::style_soft_input(
@@ -423,16 +417,12 @@ impl PeakNative {
                     // Buttons
                     iced::widget::row![
                         iced::widget::button(text("Back").size(16))
-                            .on_press(Message::Wizard(
-                                crate::apps::wizard::WizardMessage::PrevStep
-                            ))
+                            .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::PrevStep))
                             .style(move |_, status| peak_core::styles::style_secondary_button(
                                 status, is_light
                             )),
                         iced::widget::button(text("Next").size(16))
-                            .on_press(Message::Wizard(
-                                crate::apps::wizard::WizardMessage::NextStep
-                            ))
+                            .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::NextStep))
                             .padding([12, 40])
                             .style(move |_, status| peak_core::styles::style_pill_button(
                                 status, is_light
@@ -443,7 +433,7 @@ impl PeakNative {
                 .width(Length::Fixed(360.0))
                 .align_x(iced::alignment::Horizontal::Center)
             }
-            crate::apps::wizard::WizardStep::WifiConnect => {
+            peak_apps::wizard::WizardStep::WifiConnect => {
                 iced::widget::column![
                     text("Get Connected")
                         .size(24)
@@ -502,7 +492,7 @@ impl PeakNative {
                                     .align_y(iced::Alignment::Center),
                                 )
                                 .on_press(Message::Wizard(
-                                    crate::apps::wizard::WizardMessage::SelectNetwork(net),
+                                    peak_apps::wizard::WizardMessage::SelectNetwork(net),
                                 ))
                                 .width(Length::Fill)
                                 .padding(12)
@@ -580,16 +570,12 @@ impl PeakNative {
                     iced::widget::Space::with_height(30.0),
                     iced::widget::row![
                         iced::widget::button(text("Back").size(14))
-                            .on_press(Message::Wizard(
-                                crate::apps::wizard::WizardMessage::PrevStep
-                            ))
+                            .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::PrevStep))
                             .style(move |_, status| peak_core::styles::style_secondary_button(
                                 status, is_light
                             )),
                         iced::widget::button(text("Next").size(14))
-                            .on_press(Message::Wizard(
-                                crate::apps::wizard::WizardMessage::NextStep
-                            ))
+                            .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::NextStep))
                             .padding([12, 40])
                             .style(move |_, status| peak_core::styles::style_pill_button(
                                 status, is_light
@@ -601,7 +587,7 @@ impl PeakNative {
                 .width(Length::Fixed(360.0))
                 .align_x(iced::Alignment::Center)
             }
-            crate::apps::wizard::WizardStep::ThemeSelection => {
+            peak_apps::wizard::WizardStep::ThemeSelection => {
                 iced::widget::column![
                     text("Personalize")
                         .size(24)
@@ -659,9 +645,7 @@ impl PeakNative {
                                     }),
                                 )
                                 .on_press(Message::Wizard(
-                                    crate::apps::wizard::WizardMessage::SelectAvatar(
-                                        key.to_string(),
-                                    ),
+                                    peak_apps::wizard::WizardMessage::SelectAvatar(key.to_string()),
                                 ))
                                 .padding(2)
                                 .style(move |_, _status| {
@@ -749,15 +733,13 @@ impl PeakNative {
                     iced::widget::Space::with_height(40.0),
                     iced::widget::row![
                         iced::widget::button(text("Back").size(14))
-                            .on_press(Message::Wizard(
-                                crate::apps::wizard::WizardMessage::PrevStep
-                            ))
+                            .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::PrevStep))
                             .style(move |_, status| peak_core::styles::style_secondary_button(
                                 status, is_light
                             )),
                         iced::widget::button(text("Finish").size(14))
                             .on_press(Message::Wizard(
-                                crate::apps::wizard::WizardMessage::CompleteSetup
+                                peak_apps::wizard::WizardMessage::CompleteSetup
                             ))
                             .padding([12, 40])
                             .style(move |_, status| peak_core::styles::style_pill_button(
@@ -770,7 +752,7 @@ impl PeakNative {
                 .width(Length::Fixed(360.0))
                 .align_x(iced::Alignment::Center)
             }
-            crate::apps::wizard::WizardStep::Complete => iced::widget::column![
+            peak_apps::wizard::WizardStep::Complete => iced::widget::column![
                 iced::widget::svg(peak_core::icons::get_avatar_handle(
                     "peak",
                     if is_light { "#000000" } else { "#FFFFFF" }
@@ -796,7 +778,7 @@ impl PeakNative {
             .style(move |_| peak_core::styles::style_glass_card(is_light));
 
         Stack::new()
-            .push(self.vector_bg.view(is_light))
+            .push(self.vector_bg.view(self.theme))
             .push(
                 container(card)
                     .width(Length::Fill)

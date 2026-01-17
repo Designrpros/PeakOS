@@ -1,6 +1,7 @@
 use iced::mouse;
 use iced::widget::canvas::{self, Cache, Canvas, Geometry, Path, Stroke};
-use iced::{Color, Element, Length, Point, Rectangle, Theme, Vector};
+use iced::{Color, Element, Length, Point, Rectangle, Vector};
+use peak_core::theme::Theme;
 use rand::Rng;
 use std::time::Instant;
 
@@ -43,11 +44,11 @@ impl VectorBackground {
         self.cache.clear();
     }
 
-    pub fn view<'a, Message>(&'a self, is_light: bool) -> Element<'a, Message>
+    pub fn view<'a, Message>(&'a self, theme: Theme) -> Element<'a, Message>
     where
         Message: 'a,
     {
-        Canvas::new(VectorLayer { bg: self, is_light })
+        Canvas::new(VectorLayer { bg: self, theme })
             .width(Length::Fill)
             .height(Length::Fill)
             .into()
@@ -56,7 +57,7 @@ impl VectorBackground {
 
 struct VectorLayer<'a> {
     bg: &'a VectorBackground,
-    is_light: bool,
+    theme: Theme,
 }
 
 impl<'a, Message> canvas::Program<Message> for VectorLayer<'a> {
@@ -66,7 +67,7 @@ impl<'a, Message> canvas::Program<Message> for VectorLayer<'a> {
         &self,
         _state: &Self::State,
         renderer: &iced::Renderer,
-        _theme: &Theme,
+        _theme: &iced::Theme,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<Geometry> {
@@ -74,20 +75,10 @@ impl<'a, Message> canvas::Program<Message> for VectorLayer<'a> {
             let width = frame.width();
             let height = frame.height();
 
-            // Colors based on Theme
-            let (bg_color, line_color, node_color) = if self.is_light {
-                (
-                    Color::WHITE,
-                    Color::from_rgba8(20, 20, 20, 0.1),
-                    Color::from_rgba8(20, 20, 20, 0.3),
-                )
-            } else {
-                (
-                    Color::from_rgb8(28, 25, 23), // Stone Warm Dark
-                    Color::from_rgba8(220, 220, 220, 0.15),
-                    Color::from_rgba8(255, 255, 255, 0.4),
-                )
-            };
+            let palette = self.theme.palette();
+            let bg_color = palette.background;
+            let line_color = palette.line_color;
+            let node_color = palette.node_color;
 
             // Background
             let bg_path = Path::rectangle(Point::ORIGIN, bounds.size());

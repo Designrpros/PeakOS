@@ -1,4 +1,3 @@
-use crate::app::Message;
 use iced::widget::{button, column, container, row, scrollable, text, text_input};
 use iced::Task;
 use iced::{Color, Element, Length};
@@ -80,6 +79,7 @@ pub enum StoreMessage {
     AppImageSelected(Option<std::path::PathBuf>),
     #[allow(dead_code)]
     LaunchAppImage(String), // Launch by name
+    LaunchUrl(String),
 }
 
 impl StoreApp {
@@ -90,16 +90,16 @@ impl StoreApp {
         Self {
             search_query: String::new(),
             is_loading: false,
-            search_results: crate::apps::store::get_initial_apps(), // Start with all/featured
+            search_results: crate::store::get_initial_apps(), // Start with all/featured
             selected_category: None,
-            all_apps: crate::apps::store::get_initial_apps(),
+            all_apps: crate::store::get_initial_apps(),
             installing_apps: Vec::new(),
             appimage_manager,
             installed_appimages,
         }
     }
 
-    pub fn update(&mut self, message: StoreMessage) -> Task<Message> {
+    pub fn update(&mut self, message: StoreMessage) -> Task<StoreMessage> {
         match message {
             StoreMessage::SearchChanged(query) => {
                 self.search_query = query;
@@ -113,7 +113,6 @@ impl StoreApp {
                 } else {
                     let query = self.search_query.clone();
                     Task::perform(search_apk(query), StoreMessage::SearchResultsReceived)
-                        .map(Message::Store)
                 }
             }
             StoreMessage::SearchResultsReceived(results) => {
@@ -140,7 +139,7 @@ impl StoreApp {
 
                 // Spawn async installation task
                 Task::perform(install_package(pkg_name), move |success| {
-                    Message::Store(StoreMessage::InstallationComplete(name.clone(), success))
+                    StoreMessage::InstallationComplete(name.clone(), success)
                 })
             }
             StoreMessage::InstallationComplete(name, success) => {
@@ -166,7 +165,7 @@ impl StoreApp {
                         name
                     };
 
-                    return Task::done(Message::LaunchBrowser(url));
+                    return Task::done(StoreMessage::LaunchUrl(url));
                 } else {
                     let bin_name = name.to_lowercase();
                     // Intercept browser launches to use internal managed browser
@@ -175,7 +174,7 @@ impl StoreApp {
                         || bin_name.contains("brave")
                         || bin_name == "netscape"
                     {
-                        return Task::done(Message::LaunchBrowser("https://google.com".into()));
+                        return Task::done(StoreMessage::LaunchUrl("https://google.com".into()));
                     }
 
                     // Spawn detached process
@@ -203,7 +202,6 @@ impl StoreApp {
                     },
                     StoreMessage::AppImageSelected,
                 )
-                .map(Message::Store)
             }
             StoreMessage::AppImageSelected(path) => {
                 if let Some(path) = path {
@@ -234,6 +232,7 @@ impl StoreApp {
                 }
                 Task::none()
             }
+            StoreMessage::LaunchUrl(_) => Task::none(), // Handled by shell
         }
     }
 
@@ -376,6 +375,29 @@ impl StoreApp {
         .height(Length::Fill)
         .align_x(iced::alignment::Horizontal::Center)
         .into()
+    }
+}
+
+use peak_core::app_traits::{PeakApp, ShellContext};
+use peak_core::theme::Theme;
+
+impl PeakApp for StoreApp {
+    type Message = StoreMessage;
+
+    fn title(&self) -> String {
+        String::from("App Store")
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
+        self.update(message)
+    }
+
+    fn view(&self, theme: &Theme) -> Element<'_, Self::Message> {
+        self.view(*theme == Theme::Light)
     }
 }
 

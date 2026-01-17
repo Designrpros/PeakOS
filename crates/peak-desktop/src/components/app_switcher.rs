@@ -1,6 +1,6 @@
-use peak_core::registry::{AppId, AppInfo};
 use iced::widget::{column, container, row, text};
 use iced::{Alignment, Background, Border, Color, Element, Length, Shadow, Vector};
+use peak_core::registry::{AppId, AppInfo};
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]

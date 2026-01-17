@@ -1,17 +1,17 @@
 // State type definitions for PeakNative application
 
-use crate::apps::explorer::ExplorerMessage;
-use crate::apps::library::LibraryMessage;
-use crate::apps::settings::SettingsMessage;
 use crate::components::app_switcher::SwitcherMessage;
 use crate::components::inspector::InspectorMessage;
 use crate::components::menubar::MenubarMessage;
 use crate::components::omnibar::OmnibarMessage;
+use peak_apps::explorer::ExplorerMessage;
+use peak_apps::library::LibraryMessage;
+use peak_apps::settings::SettingsMessage;
 use peak_core::registry::ShellMode;
 
 #[derive(Debug, Clone)]
 pub enum AppState {
-    Setup(crate::apps::wizard::WizardState),
+    Setup(peak_apps::wizard::WizardState),
     Login(String), // Password Input
     Desktop,
 }
@@ -34,7 +34,7 @@ pub enum Message {
     Settings(SettingsMessage),
     Inspector(InspectorMessage),
     ToggleInspector,
-    Jukebox(crate::apps::jukebox::JukeboxMessage),
+    Jukebox(peak_apps::jukebox::JukeboxMessage),
     ToggleSettings,
     Omnibar(OmnibarMessage),
     ToggleOmnibar,
@@ -50,18 +50,19 @@ pub enum Message {
     ToggleExplorer,
     ToggleSystemMenu,
     ToggleStore,
-    Store(crate::apps::store::StoreMessage),
+    Store(peak_apps::store::StoreMessage),
+    Browser(peak_apps::browser_app::BrowserMessage),
     LaunchBrowser(String),
     CloseBrowser,
     Desktop(crate::components::desktop::DesktopMessage),
-    Editor(crate::apps::editor::EditorMessage),
+    Editor(peak_apps::editor::EditorMessage),
     ToggleEditor,
     Maximize(peak_core::registry::AppId),
     WindowPositionFound(Option<iced::Point>),
     CloseAlert,
-    Terminal(crate::apps::terminal::TerminalMessage),
+    Terminal(peak_apps::terminal::TerminalMessage),
     Restart,
-    Wizard(crate::apps::wizard::WizardMessage),
+    Wizard(peak_apps::wizard::WizardMessage),
     UpdateLoginPassword(String),
     SubmitLogin,
     FactoryReset,

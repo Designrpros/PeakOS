@@ -1,11 +1,14 @@
 use iced::widget::{button, column, container, row, text, text_editor};
 use iced::Element;
+use iced::Task;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum EditorMessage {
     ContentChanged(iced::widget::text_editor::Action),
     Save,
+    #[allow(dead_code)]
+    Open(PathBuf),
     #[allow(dead_code)]
     Close,
 }
@@ -21,15 +24,6 @@ impl EditorApp {
         Self {
             path: None,
             content: text_editor::Content::new(),
-            is_dirty: false,
-        }
-    }
-
-    pub fn open(path: PathBuf) -> Self {
-        let content_str = std::fs::read_to_string(&path).unwrap_or_default();
-        Self {
-            path: Some(path),
-            content: text_editor::Content::with_text(&content_str),
             is_dirty: false,
         }
     }
@@ -73,6 +67,44 @@ impl EditorApp {
             EditorMessage::Close => {
                 // Handled by main app
             }
+            EditorMessage::Open(path) => {
+                let content_str = std::fs::read_to_string(&path).unwrap_or_default();
+                self.path = Some(path);
+                self.content = text_editor::Content::with_text(&content_str);
+                self.is_dirty = false;
+            }
         }
+    }
+}
+
+use peak_core::app_traits::{PeakApp, ShellContext};
+use peak_core::theme::Theme;
+
+impl PeakApp for EditorApp {
+    type Message = EditorMessage;
+
+    fn title(&self) -> String {
+        self.path
+            .as_ref()
+            .map(|p| {
+                p.file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string()
+            })
+            .unwrap_or_else(|| "Untitled".to_string())
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
+        self.update(message);
+        Task::none()
+    }
+
+    fn view(&self, theme: &Theme) -> Element<'_, Self::Message> {
+        self.view(*theme == Theme::Light)
     }
 }

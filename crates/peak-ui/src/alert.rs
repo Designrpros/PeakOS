@@ -1,16 +1,18 @@
-use crate::app::Message;
 use iced::widget::{button, column, container, text};
 use iced::Element;
 
 pub struct SystemAlert;
 
 impl SystemAlert {
-    pub fn view<'a>(
+    pub fn view<'a, Message>(
         title: &'a str,
         body: &'a str,
         on_close: Message,
         is_light: bool,
-    ) -> Element<'a, Message> {
+    ) -> Element<'a, Message>
+    where
+        Message: 'a + Clone,
+    {
         let (bg_color, text_color, btn_bg, btn_text) = if is_light {
             (
                 iced::Color::from_rgb8(235, 235, 235), // Plain menu bar grey for Light

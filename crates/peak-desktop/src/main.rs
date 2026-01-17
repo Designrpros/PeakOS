@@ -1,5 +1,4 @@
 mod app;
-mod apps;
 mod audio;
 mod components;
 mod pages;
@@ -14,7 +13,7 @@ pub fn main() -> iced::Result {
     // Check for standalone browser mode (Multi-process support for macOS)
     if let Some(pos) = args.iter().position(|r| r == "--browser") {
         if let Some(url) = args.get(pos + 1) {
-            crate::apps::browser::BrowserApp::run(url);
+            peak_apps::browser::BrowserApp::run(url);
             return Ok(());
         }
     }

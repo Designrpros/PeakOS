@@ -35,5 +35,5 @@ peak-deploy/iso/out/*.iso
 /tmp/
 target/
 out/
-peak-deploy/alpine/rootfs/
-peak-deploy/alpine/iso/
+crates/peak-deploy/alpine/rootfs/
+crates/peak-deploy/alpine/iso/

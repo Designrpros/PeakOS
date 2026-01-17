@@ -22,12 +22,12 @@ fi
 
 # Build Docker Image
 echo "Building Docker image..."
-docker build --no-cache $PLATFORM_FLAG -t $IMAGE_NAME "$ISO_DIR"
+docker build $PLATFORM_FLAG -t $IMAGE_NAME "$ISO_DIR"
 
 echo "Starting Alpine Build Process..."
 docker run --rm --privileged $PLATFORM_FLAG \
     -v "$ISO_DIR:/build" \
-    -v "$DEPLOY_DIR/../":/project \
+    -v "$DEPLOY_DIR/../../":/project \
     -v "$OUT_DIR:/out" \
     -v "peak-cargo-cache-alpine:/root/.cargo" \
     $IMAGE_NAME

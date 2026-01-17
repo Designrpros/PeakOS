@@ -1,9 +1,9 @@
-use peak_core::models::{MediaItem, MediaKind};
-use peak_core::styles::WAVEFORM_PINK;
 use iced::widget::{
     button, column, container, horizontal_space, row, scrollable, text, text_input, vertical_space,
 };
-use iced::{Alignment, Color, Element, Length};
+use iced::{Alignment, Color, Element, Length, Task};
+use peak_core::models::{MediaItem, MediaKind};
+use peak_core::styles::WAVEFORM_PINK;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ViewMode {
@@ -26,19 +26,21 @@ pub enum JukeboxMessage {
 pub struct JukeboxApp {
     pub is_playing: bool,
     pub current_track: Option<MediaItem>,
-    pub is_open: bool,
+
     pub view_mode: ViewMode,
     pub search_query: String,
+    pub library: Vec<MediaItem>,
 }
 
 impl JukeboxApp {
-    pub fn new() -> Self {
+    pub fn new(library: Vec<MediaItem>) -> Self {
         Self {
             is_playing: false,
             current_track: None,
-            is_open: false,
+
             view_mode: ViewMode::Player,
             search_query: String::new(),
+            library,
         }
     }
 
@@ -65,7 +67,11 @@ impl JukeboxApp {
         None
     }
 
-    pub fn view<'a>(
+    pub fn view<'a>(&'a self, theme: &peak_core::theme::Theme) -> Element<'a, JukeboxMessage> {
+        self.view_internal(&self.library, *theme == peak_core::theme::Theme::Light)
+    }
+
+    fn view_internal<'a>(
         &'a self,
         items: &'a [MediaItem],
         _is_light: bool,
@@ -328,5 +334,31 @@ impl JukeboxApp {
         .width(Length::Fill)
         .height(Length::Fill)
         .into()
+    }
+}
+
+use peak_core::app_traits::{PeakApp, ShellContext};
+
+impl PeakApp for JukeboxApp {
+    type Message = JukeboxMessage;
+
+    fn title(&self) -> String {
+        String::from("Jukebox")
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
+        if let Some(msg) = self.update(message) {
+            Task::done(msg)
+        } else {
+            Task::none()
+        }
+    }
+
+    fn view(&self, theme: &peak_core::theme::Theme) -> Element<'_, Self::Message> {
+        self.view(theme)
     }
 }

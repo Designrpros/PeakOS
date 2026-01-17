@@ -2,24 +2,23 @@
 
 use iced::widget::{container, scrollable, text, text_input, Column};
 use iced::{Background, Color, Element, Length, Task};
-use peak_core::app_traits::AppTheme;
 pub use peak_core::apps::terminal::{TerminalApp, TerminalMessage};
+use peak_core::theme::Theme;
 
 pub trait TerminalDesktopView {
     fn view<'a>(
         &'a self,
-        theme: &AppTheme,
+        theme: &Theme,
     ) -> Element<'a, TerminalMessage, iced::Theme, iced::Renderer>;
 }
 
 impl TerminalDesktopView for TerminalApp {
     fn view<'a>(
         &'a self,
-        theme: &AppTheme,
+        theme: &Theme,
     ) -> Element<'a, TerminalMessage, iced::Theme, iced::Renderer> {
-        let text_color = theme.text_color;
-        let bg_color = theme.bg_color;
-        let border_color = theme.border_color;
+        let palette = theme.palette();
+        let text_color = palette.text;
 
         let output = text(&self.content)
             .font(iced::Font::MONOSPACE)
@@ -45,30 +44,24 @@ impl TerminalDesktopView for TerminalApp {
                 selection: text_color,
             });
 
+        let input_row = iced::widget::row![
+            text("> ")
+                .font(iced::Font::MONOSPACE)
+                .color(text_color)
+                .size(12),
+            input
+        ]
+        .spacing(0)
+        .align_y(iced::Alignment::Center);
+
         let term_content = Column::new()
             .push(scrollable(output).height(Length::Fill).width(Length::Fill))
-            .push(
-                container(input)
-                    .padding(5)
-                    .style(move |_| container::Style {
-                        border: iced::Border {
-                            width: 1.0,
-                            color: border_color,
-                            radius: 0.0.into(),
-                        },
-                        ..Default::default()
-                    }),
-            );
+            .push(input_row);
 
         container(term_content)
-            .padding(8)
+            .padding([8, 12])
             .style(move |_| container::Style {
-                background: Some(bg_color.into()),
-                border: iced::Border {
-                    color: border_color,
-                    width: 1.0,
-                    radius: 8.0.into(),
-                },
+                background: Some(Color::TRANSPARENT.into()),
                 ..Default::default()
             })
             .width(Length::Fill)
@@ -79,4 +72,38 @@ impl TerminalDesktopView for TerminalApp {
 
 pub fn strip_ansi(input: &str) -> String {
     peak_core::apps::terminal::strip_ansi(input)
+}
+// Wrapper for Registry
+pub struct DesktopTerminalApp(pub TerminalApp);
+
+impl DesktopTerminalApp {
+    pub fn new() -> Self {
+        Self(TerminalApp::new())
+    }
+}
+
+use peak_core::app_traits::{PeakApp, ShellContext};
+
+impl PeakApp for DesktopTerminalApp {
+    type Message = TerminalMessage;
+
+    fn title(&self) -> String {
+        self.0.title()
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
+        self.0.update(message, context)
+    }
+
+    fn view(&self, theme: &Theme) -> Element<'_, Self::Message> {
+        TerminalDesktopView::view(&self.0, theme)
+    }
+
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        self.0.subscription()
+    }
 }

@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod browser;
+pub mod browser_app;
 pub mod editor;
 pub mod explorer;
 pub mod jukebox;

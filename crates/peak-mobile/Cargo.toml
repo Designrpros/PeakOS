@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 iced = { version = "0.13", features = ["advanced", "svg", "image"] }
 peak-core = { path = "../peak-core" }
+peak-apps = { path = "../peak-apps" }
+peak-ui = { path = "../peak-ui" }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 chrono = "0.4"

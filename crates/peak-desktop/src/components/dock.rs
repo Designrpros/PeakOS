@@ -22,6 +22,7 @@ pub fn view<'a>(
     repos: &[AppId],
     dragging: Option<(AppId, usize)>,
     context_menu: Option<AppId>,
+    all_running: &[AppId],
     is_light: bool,
     mode: ShellMode,
 ) -> Element<'a, DockMessage> {
@@ -36,8 +37,8 @@ pub fn view<'a>(
         pinned_elements.push(render_dock_icon(
             id,
             i,
-            true, // is_pinned
-            true, // is_running (assume for now, or check shell state)
+            true,                      // is_pinned
+            all_running.contains(&id), // Check if actually running
             dragging,
             context_menu == Some(id),
             icon_color,

@@ -1,6 +1,6 @@
 use iced::widget::{button, column, container, row, scrollable, svg, text};
 use iced::{Element, Length, Task};
-use peak_core::app_traits::AppTheme;
+use peak_core::theme::Theme;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
@@ -22,12 +22,11 @@ impl ExplorerApp {
         }
     }
 
-    pub fn view(
-        &self,
-        theme: &AppTheme,
-    ) -> Element<'_, ExplorerMessage, iced::Theme, iced::Renderer> {
-        let text_color = theme.text_color;
-        let icon_color = if theme.is_light {
+    pub fn view(&self, theme: &Theme) -> Element<'_, ExplorerMessage, iced::Theme, iced::Renderer> {
+        let palette = theme.palette();
+        let text_color = palette.text;
+        let is_light = *theme == Theme::Light;
+        let icon_color = if is_light {
             iced::Color::from_rgb8(100, 100, 100)
         } else {
             iced::Color::from_rgb8(150, 150, 150)
@@ -53,7 +52,7 @@ impl ExplorerApp {
 
                 items = items.push(
                     button(
-                        row![view_icon(is_dir, &ext, theme.is_light), text(name).size(12),]
+                        row![view_icon(is_dir, &ext, is_light), text(name).size(12),]
                             .spacing(8)
                             .align_y(iced::Alignment::Center),
                     )
@@ -172,4 +171,26 @@ fn view_icon<'a>(is_dir: bool, ext: &str, is_light: bool) -> Element<'a, Explore
     .width(Length::Fixed(20.0))
     .align_x(iced::alignment::Horizontal::Center)
     .into()
+}
+
+use peak_core::app_traits::{PeakApp, ShellContext};
+
+impl PeakApp for ExplorerApp {
+    type Message = ExplorerMessage;
+
+    fn title(&self) -> String {
+        String::from("Explorer")
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
+        self.update(message)
+    }
+
+    fn view(&self, theme: &Theme) -> Element<'_, Self::Message> {
+        self.view(theme)
+    }
 }

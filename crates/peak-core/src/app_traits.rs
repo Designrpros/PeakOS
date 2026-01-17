@@ -1,61 +1,81 @@
 // Trait definitions for PeakOS apps
 // This module defines the common interface that all built-in apps implement
 
-use iced::{Color, Element, Subscription, Task};
+use crate::theme::Theme;
+use iced::{Element, Subscription, Task};
 
 /// Theme information passed to apps for consistent styling
+
+/// Information about an app's window state
 #[derive(Debug, Clone, Copy)]
-pub struct AppTheme {
-    pub is_light: bool,
-    pub text_color: Color,
-    pub bg_color: Color,
-    pub border_color: Color,
-    #[allow(dead_code)]
-    pub accent_color: Color,
+pub struct WindowInfo {
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub is_focused: bool,
+    pub is_minimized: bool,
 }
 
-impl AppTheme {
-    /// Create a light theme
-    pub fn light() -> Self {
+impl Default for WindowInfo {
+    fn default() -> Self {
         Self {
-            is_light: true,
-            text_color: Color::from_rgb8(35, 30, 30),
-            bg_color: Color::from_rgb8(247, 245, 242),
-            border_color: Color::from_rgba(0.0, 0.0, 0.0, 0.1),
-            accent_color: Color::from_rgb8(0, 122, 255),
+            x: 100.0,
+            y: 100.0,
+            width: 800.0,
+            height: 600.0,
+            is_focused: false,
+            is_minimized: false,
         }
     }
+}
 
-    /// Create a dark theme
-    pub fn dark() -> Self {
-        Self {
-            is_light: false,
-            text_color: Color::from_rgb8(235, 230, 225),
-            bg_color: Color::from_rgb8(15, 14, 14),
-            border_color: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-            accent_color: Color::from_rgb8(10, 132, 255),
-        }
+/// Interface for apps to interact with the shell
+pub trait ShellContext {
+    /// Send a system notification
+    fn notify(&self, title: &str, message: &str);
+
+    /// Request an AI operation
+    fn ask_intelligence(&self, prompt: &str) -> Task<String>;
+
+    /// Close the calling app
+    fn close_app(&self);
+
+    /// Request access to the file system
+    fn request_file_system(&self) -> bool;
+
+    /// Get the absolute position of the root shell window
+    fn get_root_window_position(&self) -> (f32, f32) {
+        (0.0, 0.0)
     }
 }
 
 /// Core trait that all PeakOS apps implement
 /// This provides a standardized interface for app lifecycle management
-#[allow(dead_code)]
 pub trait PeakApp {
     /// The message type this app handles
     type Message: Clone + std::fmt::Debug;
 
+    /// The title of the app
+    fn title(&self) -> String;
+
     /// Update the app state based on a message
-    /// Returns a Task that may produce more messages
-    fn update(&mut self, message: Self::Message) -> Task<Self::Message>;
+    fn update(&mut self, message: Self::Message, context: &dyn ShellContext)
+        -> Task<Self::Message>;
 
     /// Render the app UI
-    /// Takes theme information for consistent styling
-    fn view(&self, theme: &AppTheme) -> Element<'_, Self::Message>;
+    fn view(&self, theme: &Theme) -> Element<'_, Self::Message>;
 
-    /// Subscribe to external events (timers, async operations, etc.)
-    /// Default implementation returns no subscriptions
+    /// Subscribe to external events
     fn subscription(&self) -> Subscription<Self::Message> {
         Subscription::none()
     }
+
+    /// Get current window information
+    fn window_info(&self) -> WindowInfo {
+        WindowInfo::default()
+    }
+
+    /// Handle window resizing or moving
+    fn on_window_change(&mut self, _info: WindowInfo) {}
 }

@@ -1,15 +1,12 @@
 // PeakNative application module
 // Refactored from monolithic app.rs into focused sub-modules
 
-use crate::apps::explorer::ExplorerApp;
-use crate::apps::library::LibraryApp;
-use crate::apps::settings::SettingsApp;
-use crate::apps::terminal::TerminalApp;
 use crate::components::app_switcher::AppSwitcher;
 use crate::components::inspector::Inspector;
 use crate::components::omnibar::Omnibar;
 use crate::pages::Page;
 use iced::Theme as IcedTheme;
+
 use peak_core::models::MediaItem;
 use peak_core::registry::ShellMode;
 use sysinfo::System;
@@ -28,19 +25,15 @@ pub use state::{AppState, Message};
 // Main application struct
 pub struct PeakNative {
     pub state: AppState,
-    pub user: Option<crate::apps::auth::UserProfile>,
+    pub user: Option<peak_apps::auth::UserProfile>,
 
     pub theme: peak_core::theme::Theme,
     pub current_page: Page,
-    pub games: Vec<MediaItem>,
-    pub library: LibraryApp,
+    pub games: Vec<MediaItem>, // Keep for now as source of truth? Or remove if hydration is enough. Keep for hydration.
     pub cortex_state: crate::pages::cortex::State,
     pub mode: ShellMode,
-    pub terminal: TerminalApp,
-    pub settings: SettingsApp,
-    pub jukebox: crate::apps::jukebox::JukeboxApp,
-    pub explorer: ExplorerApp,
-    pub store: crate::apps::store::StoreApp,
+    pub custom_wallpaper: Option<String>,
+
     pub inspector: Inspector,
     pub show_settings: bool,
     // Spotlight / Omnibar
@@ -55,7 +48,8 @@ pub struct PeakNative {
     pub show_switcher: bool,
     pub(crate) _stream: Option<rodio::OutputStream>, // Must keep alive (if audio available)
 
-    // Window Management
+    // Registry & Window Management
+    pub registry: crate::systems::registry::AppRegistry,
     pub window_manager: crate::systems::window_manager::WindowManager,
     pub _show_app_library: bool,
     pub cursor_position: iced::Point,
@@ -78,9 +72,8 @@ pub struct PeakNative {
     pub dragging_app: Option<(peak_core::registry::AppId, usize)>, // (AppId, original_index)
     pub context_menu_app: Option<peak_core::registry::AppId>,
 
-    // Desktop & Editor
+    // Desktop
     pub desktop: crate::components::desktop::Desktop,
-    pub editor: crate::apps::editor::EditorApp,
     pub show_editor: bool,
     pub is_desktop_revealed: bool,
     pub quick_look_path: Option<std::path::PathBuf>,
@@ -100,18 +93,28 @@ impl PeakNative {
     pub fn subscription(&self) -> iced::Subscription<Message> {
         use iced::time;
 
-        let subs = iced::Subscription::batch(vec![
+        let mut subs = vec![
             iced::event::listen().map(Message::GlobalEvent),
             time::every(std::time::Duration::from_millis(100)).map(|_| Message::Tick),
-        ]);
+        ];
 
-        if self.terminal.is_open {
-            iced::Subscription::batch(vec![
-                subs,
-                self.terminal.subscription().map(Message::Terminal),
-            ])
-        } else {
-            subs
+        // Add subscriptions from modular apps - only if visible (Resource Throttling)
+        for (id, app) in &self.registry.running_apps {
+            let is_visible = self
+                .window_manager
+                .window_states
+                .get(id)
+                .map(|ws| {
+                    (ws.desktop_idx == self.current_desktop && ws.reality == self.mode)
+                        || ws.is_sticky
+                })
+                .unwrap_or(false);
+
+            if is_visible {
+                subs.push(app.subscription());
+            }
         }
+
+        iced::Subscription::batch(subs)
     }
 }

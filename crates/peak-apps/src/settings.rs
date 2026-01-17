@@ -2,15 +2,12 @@ use iced::widget::{
     button, column, container, horizontal_space, row, scrollable, text, text_input, vertical_space,
     Rule,
 };
-use iced::{Alignment, Color, Element, Length};
-use peak_core::app_traits::AppTheme;
+use iced::{Alignment, Color, Element, Length, Task};
 pub use peak_core::apps::settings::{SettingsApp, SettingsMessage, SettingsTab, ThemeMode};
+use peak_core::theme::Theme;
 
 pub trait SettingsDesktopView {
-    fn view<'a>(
-        &self,
-        theme: &AppTheme,
-    ) -> Element<'a, SettingsMessage, iced::Theme, iced::Renderer>;
+    fn view<'a>(&self, theme: &Theme) -> Element<'a, SettingsMessage, iced::Theme, iced::Renderer>;
 
     fn sidebar_group<'a>(
         &self,
@@ -48,160 +45,60 @@ pub trait SettingsDesktopView {
 }
 
 impl SettingsDesktopView for SettingsApp {
-    fn view<'a>(
-        &self,
-        theme: &AppTheme,
-    ) -> Element<'a, SettingsMessage, iced::Theme, iced::Renderer> {
-        let is_light = theme.is_light;
-        let (text_color, sidebar_bg, content_bg, accent_color, border_color) = if is_light {
-            (
-                Color::from_rgb8(35, 30, 30),
-                Color::from_rgba8(242, 242, 247, 0.8), // macOS Sidebar Grey
-                Color::WHITE,
-                Color::from_rgb8(0, 122, 255), // macOS Blue
-                Color::from_rgba(0.0, 0.0, 0.0, 0.1),
-            )
+    fn view<'a>(&self, theme: &Theme) -> Element<'a, SettingsMessage, iced::Theme, iced::Renderer> {
+        let is_light = *theme == Theme::Light;
+        let border_color = if is_light {
+            Color::from_rgba(0.0, 0.0, 0.0, 0.1)
         } else {
-            (
-                Color::WHITE,
-                Color::from_rgb8(30, 30, 30),
-                Color::from_rgb8(20, 20, 20),
-                Color::from_rgb8(10, 132, 255),
-                Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-            )
+            Color::from_rgba(1.0, 1.0, 1.0, 0.1)
         };
 
-        // Sidebar
-        let sidebar = container(
-            column![
-                // Search
-                container(
-                    row![
-                        iced::widget::svg(peak_core::icons::get_ui_icon("search", "#999999"))
-                            .width(12)
-                            .height(12),
-                        text_input("Search", &self.search_query)
-                            .on_input(SettingsMessage::SearchChanged)
-                            .size(13)
-                            .padding(0)
-                            .style(move |_, _| text_input::Style {
-                                background: Color::TRANSPARENT.into(),
-                                border: iced::Border::default(),
-                                icon: Color::TRANSPARENT,
-                                placeholder: Color::from_rgb(0.6, 0.6, 0.6),
-                                value: text_color,
-                                selection: Color::from_rgba(0.0, 0.5, 1.0, 0.3),
-                            })
-                    ]
-                    .spacing(6)
-                    .align_y(Alignment::Center)
-                    .padding(6)
-                )
-                .style(move |_| container::Style {
-                    background: Some(if is_light {
-                        Color::from_rgba(0.0, 0.0, 0.0, 0.05).into()
-                    } else {
-                        Color::from_rgba(1.0, 1.0, 1.0, 0.1).into()
-                    }),
-                    border: iced::Border {
-                        radius: 6.0.into(),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }),
-                vertical_space().height(16),
-                // User
-                button(
-                    row![
-                        container(text("VB").size(14).color(Color::WHITE))
-                            .width(36)
-                            .height(36)
-                            .center_x(Length::Fill)
-                            .center_y(Length::Fill)
-                            .style(|_| container::Style {
-                                background: Some(Color::from_rgb8(150, 150, 150).into()),
-                                border: iced::Border {
-                                    radius: 18.0.into(),
-                                    ..Default::default()
-                                },
-                                ..Default::default()
-                            }),
-                        column![
-                            text("Vegar Berentsen").size(13).font(iced::Font {
-                                weight: iced::font::Weight::Medium,
-                                ..Default::default()
-                            }),
-                            text("Apple ID, iCloud, Media & App Store")
-                                .size(11)
-                                .color(Color::from_rgb(0.5, 0.5, 0.5)),
-                        ]
-                        .spacing(2)
-                    ]
-                    .spacing(10)
-                    .align_y(Alignment::Center)
-                )
-                .padding(4)
-                .style(move |_, status| button::Style {
-                    background: if status == iced::widget::button::Status::Hovered {
-                        Some(Color::from_rgba(0.5, 0.5, 0.5, 0.1).into())
-                    } else {
-                        None
-                    },
-                    text_color,
-                    ..Default::default()
-                }),
-                vertical_space().height(16),
-                scrollable(column![
-                    self.sidebar_group(
-                        vec![
-                            ("Network", SettingsTab::WiFi, "wifi_full.svg"),
-                            ("Bluetooth", SettingsTab::Bluetooth, "cmd.svg"), // Placeholder
-                        ],
-                        text_color,
-                        accent_color,
-                        is_light
-                    ),
-                    vertical_space().height(10),
-                    self.sidebar_group(
-                        vec![
-                            ("General", SettingsTab::General, "settings.svg"),
-                            ("Appearance", SettingsTab::Appearance, "sparkles.svg"),
-                            ("Display", SettingsTab::Display, "cmd.svg"),
-                            ("Sound", SettingsTab::Sound, "robot.svg"),
-                            ("Focus", SettingsTab::Focus, "cmd.svg"),
-                        ],
-                        text_color,
-                        accent_color,
-                        is_light
-                    ),
-                    vertical_space().height(10),
-                    self.sidebar_group(
-                        vec![
-                            ("Battery", SettingsTab::Battery, "battery.svg"),
-                            ("Privacy & Security", SettingsTab::Privacy, "lock.svg"),
-                        ],
-                        text_color,
-                        accent_color,
-                        is_light
-                    ),
-                ])
-            ]
-            .padding(16),
-        )
-        .width(240)
-        .height(Length::Fill)
-        .style(move |_| container::Style {
-            background: Some(sidebar_bg.into()),
-            border: iced::Border {
-                width: 1.0,
-                color: border_color,
-                ..Default::default()
-            },
-            ..Default::default()
-        });
+        let sidebar = peak_ui::navigation::Sidebar::new("Settings")
+            .with_search(self.search_query.clone(), SettingsMessage::SearchChanged)
+            .item(
+                "Network",
+                "wifi_full.svg",
+                SettingsMessage::TabChanged(SettingsTab::WiFi),
+                self.current_tab == SettingsTab::WiFi,
+            )
+            .item(
+                "Bluetooth",
+                "bluetooth.svg",
+                SettingsMessage::TabChanged(SettingsTab::Bluetooth),
+                self.current_tab == SettingsTab::Bluetooth,
+            )
+            .item(
+                "General",
+                "settings.svg",
+                SettingsMessage::TabChanged(SettingsTab::General),
+                self.current_tab == SettingsTab::General,
+            )
+            .item(
+                "Appearance",
+                "sparkles.svg",
+                SettingsMessage::TabChanged(SettingsTab::Appearance),
+                self.current_tab == SettingsTab::Appearance,
+            )
+            .item(
+                "Display",
+                "display.svg",
+                SettingsMessage::TabChanged(SettingsTab::Display),
+                self.current_tab == SettingsTab::Display,
+            )
+            .item(
+                "Sound",
+                "speaker.svg",
+                SettingsMessage::TabChanged(SettingsTab::Sound),
+                self.current_tab == SettingsTab::Sound,
+            )
+            .item(
+                "Focus",
+                "focus.svg",
+                SettingsMessage::TabChanged(SettingsTab::Focus),
+                self.current_tab == SettingsTab::Focus,
+            );
 
-        // Content Area
-        let content = container(scrollable(
+        let content = scrollable(
             column![
                 text(format!("{:?}", self.current_tab))
                     .size(24)
@@ -214,14 +111,9 @@ impl SettingsDesktopView for SettingsApp {
             ]
             .padding(32)
             .max_width(800),
-        ))
-        .height(Length::Fill)
-        .style(move |_| container::Style {
-            background: Some(content_bg.into()),
-            ..Default::default()
-        });
+        );
 
-        row![sidebar, content].into()
+        peak_ui::navigation::NavigationSplitView::new(sidebar, content.into()).view()
     }
 
     fn sidebar_group<'a>(
@@ -345,15 +237,64 @@ impl SettingsDesktopView for SettingsApp {
             .spacing(20)
             .into(),
 
-            SettingsTab::Appearance => column![self.section(
-                "Appearance",
-                column![row![
-                    self.theme_preview("Light", ThemeMode::Light, is_light),
-                    self.theme_preview("Dark", ThemeMode::Dark, is_light),
-                ]
-                .spacing(20)],
-                is_light
-            )]
+            SettingsTab::Appearance => column![
+                self.section(
+                    "Appearance",
+                    column![row![
+                        self.theme_preview("Light", ThemeMode::Light, is_light),
+                        self.theme_preview("Dark", ThemeMode::Dark, is_light),
+                    ]
+                    .spacing(20)],
+                    is_light
+                ),
+                vertical_space().height(20),
+                self.section(
+                    "Wallpaper",
+                    iced::widget::scrollable(
+                        iced::widget::row(self.wallpapers.iter().map(|wp| {
+                            let is_selected = self.current_wallpaper == *wp;
+                            let border_color = if is_selected {
+                                Color::from_rgb8(0, 122, 255)
+                            } else {
+                                Color::TRANSPARENT
+                            };
+
+                            button(
+                                container(
+                                    iced::widget::image(peak_core::utils::assets::get_asset_path(
+                                        &format!("wallpapers/{}", wp),
+                                    ))
+                                    .width(Length::Fill)
+                                    .height(Length::Fill)
+                                    .content_fit(iced::ContentFit::Cover),
+                                )
+                                .width(Length::Fill)
+                                .height(Length::Fill)
+                                .style(move |_| container::Style {
+                                    border: iced::Border {
+                                        radius: 8.0.into(),
+                                        width: 3.0,
+                                        color: border_color,
+                                    },
+                                    ..Default::default()
+                                }),
+                            )
+                            .on_press(SettingsMessage::WallpaperChanged(wp.clone()))
+                            .width(160)
+                            .height(100)
+                            .padding(0)
+                            .style(|_, _| button::Style::default())
+                            .into()
+                        }))
+                        .spacing(15)
+                    )
+                    .direction(iced::widget::scrollable::Direction::Horizontal(
+                        iced::widget::scrollable::Scrollbar::new()
+                    ))
+                    .height(130),
+                    is_light
+                )
+            ]
             .into(),
 
             SettingsTab::WiFi => column![
@@ -568,5 +509,57 @@ impl SettingsDesktopView for SettingsApp {
         .on_press(SettingsMessage::ThemeChanged(mode))
         .style(|_, _| button::Style::default())
         .into()
+    }
+}
+// Wrapper for Registry
+pub struct DesktopSettingsApp(pub SettingsApp);
+
+impl DesktopSettingsApp {
+    pub fn new() -> Self {
+        // Simple hardcoded list for now, relying on assets existing
+        // In a real app we'd scan the directory
+        let wallpapers = vec![
+            "Peak.png".to_string(),
+            "Desert.jpeg".to_string(),
+            "Florida.jpeg".to_string(),
+            "digital_rain.jpg".to_string(),
+            "digital_rain_light.jpg".to_string(),
+            "mountain_blue_rings.png".to_string(),
+            "mountain_classic.jpg".to_string(),
+            "mountain_classic_light.jpg".to_string(),
+            "mountain_sunset_1.png".to_string(),
+            "mountain_sunset_warm.png".to_string(),
+            "peak_retro.jpg".to_string(),
+            "poolsuite_luxury-kopi.jpg".to_string(),
+            "poolsuite_luxury_night.jpg".to_string(),
+            "poolsuite_water.png".to_string(),
+            "treeInDesert.jpeg".to_string(),
+        ];
+
+        let mut app = SettingsApp::new();
+        app.wallpapers = wallpapers;
+        Self(app)
+    }
+}
+
+use peak_core::app_traits::{PeakApp, ShellContext};
+
+impl PeakApp for DesktopSettingsApp {
+    type Message = SettingsMessage;
+
+    fn title(&self) -> String {
+        self.0.title()
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
+        self.0.update(message, context)
+    }
+
+    fn view(&self, theme: &Theme) -> Element<'_, Self::Message> {
+        SettingsDesktopView::view(&self.0, theme)
     }
 }

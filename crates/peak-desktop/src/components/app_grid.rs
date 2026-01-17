@@ -1,7 +1,7 @@
 use crate::components::dock::DockMessage;
-use peak_core::registry::AppId;
 use iced::widget::{container, text, Column, Row};
 use iced::{Alignment, Element, Length};
+use peak_core::registry::{AppId, AppInfo};
 
 pub fn view<'a>(apps: &[AppId], is_light: bool) -> Element<'a, DockMessage> {
     let mut grid = Column::new()
@@ -19,7 +19,7 @@ pub fn view<'a>(apps: &[AppId], is_light: bool) -> Element<'a, DockMessage> {
         for app_id in chunk {
             // Use the centralized icon loader for correct coloring
             let icon_handle = peak_core::icons::get_app_icon(*app_id, icon_color);
-            let name = format!("{:?}", app_id);
+            let name = AppInfo::get_info(*app_id).name;
 
             let btn = iced::widget::button(
                 Column::new()

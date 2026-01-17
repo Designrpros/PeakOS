@@ -1,4 +1,6 @@
-use iced::Task;
+use crate::app_traits::{PeakApp, ShellContext};
+use crate::theme::Theme;
+use iced::{Element, Task};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ThemeMode {
@@ -36,6 +38,7 @@ pub enum SettingsMessage {
     SearchChanged(String),
     ToggleWiFi(bool),
     ToggleBluetooth(bool),
+    WallpaperChanged(String),
 }
 
 pub struct SettingsApp {
@@ -45,6 +48,8 @@ pub struct SettingsApp {
     pub search_query: String,
     pub wifi_enabled: bool,
     pub bluetooth_enabled: bool,
+    pub wallpapers: Vec<String>,
+    pub current_wallpaper: String,
 }
 
 impl SettingsApp {
@@ -56,35 +61,51 @@ impl SettingsApp {
             search_query: String::new(),
             wifi_enabled: true,
             bluetooth_enabled: true,
+            wallpapers: Vec::new(),
+            current_wallpaper: String::from("Peak.png"),
         }
     }
+}
 
-    pub fn update(&mut self, message: SettingsMessage) -> Task<SettingsMessage> {
+impl PeakApp for SettingsApp {
+    type Message = SettingsMessage;
+
+    fn title(&self) -> String {
+        String::from("Settings")
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
         match message {
             SettingsMessage::ThemeChanged(mode) => {
                 self.theme_mode = mode;
-                Task::none()
             }
             SettingsMessage::VolumeChanged(v) => {
                 self.volume = v;
-                Task::none()
             }
             SettingsMessage::TabChanged(tab) => {
                 self.current_tab = tab;
-                Task::none()
             }
             SettingsMessage::SearchChanged(q) => {
                 self.search_query = q;
-                Task::none()
             }
             SettingsMessage::ToggleWiFi(enabled) => {
                 self.wifi_enabled = enabled;
-                Task::none()
             }
             SettingsMessage::ToggleBluetooth(enabled) => {
                 self.bluetooth_enabled = enabled;
-                Task::none()
+            }
+            SettingsMessage::WallpaperChanged(path) => {
+                self.current_wallpaper = path;
             }
         }
+        Task::none()
+    }
+
+    fn view(&self, _theme: &Theme) -> Element<'_, Self::Message> {
+        iced::widget::text("Settings View (Stub)").into()
     }
 }

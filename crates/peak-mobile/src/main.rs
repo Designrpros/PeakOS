@@ -1,4 +1,5 @@
 use iced::{Element, Size};
+use peak_core::app_traits::{PeakApp, ShellContext};
 use peak_core::registry::AppId;
 
 mod view_mobile;
@@ -45,6 +46,28 @@ impl Default for PeakMobile {
     }
 }
 
+struct MobileShellContext {
+    _app_id: AppId,
+}
+
+impl ShellContext for MobileShellContext {
+    fn notify(&self, title: &str, message: &str) {
+        println!("[Mobile Notification] {}: {}", title, message);
+    }
+
+    fn ask_intelligence(&self, _prompt: &str) -> iced::Task<String> {
+        iced::Task::none()
+    }
+
+    fn close_app(&self) {
+        // Handle mobile app close
+    }
+
+    fn request_file_system(&self) -> bool {
+        false // Stricter on mobile
+    }
+}
+
 impl PeakMobile {
     fn update(&mut self, message: Message) -> iced::Task<Message> {
         match message {
@@ -54,10 +77,16 @@ impl PeakMobile {
                 self.time = chrono::Local::now().format("%H:%M").to_string();
             }
             Message::Terminal(msg) => {
-                return self.terminal.update(msg).map(Message::Terminal);
+                let context = MobileShellContext {
+                    _app_id: AppId::Terminal,
+                };
+                return self.terminal.update(msg, &context).map(Message::Terminal);
             }
             Message::Settings(msg) => {
-                return self.settings.update(msg).map(Message::Settings);
+                let context = MobileShellContext {
+                    _app_id: AppId::Settings,
+                };
+                return self.settings.update(msg, &context).map(Message::Settings);
             }
         }
         iced::Task::none()

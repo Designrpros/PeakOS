@@ -1,25 +1,30 @@
 use iced::widget::{button, column, container, row, scrollable, text};
-use iced::{Alignment, Color, Element, Length};
+use iced::{Alignment, Color, Element, Length, Task};
 use peak_core::models::{MediaItem, MediaStatus};
+use peak_core::theme::Theme;
 
 #[derive(Debug, Clone)]
 pub enum LibraryMessage {
     LaunchItem(String), // Renamed from LaunchGame
     ImageLoaded(String, iced::widget::image::Handle),
-    ImageLoadFailed(String),
+    ImageLoadFailed(#[allow(dead_code)] String),
     // TabChanged(MediaKind),
 }
 
 pub struct LibraryApp {
-    pub is_open: bool,
+    pub items: Vec<MediaItem>,
 }
 
 impl LibraryApp {
-    pub fn new() -> Self {
-        Self { is_open: false }
+    pub fn new(items: Vec<MediaItem>) -> Self {
+        Self { items }
     }
 
-    pub fn view<'a>(&self, items: &'a [MediaItem]) -> Element<'a, LibraryMessage> {
+    pub fn view(&self, _theme: &Theme) -> Element<'_, LibraryMessage> {
+        Self::view_items(&self.items)
+    }
+
+    fn view_items<'a>(items: &'a [MediaItem]) -> Element<'a, LibraryMessage> {
         // Show all items (Games, Apps, etc.)
         let mut filtered_items = items.iter().peekable();
 
@@ -62,7 +67,30 @@ impl LibraryApp {
     }
 }
 
-pub fn view_card(item: &MediaItem) -> Element<'_, LibraryMessage> {
+use peak_core::app_traits::{PeakApp, ShellContext};
+
+impl PeakApp for LibraryApp {
+    type Message = LibraryMessage;
+
+    fn title(&self) -> String {
+        String::from("Library")
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
+        self.update(message);
+        Task::none()
+    }
+
+    fn view(&self, theme: &Theme) -> Element<'_, Self::Message> {
+        self.view(theme)
+    }
+}
+
+pub fn view_card<'a>(item: &'a MediaItem) -> Element<'a, LibraryMessage> {
     use iced::widget::image;
     let status_color = match item.status {
         MediaStatus::Ready => Color::from_rgb(0.0, 1.0, 0.8), // Cyan

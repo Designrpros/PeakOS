@@ -89,7 +89,7 @@ apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untr
     alpine-base linux-lts linux-firmware-none \
     udev eudev libinput libinput-dev \
     alsa-lib wayland mesa-dri-gallium \
-    weston weston-backend-drm seatd \
+    weston weston-backend-drm weston-shell-desktop seatd \
     webkit2gtk-4.1 \
     adwaita-icon-theme \
     ttf-dejavu font-noto font-noto-cjk \
@@ -154,23 +154,32 @@ sleep 3
 
 # Launch Weston (Wayland Compositor)
 # We run as root for now (simplicity)
-# Run in background, log to file
-weston --continue-without-input --log=/var/log/weston.log &
+# Run in background, log to console for debugging
+weston --continue-without-input --debug >> /dev/tty1 2>&1 &
 
-# Wait for Wayland socket to appear
+# Wait for Wayland socket to appear (Increased timeout for slow emulation)
 echo "Waiting for Wayland socket..."
-for i in \$(seq 1 10); do
-    if [ -e \$XDG_RUNTIME_DIR/wayland-0 ]; then
-        echo "Wayland socket found!"
+SOCKET_NAME=""
+for i in \$(seq 1 20); do
+    SOCKET_FOUND=\$(find \$XDG_RUNTIME_DIR -name "wayland-*" | head -n 1)
+    if [ -n "\$SOCKET_FOUND" ]; then
+        echo "Wayland socket found: \$SOCKET_FOUND"
+        SOCKET_NAME=\$(basename "\$SOCKET_FOUND")
         break
     fi
     sleep 1
 done
 
+if [ -z "\$SOCKET_NAME" ]; then
+    echo "Error: Wayland socket not found!"
+    # Fallback just in case
+    SOCKET_NAME="wayland-0"
+fi
+
 # Launch PeakOS Native App
-echo "Launching PeakOS..."
-# Export display explicitly just in case
-export WAYLAND_DISPLAY=wayland-0
+echo "Launching PeakOS on \$SOCKET_NAME..."
+# Export display explicitly
+export WAYLAND_DISPLAY=\$SOCKET_NAME
 /peak-desktop &
 
 # Prevent script from exiting so init doesn't respawn it immediately (if using respawn)

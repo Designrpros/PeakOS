@@ -1,6 +1,6 @@
-use peak_core::registry::AppId;
 use iced::keyboard::Key;
 use iced::{Point, Size};
+use peak_core::registry::AppId;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy)]

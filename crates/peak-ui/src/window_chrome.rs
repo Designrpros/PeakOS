@@ -12,56 +12,58 @@ where
 {
     let title_bar = container(
         row![
-            text(title.to_uppercase())
-                .size(10) // Ultra compact
-                .font(iced::Font::MONOSPACE)
-                .color(Color::from_rgb(0.5, 0.5, 0.5)),
-            iced::widget::horizontal_space(),
             row![
                 // Red (Close)
-                button(window_control(Color::from_rgb(0.9, 0.2, 0.2)))
-                    .on_press(on_close)
-                    .padding(0)
-                    .style(|_theme, status| button::Style {
-                        background: if status == iced::widget::button::Status::Hovered {
-                            Some(Color::from_rgba(0.9, 0.2, 0.2, 0.2).into())
-                        } else {
-                            None
-                        },
-                        border: iced::Border {
-                            radius: 10.0.into(),
+                Element::from(
+                    button(window_control(Color::from_rgb8(255, 69, 58))) // MacOS Red
+                        .on_press(on_close)
+                        .padding(0)
+                        .style(|_theme, _status| button::Style {
+                            background: None,
                             ..Default::default()
-                        },
-                        ..Default::default()
-                    }),
+                        })
+                ),
                 // Yellow (Minimize - Placeholder)
-                window_control(Color::from_rgb(0.9, 0.7, 0.2)),
+                window_control(Color::from_rgb8(255, 186, 10)), // MacOS Yellow
                 // Green (Maximize)
                 if let Some(msg) = on_maximize {
-                    button(window_control(Color::from_rgb(0.2, 0.8, 0.2)))
-                        .on_press(msg)
-                        .padding(0)
-                        .style(|_theme, _status| button::Style {
-                            background: None,
-                            ..Default::default()
-                        })
+                    Element::from(
+                        button(window_control(Color::from_rgb8(50, 215, 75))) // MacOS Green
+                            .on_press(msg)
+                            .padding(0)
+                            .style(|_theme, _status| button::Style {
+                                background: None,
+                                ..Default::default()
+                            }),
+                    )
                 } else {
-                    button(window_control(Color::from_rgb(0.2, 0.8, 0.2)))
-                        .padding(0)
-                        .style(|_theme, _status| button::Style {
-                            background: None,
-                            ..Default::default()
-                        })
+                    Element::from(
+                        container(window_control(Color::from_rgb8(50, 215, 75))).padding(0),
+                    )
                 }
             ]
-            .spacing(8),
+            .spacing(10)
+            .padding(Padding {
+                left: 4.0,
+                ..Padding::ZERO
+            }),
+            iced::widget::horizontal_space(),
+            text(title.to_uppercase())
+                .size(11)
+                .font(iced::Font::DEFAULT)
+                .color(Color::from_rgb(0.4, 0.4, 0.4)),
+            iced::widget::horizontal_space(),
         ]
         .width(Length::Fill)
+        .height(Length::Fixed(40.0))
         .align_y(Alignment::Center),
     )
-    .padding(Padding::from([6, 12]))
-    .style(|_| container::Style::default()); // Fluid: No background on title bar
-
+    .padding(Padding {
+        left: 16.0,
+        right: 16.0,
+        ..Padding::ZERO
+    })
+    .style(|_| container::Style::default());
     let window_body = container(content)
         .width(Length::Fill)
         .height(Length::Fill)
