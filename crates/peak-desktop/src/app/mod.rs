@@ -80,6 +80,7 @@ pub struct PeakNative {
     pub tracked_modifiers: iced::keyboard::Modifiers,
     pub is_mouse_button_pressed: bool, // Track left mouse button state for reliable drag release
     pub scanned_apps: Vec<MediaItem>,
+    pub tokens: peak_theme::ThemeTokens,
 }
 
 impl PeakNative {

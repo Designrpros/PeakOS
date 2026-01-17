@@ -244,7 +244,7 @@ impl Omnibar {
         iced::Task::none()
     }
 
-    pub fn view(&self, is_light: bool) -> Element<'_, OmnibarMessage> {
+    pub fn view(&self, tokens: peak_theme::ThemeTokens) -> Element<'_, OmnibarMessage> {
         // Input field
         let input = text_input("Go...", &self.query)
             .on_input(OmnibarMessage::QueryChanged)
@@ -257,21 +257,21 @@ impl Omnibar {
                     width: 0.0,
                     ..Default::default()
                 },
-                icon: if is_light { Color::BLACK } else { Color::WHITE },
-                placeholder: if is_light {
-                    Color::from_rgba(0.0, 0.0, 0.0, 0.4)
-                } else {
-                    Color::from_rgba(1.0, 1.0, 1.0, 0.4)
+                icon: tokens.text,
+                placeholder: {
+                    let mut c = tokens.text;
+                    c.a = 0.4;
+                    c
                 },
-                value: if is_light { Color::BLACK } else { Color::WHITE },
-                selection: Color::from_rgb(0.3, 0.5, 1.0),
+                value: tokens.text,
+                selection: tokens.accent,
             });
 
         // Content based on mode
         let content: Element<_> = match self.mode {
-            OmnibarMode::Menu => self.view_menu(is_light),
-            OmnibarMode::Search => self.view_search_results(is_light),
-            OmnibarMode::Install => self.view_install_packages(is_light),
+            OmnibarMode::Menu => self.view_menu(tokens),
+            OmnibarMode::Search => self.view_search_results(tokens),
+            OmnibarMode::Install => self.view_install_packages(tokens),
         };
 
         // Main container
@@ -279,34 +279,30 @@ impl Omnibar {
             .width(Length::Fixed(400.0))
             .padding(16)
             .style(move |_| container::Style {
-                background: Some(Background::Color(if is_light {
-                    Color::from_rgb8(245, 245, 247)
-                } else {
-                    Color::from_rgb8(30, 30, 30)
-                })),
+                background: Some(Background::Color(tokens.glass_bg)),
                 border: iced::Border {
-                    color: if is_light {
-                        Color::from_rgba8(0, 0, 0, 0.1)
-                    } else {
-                        Color::from_rgba8(255, 255, 255, 0.1)
-                    },
+                    color: tokens.glass_border,
                     width: 1.0,
-                    radius: 12.0.into(),
+                    radius: tokens.radius.into(),
                 },
-                text_color: Some(if is_light { Color::BLACK } else { Color::WHITE }),
+                shadow: iced::Shadow {
+                    color: tokens.shadow_color,
+                    offset: iced::Vector::new(0.0, 20.0),
+                    blur_radius: 40.0,
+                },
                 ..Default::default()
             })
             .into()
     }
 
-    fn view_menu(&self, is_light: bool) -> Element<'_, OmnibarMessage> {
+    fn view_menu(&self, tokens: peak_theme::ThemeTokens) -> Element<'_, OmnibarMessage> {
         let items: Vec<Element<OmnibarMessage>> = self
             .menu_items
             .iter()
             .enumerate()
             .map(|(i, item)| {
                 let is_selected = i == self.selected_index;
-                self.view_menu_item(item, is_selected, is_light)
+                self.view_menu_item(item, is_selected, tokens)
             })
             .collect();
 
@@ -317,43 +313,30 @@ impl Omnibar {
         &self,
         item: &MenuItem,
         is_selected: bool,
-        is_light: bool,
+        tokens: peak_theme::ThemeTokens,
     ) -> Element<'_, OmnibarMessage> {
         let bg_color = if is_selected {
-            if is_light {
-                Color::from_rgb8(220, 220, 220) // Warm light gray
-            } else {
-                Color::from_rgb8(60, 60, 60) // Warm dark gray
-            }
+            let mut c = tokens.accent;
+            c.a = 0.2;
+            c
         } else {
             Color::TRANSPARENT
         };
 
         let text_color = if is_selected {
-            if is_light {
-                Color::BLACK
-            } else {
-                Color::WHITE
-            }
-        } else if is_light {
-            Color::BLACK
+            tokens.accent
         } else {
-            Color::WHITE
+            tokens.text
         };
 
-        let icon_color = if is_selected {
-            if is_light {
-                "#000000"
-            } else {
-                "#FFFFFF"
-            }
-        } else if is_light {
-            "#000000"
-        } else {
-            "#FFFFFF"
-        };
+        let hex_color = format!(
+            "#{:02x}{:02x}{:02x}",
+            (text_color.r * 255.0) as u8,
+            (text_color.g * 255.0) as u8,
+            (text_color.b * 255.0) as u8
+        );
 
-        let icon = iced::widget::svg(peak_core::icons::get_ui_icon(item.icon(), icon_color))
+        let icon = iced::widget::svg(peak_core::icons::get_ui_icon(item.icon(), &hex_color))
             .width(Length::Fixed(16.0))
             .height(Length::Fixed(16.0));
 
@@ -365,29 +348,35 @@ impl Omnibar {
         .on_press(OmnibarMessage::SelectMenuItem(*item))
         .padding([8, 12])
         .width(Length::Fill)
-        .style(move |_, _| button::Style {
-            background: Some(Background::Color(bg_color)),
-            text_color,
-            border: iced::Border {
-                radius: 8.0.into(),
+        .style(move |_, status| {
+            let mut final_bg = bg_color;
+            if status == button::Status::Hovered && !is_selected {
+                final_bg = tokens.text;
+                final_bg.a = 0.1;
+            }
+
+            button::Style {
+                background: Some(Background::Color(final_bg)),
+                text_color,
+                border: iced::Border {
+                    radius: tokens.radius.into(),
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
+            }
         })
         .into()
     }
 
-    fn view_search_results(&self, is_light: bool) -> Element<'_, OmnibarMessage> {
+    fn view_search_results(&self, tokens: peak_theme::ThemeTokens) -> Element<'_, OmnibarMessage> {
         if self.search_results.is_empty() {
-            container(text("No apps found").size(14).color(if is_light {
-                Color::from_rgba(0.0, 0.0, 0.0, 0.4)
-            } else {
-                Color::from_rgba(1.0, 1.0, 1.0, 0.4)
-            }))
-            .padding(20)
-            .width(Length::Fill)
-            .center_x(Length::Fill)
-            .into()
+            let mut text_color = tokens.text;
+            text_color.a = 0.4;
+            container(text("No apps found").size(14).color(text_color))
+                .padding(20)
+                .width(Length::Fill)
+                .center_x(Length::Fill)
+                .into()
         } else {
             let items: Vec<Element<OmnibarMessage>> = self
                 .search_results
@@ -395,7 +384,7 @@ impl Omnibar {
                 .enumerate()
                 .map(|(i, result)| {
                     let is_selected = i == self.selected_index;
-                    self.view_search_result(result, is_selected, is_light)
+                    self.view_search_result(result, is_selected, tokens)
                 })
                 .collect();
 
@@ -407,28 +396,20 @@ impl Omnibar {
         &'a self,
         result: &'a SearchResult,
         is_selected: bool,
-        is_light: bool,
+        tokens: peak_theme::ThemeTokens,
     ) -> Element<'a, OmnibarMessage> {
         let bg_color = if is_selected {
-            if is_light {
-                Color::from_rgb8(220, 220, 220) // Warm light gray
-            } else {
-                Color::from_rgb8(60, 60, 60) // Warm dark gray
-            }
+            let mut c = tokens.accent;
+            c.a = 0.2;
+            c
         } else {
             Color::TRANSPARENT
         };
 
         let text_color = if is_selected {
-            if is_light {
-                Color::BLACK
-            } else {
-                Color::WHITE
-            }
-        } else if is_light {
-            Color::BLACK
+            tokens.accent
         } else {
-            Color::WHITE
+            tokens.text
         };
 
         let msg = if let Some(app_id) = result.app_id {
@@ -437,24 +418,19 @@ impl Omnibar {
             OmnibarMessage::Submit
         };
 
-        let icon_color = if is_selected {
-            if is_light {
-                "#000000"
-            } else {
-                "#FFFFFF"
-            }
-        } else if is_light {
-            "#000000"
-        } else {
-            "#FFFFFF"
-        };
+        let hex_color = format!(
+            "#{:02x}{:02x}{:02x}",
+            (text_color.r * 255.0) as u8,
+            (text_color.g * 255.0) as u8,
+            (text_color.b * 255.0) as u8
+        );
 
         let icon = if let Some(app_id) = result.app_id {
-            iced::widget::svg(peak_core::icons::get_app_icon(app_id, icon_color))
+            iced::widget::svg(peak_core::icons::get_app_icon(app_id, &hex_color))
                 .width(Length::Fixed(16.0))
                 .height(Length::Fixed(16.0))
         } else {
-            iced::widget::svg(peak_core::icons::get_ui_icon("document", icon_color))
+            iced::widget::svg(peak_core::icons::get_ui_icon("document", &hex_color))
                 .width(Length::Fixed(16.0))
                 .height(Length::Fixed(16.0))
         };
@@ -467,43 +443,48 @@ impl Omnibar {
         .on_press(msg)
         .padding([8, 12])
         .width(Length::Fill)
-        .style(move |_, _| button::Style {
-            background: Some(Background::Color(bg_color)),
-            text_color,
-            border: iced::Border {
-                radius: 8.0.into(),
+        .style(move |_, status| {
+            let mut final_bg = bg_color;
+            if status == button::Status::Hovered && !is_selected {
+                final_bg = tokens.text;
+                final_bg.a = 0.1;
+            }
+            button::Style {
+                background: Some(Background::Color(final_bg)),
+                text_color,
+                border: iced::Border {
+                    radius: tokens.radius.into(),
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
+            }
         })
         .into()
     }
 
-    fn view_install_packages(&self, is_light: bool) -> Element<'_, OmnibarMessage> {
+    fn view_install_packages(
+        &self,
+        tokens: peak_theme::ThemeTokens,
+    ) -> Element<'_, OmnibarMessage> {
+        let mut placeholder_color = tokens.text;
+        placeholder_color.a = 0.4;
+
         if self.query.is_empty() {
             container(
                 text("Search for packages to install")
                     .size(14)
-                    .color(if is_light {
-                        Color::from_rgba(0.0, 0.0, 0.0, 0.4)
-                    } else {
-                        Color::from_rgba(1.0, 1.0, 1.0, 0.4)
-                    }),
+                    .color(placeholder_color),
             )
             .padding(20)
             .width(Length::Fill)
             .center_x(Length::Fill)
             .into()
         } else if self.apk_results.is_empty() {
-            container(text("Searching...").size(14).color(if is_light {
-                Color::from_rgba(0.0, 0.0, 0.0, 0.4)
-            } else {
-                Color::from_rgba(1.0, 1.0, 1.0, 0.4)
-            }))
-            .padding(20)
-            .width(Length::Fill)
-            .center_x(Length::Fill)
-            .into()
+            container(text("Searching...").size(14).color(placeholder_color))
+                .padding(20)
+                .width(Length::Fill)
+                .center_x(Length::Fill)
+                .into()
         } else {
             let items: Vec<Element<OmnibarMessage>> = self
                 .apk_results
@@ -512,36 +493,26 @@ impl Omnibar {
                 .map(|(i, pkg)| {
                     let is_selected = i == self.selected_index;
                     let bg_color = if is_selected {
-                        if is_light {
-                            Color::from_rgb8(220, 220, 220)
-                        } else {
-                            Color::from_rgb8(60, 60, 60)
-                        }
+                        let mut c = tokens.accent;
+                        c.a = 0.2;
+                        c
                     } else {
                         Color::TRANSPARENT
                     };
 
                     let text_color = if is_selected {
-                        if is_light {
-                            Color::BLACK
-                        } else {
-                            Color::WHITE
-                        }
-                    } else if is_light {
-                        Color::BLACK
+                        tokens.accent
                     } else {
-                        Color::WHITE
+                        tokens.text
                     };
 
                     button(
                         column![
                             text(&pkg.name).size(14).color(text_color),
-                            text(&pkg.description).size(12).color(if is_selected {
-                                text_color
-                            } else if is_light {
-                                Color::from_rgba(0.0, 0.0, 0.0, 0.6)
-                            } else {
-                                Color::from_rgba(1.0, 1.0, 1.0, 0.6)
+                            text(&pkg.description).size(12).color({
+                                let mut c = text_color;
+                                c.a = 0.6;
+                                c
                             }),
                         ]
                         .spacing(4),
@@ -549,13 +520,20 @@ impl Omnibar {
                     .on_press(OmnibarMessage::SelectApk(pkg.name.clone()))
                     .padding([8, 12])
                     .width(Length::Fill)
-                    .style(move |_, _| button::Style {
-                        background: Some(Background::Color(bg_color)),
-                        border: iced::Border {
-                            radius: 8.0.into(),
+                    .style(move |_, status| {
+                        let mut final_bg = bg_color;
+                        if status == button::Status::Hovered && !is_selected {
+                            final_bg = tokens.text;
+                            final_bg.a = 0.1;
+                        }
+                        button::Style {
+                            background: Some(Background::Color(final_bg)),
+                            border: iced::Border {
+                                radius: tokens.radius.into(),
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
+                        }
                     })
                     .into()
                 })

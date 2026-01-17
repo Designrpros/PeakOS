@@ -51,6 +51,15 @@ impl PeakNative {
         }
     }
 
+    pub fn update_tokens(&mut self) {
+        let tone = match self.theme {
+            peak_core::theme::Theme::Light => peak_theme::ThemeTone::Light,
+            peak_core::theme::Theme::Dark => peak_theme::ThemeTone::Dark,
+            _ => peak_theme::ThemeTone::Light,
+        };
+        self.tokens = peak_theme::ThemeTokens::get(self.mode, tone);
+    }
+
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::WindowPositionFound(pos_opt) => {
@@ -608,6 +617,7 @@ impl PeakNative {
                     peak_core::theme::Theme::Dark => peak_core::theme::Theme::Light,
                     _ => peak_core::theme::Theme::Light,
                 };
+                self.update_tokens();
                 Task::none()
             }
             Message::Navigate(page) => {
@@ -772,6 +782,7 @@ impl PeakNative {
                         peak_apps::settings::ThemeMode::Light => peak_core::theme::Theme::Light,
                         peak_apps::settings::ThemeMode::Dark => peak_core::theme::Theme::Dark,
                     };
+                    self.update_tokens();
                     Task::none()
                 }
                 peak_apps::settings::SettingsMessage::WallpaperChanged(ref path) => {

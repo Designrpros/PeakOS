@@ -39,39 +39,35 @@ impl AppSwitcher {
         }
     }
 
-    pub fn view(&self, is_light: bool) -> Element<'_, SwitcherMessage> {
-        let text_color = if is_light { Color::BLACK } else { Color::WHITE };
-        let card_bg = if is_light {
-            Color::from_rgba(1.0, 1.0, 1.0, 0.7)
-        } else {
-            Color::from_rgba(0.05, 0.05, 0.08, 0.8)
-        };
+    pub fn view(&self, tokens: peak_theme::ThemeTokens) -> Element<'_, SwitcherMessage> {
+        let text_color = tokens.text;
+        let card_bg = tokens.glass_bg;
+
+        let hex_color = format!(
+            "#{:02x}{:02x}{:02x}",
+            (tokens.text.r * 255.0) as u8,
+            (tokens.text.g * 255.0) as u8,
+            (tokens.text.b * 255.0) as u8
+        );
 
         let content = row(self.apps.iter().enumerate().map(|(i, app)| {
             let is_selected = i == self.selected_index;
 
             let bg = if is_selected {
-                if is_light {
-                    Color::from_rgba(0.0, 0.0, 0.0, 0.1)
-                } else {
-                    Color::from_rgba(1.0, 1.0, 1.0, 0.15)
-                }
+                let mut c = tokens.text;
+                c.a = 0.1;
+                c
             } else {
                 Color::TRANSPARENT
             };
 
             let border_color = if is_selected {
-                if is_light {
-                    Color::from_rgba(0.0, 0.0, 0.0, 0.1)
-                } else {
-                    Color::from_rgba(1.0, 1.0, 1.0, 0.2)
-                }
+                tokens.glass_border
             } else {
                 Color::TRANSPARENT
             };
 
-            let icon_color = if is_light { "#000000" } else { "#FFFFFF" };
-            let icon = peak_core::icons::get_app_icon(app.id, icon_color);
+            let icon = peak_core::icons::get_app_icon(app.id, &hex_color);
 
             container(
                 column![
@@ -103,7 +99,7 @@ impl AppSwitcher {
                 border: Border {
                     color: border_color,
                     width: 1.0,
-                    radius: 16.0.into(),
+                    radius: tokens.radius.into(),
                 },
                 ..Default::default()
             })
@@ -117,16 +113,12 @@ impl AppSwitcher {
             .style(move |_| container::Style {
                 background: Some(Background::Color(card_bg)),
                 border: Border {
-                    color: if is_light {
-                        Color::from_rgba(0.0, 0.0, 0.0, 0.1)
-                    } else {
-                        Color::from_rgba(1.0, 1.0, 1.0, 0.1)
-                    },
+                    color: tokens.glass_border,
                     width: 1.0,
-                    radius: 24.0.into(),
+                    radius: (tokens.radius * 2.0).into(),
                 },
                 shadow: Shadow {
-                    color: Color::from_rgba(0.0, 0.0, 0.0, 0.4),
+                    color: tokens.shadow_color,
                     offset: Vector::new(0.0, 20.0),
                     blur_radius: 50.0,
                 },

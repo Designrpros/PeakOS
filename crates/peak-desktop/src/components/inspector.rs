@@ -108,7 +108,7 @@ impl Inspector {
         }
     }
 
-    pub fn view(&self, is_light: bool) -> Element<'_, InspectorMessage> {
+    pub fn view<'a>(&'a self, tokens: peak_theme::ThemeTokens) -> Element<'a, InspectorMessage> {
         if !self.is_visible {
             return container(vertical_space().height(0))
                 .width(0)
@@ -116,13 +116,8 @@ impl Inspector {
                 .into();
         }
 
-        let bg_color = if is_light {
-            Color::from_rgba8(255, 255, 255, 0.85)
-        } else {
-            Color::from_rgba8(0, 0, 0, 0.85)
-        };
-
-        let text_color = if is_light { Color::BLACK } else { Color::WHITE };
+        let bg_color = tokens.glass_bg;
+        let text_color = tokens.text;
 
         let header = container(text("Peak Intelligence").size(14).font(iced::Font {
             weight: iced::font::Weight::Bold,
@@ -139,17 +134,13 @@ impl Inspector {
                     .map(|msg| {
                         let is_user = msg.role == "user";
                         if is_user {
-                            // User Bubble: Warm Gray
-                            let warm_gray = if is_light {
-                                Color::from_rgb8(230, 225, 220)
-                            } else {
-                                Color::from_rgb8(80, 75, 70)
-                            };
+                            // User Bubble: Card-like or Subtle bg
+                            let bubble_bg = tokens.card_bg;
 
                             container(text(&msg.content).size(14).color(text_color))
                                 .padding(12)
                                 .style(move |_| container::Style {
-                                    background: Some(warm_gray.into()),
+                                    background: Some(bubble_bg.into()),
                                     border: iced::Border {
                                         radius: 16.0.into(),
                                         ..Default::default()
@@ -181,23 +172,15 @@ impl Inspector {
         )
         .height(Length::Fill);
 
-        // Input Area (Bottom)
-        let _input_container_bg = if is_light {
-            Color::from_rgba8(0, 0, 0, 0.05)
-        } else {
-            Color::from_rgba8(30, 30, 30, 1.0) // Darker background for input area
-        };
-
         // Icons for toolbar
-        let mic_icon = peak_core::icons::get_ui_icon(
-            "microphone",
-            if is_light { "#000000" } else { "#FFFFFF" },
+        let hex_color = format!(
+            "#{:02x}{:02x}{:02x}",
+            (tokens.text.r * 255.0) as u8,
+            (tokens.text.g * 255.0) as u8,
+            (tokens.text.b * 255.0) as u8
         );
-        let arrow_icon = peak_core::icons::get_ui_icon("arrow_up", "#FFFFFF"); // Always white on blue button
-
-        // Let's refine the input layout. The user wants the input text likely ABOVE the toolbar icons (or inline).
-        // The screenshot shows "Ask anything..." text at top left of box, and icons at bottom right.
-        // It looks like one big text area with a toolbar at the bottom.
+        let mic_icon = peak_core::icons::get_ui_icon("microphone", &hex_color);
+        let arrow_icon = peak_core::icons::get_ui_icon("arrow_up", "#FFFFFF"); // Action icon stays white
 
         let refined_input_area = container(column![
             // Text Editor acts as the main input area
@@ -210,7 +193,7 @@ impl Inspector {
                         background: Color::TRANSPARENT.into(),
                         border: iced::Border::default(),
                         value: text_color,
-                        selection: Color::from_rgb(0.4, 0.4, 0.8),
+                        selection: tokens.accent,
                         placeholder: Color::from_rgb(0.5, 0.5, 0.5),
                         icon: Color::from_rgb(0.5, 0.5, 0.5),
                     })
@@ -248,18 +231,20 @@ impl Inspector {
                 ))
                 .on_press(InspectorMessage::SendPressed)
                 .padding(8)
-                .style(move |_: &iced::Theme, status| button::Style {
-                    background: if status == iced::widget::button::Status::Hovered {
-                        Some(Color::from_rgb8(60, 60, 65).into())
-                    } else {
-                        Some(Color::from_rgba8(50, 50, 55, 1.0).into())
-                    },
-                    text_color: Color::WHITE,
-                    border: iced::Border {
-                        radius: 20.0.into(),
+                .style(move |_: &iced::Theme, status| {
+                    let mut bg = tokens.accent;
+                    if status != iced::widget::button::Status::Hovered {
+                        bg.a = 0.8;
+                    }
+                    button::Style {
+                        background: Some(bg.into()),
+                        text_color: Color::WHITE,
+                        border: iced::Border {
+                            radius: 20.0.into(),
+                            ..Default::default()
+                        },
                         ..Default::default()
-                    },
-                    ..Default::default()
+                    }
                 })
             ]
             .spacing(12)
@@ -267,15 +252,11 @@ impl Inspector {
         ])
         .padding(12)
         .style(move |_| container::Style {
-            background: Some(if is_light {
-                Color::from_rgba8(240, 240, 240, 1.0).into()
-            } else {
-                Color::from_rgba8(40, 40, 40, 1.0).into()
-            }),
+            background: Some(tokens.card_bg.into()),
             border: iced::Border {
-                radius: 12.0.into(),
+                radius: tokens.radius.into(),
                 width: 1.0,
-                color: Color::from_rgba(1.0, 1.0, 1.0, 0.05),
+                color: tokens.glass_border,
             },
             ..Default::default()
         });
@@ -296,11 +277,15 @@ impl Inspector {
         .style(move |_| container::Style {
             background: Some(bg_color.into()),
             border: iced::Border {
-                width: 0.0, // No border on the main panel edge to blend
-                color: Color::TRANSPARENT,
+                width: 1.0,
+                color: tokens.glass_border,
                 ..Default::default()
             },
-            shadow: iced::Shadow::default(), // No shadow
+            shadow: iced::Shadow {
+                color: tokens.shadow_color,
+                offset: iced::Vector::new(0.0, 4.0),
+                blur_radius: 12.0,
+            },
             ..Default::default()
         })
         .into()

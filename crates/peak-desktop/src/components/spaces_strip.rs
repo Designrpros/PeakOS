@@ -1,13 +1,15 @@
-use peak_core::registry::ShellMode;
 use iced::widget::{button, column, container, row, text};
-use iced::{Alignment, Background, Color, Element, Length};
+use iced::{Alignment, Background, Element, Length};
 
 #[derive(Debug, Clone)]
 pub enum SpacesMessage {
     SwitchDesktop(usize),
 }
 
-pub fn view<'a>(_active_mode: ShellMode, active_desktop: usize) -> Element<'a, SpacesMessage> {
+pub fn view<'a>(
+    tokens: peak_theme::ThemeTokens,
+    active_desktop: usize,
+) -> Element<'a, SpacesMessage> {
     // Workstation Selection (Desktops)
     let workstation_chip = |idx: usize| {
         let is_active = active_desktop == idx;
@@ -16,26 +18,36 @@ pub fn view<'a>(_active_mode: ShellMode, active_desktop: usize) -> Element<'a, S
         button(text(label).size(10).align_y(iced::Alignment::Center))
             .on_press(SpacesMessage::SwitchDesktop(idx))
             .style(move |_theme, status| {
-                let base = button::Style {
-                    background: Some(Background::Color(if is_active {
-                        Color::from_rgb(0.0, 0.8, 1.0)
-                    } else {
-                        Color::from_rgba(1.0, 1.0, 1.0, 0.1)
-                    })),
-                    text_color: Color::WHITE,
+                let mut bg = if is_active {
+                    tokens.accent
+                } else {
+                    tokens.text
+                };
+
+                if !is_active {
+                    bg.a = 0.1;
+                }
+
+                let mut base = button::Style {
+                    background: Some(Background::Color(bg)),
+                    text_color: tokens.text,
                     border: iced::Border {
                         radius: 4.0.into(),
                         ..Default::default()
                     },
                     ..Default::default()
                 };
-                match status {
-                    button::Status::Hovered => button::Style {
-                        background: Some(Background::Color(Color::from_rgba(0.0, 0.8, 1.0, 0.8))),
-                        ..base
-                    },
-                    _ => base,
+
+                if status == button::Status::Hovered {
+                    let mut hover_bg = if is_active {
+                        tokens.accent
+                    } else {
+                        tokens.text
+                    };
+                    hover_bg.a = 0.8;
+                    base.background = Some(Background::Color(hover_bg));
                 }
+                base
             })
             .width(Length::Fixed(35.0))
             .height(Length::Fixed(25.0))
@@ -50,27 +62,30 @@ pub fn view<'a>(_active_mode: ShellMode, active_desktop: usize) -> Element<'a, S
     .spacing(10)
     .align_y(Alignment::Center);
 
+    let mut label_color = tokens.text;
+    label_color.a = 0.4;
+
     container(
         column![
             text("DESKTOPS")
                 .size(10)
                 .font(iced::Font::MONOSPACE)
-                .color(Color::from_rgba(1.0, 1.0, 1.0, 0.4)),
+                .color(label_color),
             workstations
         ]
         .spacing(10)
         .align_x(Alignment::Center),
     )
     .padding(15)
-    .style(|_| container::Style {
-        background: Some(Background::Color(Color::from_rgba(0.03, 0.03, 0.05, 0.9))),
+    .style(move |_| container::Style {
+        background: Some(Background::Color(tokens.glass_bg)),
         border: iced::Border {
-            color: Color::from_rgba(1.0, 1.0, 1.0, 0.15),
+            color: tokens.glass_border,
             width: 1.0,
-            radius: 12.0.into(),
+            radius: tokens.radius.into(),
         },
         shadow: iced::Shadow {
-            color: Color::BLACK,
+            color: tokens.shadow_color,
             offset: iced::Vector::new(0.0, 10.0),
             blur_radius: 20.0,
         },

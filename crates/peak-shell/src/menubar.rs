@@ -1,7 +1,6 @@
 use chrono::Local;
 use iced::widget::{button, container, horizontal_space, row, svg, text};
-use iced::{Alignment, Background, Color, Element, Length};
-use peak_core::registry::ShellMode;
+use iced::{Alignment, Element, Length};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MenubarMessage {
@@ -14,30 +13,24 @@ pub enum MenubarMessage {
     ToggleInspector,
 }
 
-pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> {
+use peak_theme::ThemeTokens;
+
+pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
     // 1. The Clock (Real-time)
     let time = Local::now().format("%H:%M").to_string();
     let date = Local::now().format("%a %b %d").to_string();
 
-    // 2. The Styling Logic
-    let (text_color, bg_color) = match (mode, is_light) {
-        (ShellMode::Peak, true) => (
-            Color::from_rgb8(35, 30, 30),
-            Color::from_rgb8(247, 245, 242),
-        ),
-        (ShellMode::Peak, false) => (
-            Color::from_rgb8(235, 230, 225),
-            Color::from_rgb8(15, 14, 14),
-        ),
-        (ShellMode::Poolside, _) => (
-            Color::from_rgb8(50, 50, 50),
-            Color::from_rgb8(255, 153, 204),
-        ),
-    };
+    let text_color = tokens.text;
+    let bg_color = tokens.glass_bg;
 
-    let icon_color_hex = if is_light { "#000000" } else { "#FFFFFF" };
+    let hex_color = format!(
+        "#{:02x}{:02x}{:02x}",
+        (tokens.text.r * 255.0) as u8,
+        (tokens.text.g * 255.0) as u8,
+        (tokens.text.b * 255.0) as u8
+    );
 
-    let switcher = button(text(mode.to_string()).size(13))
+    let switcher = button(text("Peak").size(13)) // Placeholder for mode string, can be passed if needed
         .on_press(MenubarMessage::ToggleRealityMenu)
         .padding([5, 0])
         .style(move |_, _| button::Style {
@@ -45,10 +38,10 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
             ..Default::default()
         });
 
-    let logo_file = if is_light {
-        "peak_logo.png"
-    } else {
+    let logo_file = if tokens.background.r < 0.2 {
         "peak_logo_dark.png"
+    } else {
+        "peak_logo.png"
     };
 
     // 4. The Left Menu (System & App)
@@ -74,7 +67,7 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
     let right_menu = row![
         // Search
         button(
-            svg(peak_core::icons::get_ui_icon("search", icon_color_hex))
+            svg(peak_core::icons::get_ui_icon("search", &hex_color))
                 .width(Length::Fixed(16.0))
                 .height(Length::Fixed(16.0)),
         )
@@ -83,7 +76,7 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
         .style(button::text),
         // WiFi (Full)
         button(
-            svg(peak_core::icons::get_status_icon("wifi", icon_color_hex))
+            svg(peak_core::icons::get_status_icon("wifi", &hex_color))
                 .width(Length::Fixed(16.0))
                 .height(Length::Fixed(16.0)),
         )
@@ -92,7 +85,7 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
         .style(button::text),
         // Robot (AI)
         button(
-            svg(peak_core::icons::get_avatar_handle("robot", icon_color_hex))
+            svg(peak_core::icons::get_avatar_handle("robot", &hex_color))
                 .width(Length::Fixed(16.0))
                 .height(Length::Fixed(16.0)),
         )
@@ -101,7 +94,7 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
         .style(button::text),
         // Settings
         button(
-            svg(peak_core::icons::get_ui_icon("settings", icon_color_hex))
+            svg(peak_core::icons::get_ui_icon("settings", &hex_color))
                 .width(Length::Fixed(16.0))
                 .height(Length::Fixed(16.0))
         )
@@ -110,7 +103,7 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
         .style(button::text),
         // Command
         button(
-            svg(peak_core::icons::get_ui_icon("cmd", icon_color_hex))
+            svg(peak_core::icons::get_ui_icon("cmd", &hex_color))
                 .width(Length::Fixed(16.0))
                 .height(Length::Fixed(16.0))
         )
@@ -147,7 +140,7 @@ pub fn view<'a>(mode: ShellMode, is_light: bool) -> Element<'a, MenubarMessage> 
     .height(32) // Slightly taller for the button feel (User suggested 32 in prompt, original was 24)
     .center_y(32) // Explicitly center within the height
     .style(move |_| container::Style {
-        background: Some(Background::Color(bg_color)),
+        background: Some(bg_color.into()),
         ..Default::default()
     })
     .into()

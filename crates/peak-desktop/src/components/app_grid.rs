@@ -5,15 +5,20 @@ use peak_shell::dock::DockMessage;
 
 pub fn view<'a>(
     apps: &'a [peak_core::models::MediaItem],
-    is_light: bool,
+    tokens: peak_theme::ThemeTokens,
 ) -> Element<'a, DockMessage> {
     let mut grid = Column::new()
         .spacing(40)
         .padding(40)
         .align_x(Alignment::Center);
 
-    // Determine icon color based on theme
-    let icon_color = if is_light { "#000000" } else { "#FFFFFF" };
+    // Determine icon color based on tokens
+    let hex_color = format!(
+        "#{:02x}{:02x}{:02x}",
+        (tokens.text.r * 255.0) as u8,
+        (tokens.text.g * 255.0) as u8,
+        (tokens.text.b * 255.0) as u8
+    );
 
     let chunk_size = 6;
     for chunk in apps.chunks(chunk_size) {
@@ -22,11 +27,9 @@ pub fn view<'a>(
         for item in chunk {
             // Try to use app icon if it's a builtin app, otherwise fallback or generic
             let icon_handle = if let Ok(app_id) = item.launch_command.parse::<AppId>() {
-                peak_core::icons::get_app_icon(app_id, icon_color)
+                peak_core::icons::get_app_icon(app_id, &hex_color)
             } else {
-                // For external apps, we'd ideally load their real icon,
-                // but for now we'll use a generic "app" icon or a fallback.
-                peak_core::icons::get_app_icon(AppId::AppGrid, icon_color)
+                peak_core::icons::get_app_icon(AppId::AppGrid, &hex_color)
             };
 
             let name = &item.title;
@@ -48,29 +51,19 @@ pub fn view<'a>(
                     .push(
                         text(name)
                             .size(13)
-                            .color(if is_light {
-                                iced::Color::BLACK
-                            } else {
-                                iced::Color::WHITE
-                            })
+                            .color(tokens.text) // Use tokens.text
                             .align_y(Alignment::Center),
                     ),
             )
             .on_press(DockMessage::LaunchMedia(item.clone()))
             .style(move |_, status| {
-                let parse_color = |r, g, b, a| iced::Color { r, g, b, a };
                 if status == iced::widget::button::Status::Hovered {
+                    let mut hover_bg = tokens.text;
+                    hover_bg.a = 0.1;
                     iced::widget::button::Style {
-                        background: Some(
-                            if is_light {
-                                parse_color(0.0, 0.0, 0.0, 0.1)
-                            } else {
-                                parse_color(1.0, 1.0, 1.0, 0.1)
-                            }
-                            .into(),
-                        ),
+                        background: Some(hover_bg.into()),
                         border: iced::Border {
-                            radius: 12.0.into(),
+                            radius: tokens.radius.into(),
                             width: 0.0,
                             color: iced::Color::TRANSPARENT,
                         },
@@ -80,7 +73,7 @@ pub fn view<'a>(
                     iced::widget::button::Style {
                         background: Some(iced::Color::TRANSPARENT.into()),
                         border: iced::Border {
-                            radius: 12.0.into(),
+                            radius: tokens.radius.into(),
                             width: 0.0,
                             color: iced::Color::TRANSPARENT,
                         },
@@ -102,14 +95,7 @@ pub fn view<'a>(
         .center_x(Length::Fill)
         .center_y(Length::Fill)
         .style(move |_| container::Style {
-            background: Some(
-                if is_light {
-                    iced::Color::from_rgba(0.9, 0.9, 0.9, 0.3)
-                } else {
-                    iced::Color::from_rgba(0.0, 0.0, 0.0, 0.3)
-                }
-                .into(),
-            ),
+            background: Some(tokens.glass_bg.into()),
             ..Default::default()
         })
         .into()

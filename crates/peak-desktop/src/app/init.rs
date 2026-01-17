@@ -119,6 +119,14 @@ impl PeakNative {
             // Initialize Desktop
             desktop: crate::components::desktop::Desktop::new(),
             show_editor: false,
+            tokens: peak_theme::ThemeTokens::get(
+                if mode_str == "poolside" {
+                    ShellMode::Poolside
+                } else {
+                    ShellMode::Peak
+                },
+                peak_theme::ThemeTone::Light,
+            ),
         };
 
         // --- Register Modular Apps ---

@@ -11,8 +11,8 @@ use peak_shell::{
 };
 
 impl PeakNative {
-    fn view_app_grid(&self, is_light: bool) -> Element<'_, Message> {
-        let grid = crate::components::app_grid::view(&self.scanned_apps, is_light)
+    fn view_app_grid(&self, tokens: peak_theme::ThemeTokens) -> Element<'_, Message> {
+        let grid = crate::components::app_grid::view(&self.scanned_apps, tokens)
             .map(Message::DockInteraction);
 
         container(grid)
@@ -183,8 +183,7 @@ impl PeakNative {
             self.dragging_app,
             self.context_menu_app,
             &all_running,
-            is_light,
-            self.mode,
+            self.tokens,
         )
         .map(Message::DockInteraction);
 
@@ -196,7 +195,7 @@ impl PeakNative {
                 .width(Length::Fill)
                 .height(Length::Fill),
             if self.inspector.is_visible {
-                self.inspector.view(is_light).map(Message::Inspector)
+                self.inspector.view(self.tokens).map(Message::Inspector)
             } else {
                 container(iced::widget::Space::with_width(0)).into()
             }
@@ -206,7 +205,7 @@ impl PeakNative {
 
         // Menubar overlay (top)
         final_view = final_view.push(
-            container(menubar::view(self.mode, is_light).map(Message::MenubarAction))
+            container(menubar::view(self.tokens).map(Message::MenubarAction))
                 .width(Length::Fill)
                 .height(Length::Shrink)
                 .align_y(iced::alignment::Vertical::Top),
@@ -229,7 +228,7 @@ impl PeakNative {
 
         if self.show_omnibar {
             final_view = final_view.push(
-                container(self.omnibar.view(is_light).map(Message::Omnibar))
+                container(self.omnibar.view(self.tokens).map(Message::Omnibar))
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .center_x(Length::Fill)
@@ -243,11 +242,7 @@ impl PeakNative {
                     container(
                         button(text(""))
                             .style(move |_, _| button::Style {
-                                background: Some(if is_light {
-                                    iced::Color::from_rgb8(242, 242, 247).into()
-                                } else {
-                                    iced::Color::from_rgb8(20, 20, 20).into()
-                                }),
+                                background: Some(self.tokens.background.into()),
                                 ..Default::default()
                             })
                             .on_press(Message::ToggleAppGrid)
@@ -258,7 +253,7 @@ impl PeakNative {
                     .height(Length::Fill),
                 )
                 .push(
-                    container(self.view_app_grid(is_light))
+                    container(self.view_app_grid(self.tokens))
                         .width(Length::Fill)
                         .height(Length::Fill)
                         .center_x(Length::Fill)
@@ -280,7 +275,7 @@ impl PeakNative {
                         }),
                 )
                 .push(
-                    container(self.switcher.view(is_light).map(Message::Switcher))
+                    container(self.switcher.view(self.tokens).map(Message::Switcher))
                         .width(Length::Fill)
                         .height(Length::Fill)
                         .center_x(Length::Fill)
@@ -291,7 +286,7 @@ impl PeakNative {
         if self.show_spaces_selector {
             final_view = final_view.push(
                 container(
-                    crate::components::spaces_strip::view(self.mode, self.current_desktop)
+                    crate::components::spaces_strip::view(self.tokens, self.current_desktop)
                         .map(Message::SwitchSpace),
                 )
                 .width(Length::Fill)
@@ -305,56 +300,44 @@ impl PeakNative {
         }
 
         if self.show_system_menu || self.show_reality_menu || self.show_wifi_menu {
-            let (text_color, bg) = match self.mode {
-                ShellMode::Peak => (
-                    Color::from_rgb8(35, 30, 30),
-                    Color::from_rgb8(247, 245, 242),
-                ),
-                ShellMode::Poolside => (
-                    Color::from_rgb8(50, 50, 50),
-                    Color::from_rgb8(255, 153, 204),
-                ),
-            };
+            let tokens = self.tokens;
+            let text_color = tokens.text;
+            let bg = tokens.glass_bg;
 
-            let menu_button = |label: String, msg: Message, active: bool| -> Element<'_, Message> {
-                button(
-                    container(text(label).size(13))
-                        .width(Length::Fill)
-                        .padding([5, 10]),
-                )
-                .on_press(msg)
-                .style(move |_, status| {
-                    let is_hovered = status == iced::widget::button::Status::Hovered;
-                    button::Style {
-                        background: if active {
-                            if is_light {
-                                Some(Color::from_rgb8(220, 220, 220).into())
-                            } else {
-                                Some(Color::from_rgb8(60, 60, 60).into())
-                            }
+            let menu_button =
+                move |label: String, msg: Message, active: bool| -> Element<'_, Message> {
+                    button(
+                        container(text(label).size(13))
+                            .width(Length::Fill)
+                            .padding([5, 10]),
+                    )
+                    .on_press(msg)
+                    .style(move |_, status| {
+                        let is_hovered = status == iced::widget::button::Status::Hovered;
+                        let final_bg = if active {
+                            let mut c = tokens.accent;
+                            c.a = 0.2;
+                            c
                         } else if is_hovered {
-                            Some(Color::from_rgba(1.0, 1.0, 1.0, 0.1).into())
+                            let mut c = tokens.text;
+                            c.a = 0.1;
+                            c
                         } else {
-                            None
-                        },
-                        text_color: if active {
-                            if is_light {
-                                Color::BLACK
-                            } else {
-                                Color::WHITE
-                            }
-                        } else {
-                            text_color
-                        },
-                        border: iced::Border {
-                            radius: 4.0.into(),
+                            Color::TRANSPARENT
+                        };
+
+                        button::Style {
+                            background: Some(final_bg.into()),
+                            text_color: if active { tokens.accent } else { tokens.text },
+                            border: iced::Border {
+                                radius: 4.0.into(),
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
-                    }
-                })
-                .into()
-            };
+                        }
+                    })
+                    .into()
+                };
 
             if self.show_system_menu {
                 let menu = container(
