@@ -138,6 +138,7 @@ impl PeakNative {
                 },
                 peak_theme::ThemeTone::Light,
             ),
+            active_downloads: std::collections::HashSet::new(),
         };
 
         // --- Register Modular Apps ---

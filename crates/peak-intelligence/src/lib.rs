@@ -5,3 +5,5 @@ pub mod mcp;
 pub mod steam;
 pub mod terminal;
 pub mod tools;
+
+pub use sipper;

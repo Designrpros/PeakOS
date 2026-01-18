@@ -63,16 +63,17 @@ pub fn summarize<'a>(
         let text = scrape(url.clone()).await?;
 
         let reply = assistant
+            .clone()
             .reply(
-                "You are a helpful assistant.",
-                &[Message::User(format!(
+                "You are a helpful assistant.".to_string(),
+                vec![Message::User(format!(
                     "```\n\
                     {text}\n\
                     ```\n\n\
                     Please, summarize the parts of the previous text that \
                     are relevant to the query: \"{query}\"."
                 ))],
-                &[],
+                vec![],
             )
             .with(|(reply, _token)| Summary {
                 url: url.clone(),

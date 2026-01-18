@@ -778,7 +778,6 @@ impl PeakNative {
                 }
                 Task::none()
             }
-
             Message::Inspector(msg) => {
                 // Always clear dragging when Inspector receives any event
                 self.window_manager.dragging = None;
@@ -798,22 +797,53 @@ impl PeakNative {
                 self.inspector.is_visible = !self.inspector.is_visible;
                 Task::none()
             }
-            Message::Settings(msg) => match msg {
-                peak_apps::settings::SettingsMessage::ThemeChanged(mode) => {
-                    self.theme = match mode {
-                        peak_apps::settings::ThemeMode::Light => peak_core::theme::Theme::Light,
-                        peak_apps::settings::ThemeMode::Dark => peak_core::theme::Theme::Dark,
-                    };
-                    self.update_tokens();
-                    Task::none()
+            Message::Settings(settings_msg) => {
+                // Intercept global settings actions if needed
+                match &settings_msg {
+                    peak_apps::settings::SettingsMessage::ThemeChanged(mode) => {
+                        self.theme = match mode {
+                            peak_apps::settings::ThemeMode::Light => peak_core::theme::Theme::Light,
+                            peak_apps::settings::ThemeMode::Dark => peak_core::theme::Theme::Dark,
+                        };
+                        self.update_tokens();
+                    }
+                    peak_apps::settings::SettingsMessage::ModelDownload(id) => {
+                        // Start tracking this download
+                        println!("Requesting download for model: {}", id);
+                        self.active_downloads.insert(id.clone());
+                    }
+                    peak_apps::settings::SettingsMessage::ModelDownloadCancel(id) => {
+                        // Stop tracking limits download, causing subscription to drop
+                        self.active_downloads.remove(id);
+                    }
+                    peak_apps::settings::SettingsMessage::ModelDownloadProgress(id, progress) => {
+                        // Remove from active downloads if complete
+                        if *progress >= 1.0 {
+                            self.active_downloads.remove(id);
+                        }
+                    }
+                    peak_apps::settings::SettingsMessage::ModelDownloadFailed(id, _) => {
+                        self.active_downloads.remove(id);
+                    }
+                    peak_apps::settings::SettingsMessage::ModelActivate(id) => {
+                        // Notify Inspector of active model change
+                        return Task::batch(vec![
+                            self.forward_to_app(
+                                AppId::Settings,
+                                Message::Settings(settings_msg.clone()),
+                            ),
+                            Task::done(Message::Inspector(
+                                crate::components::inspector::InspectorMessage::SetActiveModel(
+                                    id.clone(),
+                                ),
+                            )),
+                        ]);
+                    }
+                    _ => {}
                 }
-                peak_apps::settings::SettingsMessage::WallpaperChanged(ref path) => {
-                    self.custom_wallpaper = Some(path.clone());
-                    // Forward to app so it updates its own UI selection state
-                    self.forward_to_app(AppId::Settings, Message::Settings(msg))
-                }
-                _ => self.forward_to_app(AppId::Settings, Message::Settings(msg)),
-            },
+
+                self.forward_to_app(AppId::Settings, Message::Settings(settings_msg))
+            }
             Message::SwitchMode(mode) => {
                 self.mode = mode;
                 self.show_spaces_selector = false;
@@ -1182,12 +1212,14 @@ impl PeakNative {
                 }
                 Task::none()
             }
+
             Message::ToggleSettings => {
                 self.window_manager.dragging = None;
                 self.dragging_app = None;
                 self.show_settings = !self.show_settings;
-                self.toggle_app(AppId::Settings, 600.0, 400.0)
+                self.toggle_app(peak_core::registry::AppId::Settings, 1000.0, 800.0)
             }
+
             Message::ToggleSystemMenu => {
                 self.show_system_menu = !self.show_system_menu;
                 Task::none()

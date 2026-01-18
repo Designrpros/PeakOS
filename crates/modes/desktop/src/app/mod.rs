@@ -4,6 +4,7 @@
 use crate::components::inspector::Inspector;
 use crate::components::omnibar::Omnibar;
 use crate::pages::Page;
+use iced::futures::SinkExt;
 use iced::Theme as IcedTheme;
 use peak_shell::app_switcher::AppSwitcher;
 
@@ -96,6 +97,7 @@ pub struct PeakNative {
     pub is_mouse_button_pressed: bool, // Track left mouse button state for reliable drag release
     pub scanned_apps: Vec<MediaItem>,
     pub tokens: peak_theme::ThemeTokens,
+    pub active_downloads: std::collections::HashSet<String>,
 }
 
 impl PeakNative {
@@ -132,6 +134,139 @@ impl PeakNative {
             }
         }
 
+        // Inspector subscription
+        subs.push(self.inspector.subscription().map(Message::Inspector));
+
+        // Check for active downloads
+        for id in &self.active_downloads {
+            subs.push(download_model_subscription(id.clone()));
+        }
+
         iced::Subscription::batch(subs)
     }
+}
+
+fn download_model_subscription(id: String) -> iced::Subscription<Message> {
+    use iced::futures::StreamExt;
+    use peak_intelligence::brain::model::{File, Model};
+
+    iced::Subscription::run_with_id(
+        id.clone(),
+        iced::stream::channel(100, move |mut output| async move {
+            // Search for model
+            let Ok(models) = Model::search(id.clone()).await else {
+                output
+                    .send(Message::Settings(
+                        peak_apps::settings::SettingsMessage::ModelDownloadFailed(
+                            id.clone(),
+                            "Search failed".into(),
+                        ),
+                    ))
+                    .await
+                    .ok();
+                return;
+            };
+
+            let Some(model) = models.first() else {
+                output
+                    .send(Message::Settings(
+                        peak_apps::settings::SettingsMessage::ModelDownloadFailed(
+                            id.clone(),
+                            "Model not found".into(),
+                        ),
+                    ))
+                    .await
+                    .ok();
+                return;
+            };
+
+            // List files
+            let Ok(files) = File::list(model.id.clone()).await else {
+                output
+                    .send(Message::Settings(
+                        peak_apps::settings::SettingsMessage::ModelDownloadFailed(
+                            id.clone(),
+                            "File list failed".into(),
+                        ),
+                    ))
+                    .await
+                    .ok();
+                return;
+            };
+
+            // Pick best available quantization (Q4_K_M is a good default for Apple Silicon)
+            let file = files.values().flat_map(|v| v).find(|f| {
+                f.name.contains("Q4_K_M")
+                    || f.name.contains("Q4_0")
+                    || f.name.contains("block_medium")
+            });
+
+            let file = match file {
+                Some(f) => f.clone(),
+                None => {
+                    // Fallback to first file
+                    if let Some(first) = files.values().flat_map(|v| v).next() {
+                        first.clone()
+                    } else {
+                        output
+                            .send(Message::Settings(
+                                peak_apps::settings::SettingsMessage::ModelDownloadFailed(
+                                    id.clone(),
+                                    "No GGUF file found".into(),
+                                ),
+                            ))
+                            .await
+                            .ok();
+                        return;
+                    }
+                }
+            };
+
+            let directory = peak_intelligence::brain::model::Directory::default();
+            let mut stream = Box::pin(file.download(&directory));
+
+            output
+                .send(Message::Settings(
+                    peak_apps::settings::SettingsMessage::ModelDownloadProgress(id.clone(), 0.0),
+                ))
+                .await
+                .ok();
+
+            while let Some(progress) = stream.next().await {
+                let total = progress.total.unwrap_or(progress.downloaded.max(1));
+                let percent = progress.downloaded as f32 / total as f32;
+                output
+                    .send(Message::Settings(
+                        peak_apps::settings::SettingsMessage::ModelDownloadProgress(
+                            id.clone(),
+                            percent,
+                        ),
+                    ))
+                    .await
+                    .ok();
+            }
+
+            match stream.await {
+                Ok(_) => {
+                    output
+                        .send(Message::Settings(
+                            peak_apps::settings::SettingsMessage::ModelDownloadComplete(id.clone()),
+                        ))
+                        .await
+                        .ok();
+                }
+                Err(e) => {
+                    output
+                        .send(Message::Settings(
+                            peak_apps::settings::SettingsMessage::ModelDownloadFailed(
+                                id.clone(),
+                                e.to_string(),
+                            ),
+                        ))
+                        .await
+                        .ok();
+                }
+            }
+        }),
+    )
 }

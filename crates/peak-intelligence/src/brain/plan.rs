@@ -127,10 +127,11 @@ fn design<'a>(
 ) -> impl Straw<Plan, Event, Error> + 'a {
     sipper(move |progress| async move {
         let reply = assistant
+            .clone()
             .reply(
-                "You are a helpful assistant.",
-                history,
-                &[Message::System(BROWSE_PROMPT.to_owned())],
+                "You are a helpful assistant.".to_string(),
+                history.to_vec(),
+                vec![Message::System(BROWSE_PROMPT.to_owned())],
             )
             .filter_with(|(reply, _token)| reply.reasoning.map(Event::Designing))
             .run(progress)
@@ -388,7 +389,12 @@ fn execute<'a>(
                     ];
 
                     let mut reply = assistant
-                        .reply("You are a helpful assistant.", history, &query)
+                        .clone()
+                        .reply(
+                            "You are a helpful assistant.".to_string(),
+                            history.to_vec(),
+                            query.to_vec(),
+                        )
                         .pin();
 
                     while let Some((reply, _token)) = reply.sip().await {

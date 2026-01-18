@@ -28,6 +28,20 @@ pub enum SettingsTab {
     Sound,
     Focus,
     Privacy,
+    Intelligence,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ModelInfo {
+    pub name: String,
+    pub id: String,
+    pub description: String,
+    pub size_estimate: String,
+    pub min_ram_gb: u8,
+    pub is_downloaded: bool,
+    pub is_active: bool,
+    pub download_progress: Option<f32>, // None = not downloading, Some(0.0-1.0) = progress
+    pub last_error: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -39,6 +53,17 @@ pub enum SettingsMessage {
     ToggleWiFi(bool),
     ToggleBluetooth(bool),
     WallpaperChanged(String),
+    // Intelligence
+    ModelDownload(String),
+    ModelDownloadProgress(String, f32),
+    ModelDownloadComplete(String),
+    ModelDownloadFailed(String, String),
+    ModelDownloadCancel(String),
+    ModelRemove(String),
+    ModelActivate(String),
+    AddModelInputChanged(String),
+    AddModelPressed,
+    ToggleCaptions(bool),
 }
 
 pub struct SettingsApp {
@@ -50,6 +75,11 @@ pub struct SettingsApp {
     pub bluetooth_enabled: bool,
     pub wallpapers: Vec<String>,
     pub current_wallpaper: String,
+    // Intelligence
+    pub recommended_models: Vec<ModelInfo>,
+    pub custom_models: Vec<ModelInfo>,
+    pub add_model_input: String,
+    pub captions_enabled: bool,
 }
 
 impl SettingsApp {
@@ -63,6 +93,55 @@ impl SettingsApp {
             bluetooth_enabled: true,
             wallpapers: Vec::new(),
             current_wallpaper: String::from("Peak.png"),
+            recommended_models: vec![
+                ModelInfo {
+                    name: "Llama 3.2 3B".into(),
+                    id: "bartowski/Llama-3.2-3B-Instruct-GGUF".into(),
+                    description: "Best balance of speed and intelligence.".into(),
+                    size_estimate: "~2.4 GB".into(),
+                    min_ram_gb: 8,
+                    is_downloaded: false,
+                    is_active: false,
+                    download_progress: None,
+                    last_error: None,
+                },
+                ModelInfo {
+                    name: "Gemma 3 4B".into(),
+                    id: "bartowski/google_gemma-3-4b-it-GGUF".into(),
+                    description: "Multimodal, large context (128k), efficient.".into(),
+                    size_estimate: "~3.0 GB".into(),
+                    min_ram_gb: 8,
+                    is_downloaded: false,
+                    is_active: false,
+                    download_progress: None,
+                    last_error: None,
+                },
+                ModelInfo {
+                    name: "Qwen 2.5 7B".into(),
+                    id: "Qwen/Qwen2.5-7B-Instruct-GGUF".into(),
+                    description: "Superior coding and reasoning capabilities.".into(),
+                    size_estimate: "~4.5 GB".into(),
+                    min_ram_gb: 16,
+                    is_downloaded: false,
+                    is_active: false,
+                    download_progress: None,
+                    last_error: None,
+                },
+                ModelInfo {
+                    name: "Ministral 3 8B".into(),
+                    id: "bartowski/mistralai_Ministral-3-8B-Reasoning-2512-GGUF".into(),
+                    description: "Strong edge model with vision support.".into(),
+                    size_estimate: "~5.5 GB".into(),
+                    min_ram_gb: 16,
+                    is_downloaded: false,
+                    is_active: false,
+                    download_progress: None,
+                    last_error: None,
+                },
+            ],
+            custom_models: Vec::new(),
+            add_model_input: String::new(),
+            captions_enabled: false,
         }
     }
 }
@@ -100,6 +179,108 @@ impl PeakApp for SettingsApp {
             }
             SettingsMessage::WallpaperChanged(path) => {
                 self.current_wallpaper = path;
+            }
+            SettingsMessage::ModelDownload(_) => {
+                // Initiated in PeakNative
+            }
+            SettingsMessage::ModelDownloadProgress(id, progress) => {
+                for model in self
+                    .recommended_models
+                    .iter_mut()
+                    .chain(self.custom_models.iter_mut())
+                {
+                    if model.id == id {
+                        model.download_progress = Some(progress);
+                    }
+                }
+            }
+            SettingsMessage::ModelDownloadComplete(id) => {
+                for model in self
+                    .recommended_models
+                    .iter_mut()
+                    .chain(self.custom_models.iter_mut())
+                {
+                    if model.id == id {
+                        model.download_progress = None;
+                        model.is_downloaded = true;
+                    }
+                }
+            }
+            SettingsMessage::ModelDownloadFailed(id, err) => {
+                for model in self
+                    .recommended_models
+                    .iter_mut()
+                    .chain(self.custom_models.iter_mut())
+                {
+                    if model.id == id {
+                        model.download_progress = None;
+                        model.is_downloaded = false;
+                        model.last_error = Some(err.clone());
+                    }
+                }
+            }
+            SettingsMessage::ModelDownloadCancel(id) => {
+                for model in self
+                    .recommended_models
+                    .iter_mut()
+                    .chain(self.custom_models.iter_mut())
+                {
+                    if model.id == id {
+                        model.download_progress = None;
+                        // Keep is_downloaded as false (or whatever it was)
+                    }
+                }
+            }
+            SettingsMessage::ModelRemove(id) => {
+                self.custom_models.retain(|m| m.id != id);
+            }
+            SettingsMessage::ModelActivate(id) => {
+                // Deactivate all first
+                for model in self
+                    .recommended_models
+                    .iter_mut()
+                    .chain(self.custom_models.iter_mut())
+                {
+                    model.is_active = false;
+                }
+                // Activate target if downloaded
+                for model in self
+                    .recommended_models
+                    .iter_mut()
+                    .chain(self.custom_models.iter_mut())
+                {
+                    if model.id == id && model.is_downloaded {
+                        model.is_active = true;
+                    }
+                }
+            }
+            SettingsMessage::AddModelInputChanged(val) => {
+                self.add_model_input = val;
+            }
+            SettingsMessage::AddModelPressed => {
+                if !self.add_model_input.trim().is_empty() {
+                    let id = self.add_model_input.trim().to_string();
+                    if !self.recommended_models.iter().any(|m| m.id == id)
+                        && !self.custom_models.iter().any(|m| m.id == id)
+                    {
+                        self.custom_models.push(ModelInfo {
+                            name: id.clone(),
+                            id: id.clone(),
+                            description: "Custom Model".into(),
+                            size_estimate: "Unknown".into(),
+                            min_ram_gb: 0,
+                            is_downloaded: false,
+                            is_active: false,
+                            download_progress: None,
+                            last_error: None,
+                        });
+                        self.add_model_input.clear();
+                    }
+                }
+            }
+
+            SettingsMessage::ToggleCaptions(enabled) => {
+                self.captions_enabled = enabled;
             }
         }
         Task::none()

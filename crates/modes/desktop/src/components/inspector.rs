@@ -1,16 +1,23 @@
 use iced::widget::{button, column, container, row, scrollable, text, text_editor, vertical_space};
 use iced::{Alignment, Color, Element, Length, Task};
-use peak_intelligence::llm::{LlmClient, Message, ModelProvider};
+use peak_intelligence::brain::assistant::{Assistant, Backend, Message as BrainMessage, Token};
+use peak_intelligence::brain::{self};
+use peak_intelligence::sipper::Sipper;
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum InspectorMessage {
     InputChanged(text_editor::Action),
     SendPressed,
     ResponseReceived(Result<String, String>),
-    #[allow(dead_code)]
     OpenSettings,
     MouseReleased, // Forward mouse releases to parent
+    BootProgress(String, u32),
+    BootFinished(Result<Arc<Assistant>, String>),
+    StreamToken(String),
+    StreamFinished,
+    SetActiveModel(String),
 }
 
 #[derive(Debug, Clone)]
@@ -19,49 +26,157 @@ struct ChatMessage {
     content: String,
 }
 
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
+pub enum InspectorState {
+    Idle,
+    Booting { progress: u32, stage: String },
+    Ready,
+    Streaming,
+    Error(String),
+}
+
 pub struct Inspector {
     pub is_visible: bool,
     input_content: text_editor::Content,
     messages: Vec<ChatMessage>,
-    is_loading: bool,
-    #[allow(dead_code)]
-    provider: ModelProvider,
-    client: Arc<LlmClient>,
+    pub state: InspectorState,
+    assistant: Option<Arc<Assistant>>,
+    pending_chat: Option<(String, Vec<BrainMessage>)>,
+    active_model_id: Option<String>,
 }
 
 impl Inspector {
     pub fn new() -> Self {
-        Self {
+        let inspector = Self {
             is_visible: false,
             input_content: text_editor::Content::new(),
             messages: vec![ChatMessage {
                 role: "system".to_string(),
-                content:
-                    "Hello! I am Peak Intelligence. How can I help you manage your system today?"
-                        .to_string(),
+                content: "Initializing Peak Intelligence...".to_string(),
             }],
-            is_loading: false,
-            provider: ModelProvider::Ollama, // Default to local
-            client: Arc::new(LlmClient::new(
-                ModelProvider::Ollama,
-                "llama3".to_string(), // Default model
-                None,
-            )),
-        }
+            state: InspectorState::Idle,
+            assistant: None,
+            pending_chat: None,
+            active_model_id: None,
+        };
+
+        // We defer boot to first update or explicit call to avoid blocking init
+        inspector
+    }
+
+    pub fn boot(&mut self) -> Task<InspectorMessage> {
+        self.state = InspectorState::Booting {
+            progress: 0,
+            stage: "Starting...".into(),
+        };
+
+        let target_id = self.active_model_id.clone();
+
+        Task::perform(
+            async move {
+                let lib = brain::model::Library::default();
+                // TODO: Load configured model from settings
+                // For now, we attempt to find *any* model or fail
+                let files = lib.files();
+                if files.is_empty() {
+                    return Err("No models found. Please download one in settings.".into());
+                }
+
+                // Find target model or fallback to first
+                let file = if let Some(id) = target_id {
+                    files
+                        .iter()
+                        .find(|f| f.model.0 == id)
+                        .cloned()
+                        .unwrap_or_else(|| files[0].clone())
+                } else {
+                    files[0].clone()
+                };
+
+                let directory = lib.directory().clone();
+
+                let mut boot_process = Assistant::boot(directory, file, Backend::Cpu).pin();
+
+                while let Some(_event) = boot_process.sip().await {
+                    // Just wait for completion
+                }
+
+                match boot_process.await {
+                    Ok(a) => Ok(Arc::new(a)),
+                    Err(e) => Err(e.to_string()),
+                }
+            },
+            InspectorMessage::BootFinished,
+        )
     }
 
     pub fn update(&mut self, message: InspectorMessage) -> Task<InspectorMessage> {
         match message {
+            InspectorMessage::SetActiveModel(id) => {
+                let was_different = self.active_model_id.as_ref() != Some(&id);
+                self.active_model_id = Some(id);
+
+                // If model changed and we are already running, we should reboot
+                if was_different {
+                    // Only reboot if we have valid state to reboot from (not streaming/booting)
+                    match self.state {
+                        InspectorState::Ready | InspectorState::Error(_) => {
+                            self.messages.push(ChatMessage {
+                                role: "system".into(),
+                                content: "Switching model...".into(),
+                            });
+                            return self.boot();
+                        }
+                        _ => {}
+                    }
+                }
+                Task::none()
+            }
             InspectorMessage::InputChanged(action) => {
                 self.input_content.perform(action);
                 Task::none()
             }
-            InspectorMessage::OpenSettings => Task::none(), // Handled in parent
-            InspectorMessage::MouseReleased => Task::none(), // Handled in parent
+            InspectorMessage::OpenSettings => Task::none(),
+            InspectorMessage::MouseReleased => Task::none(),
+            InspectorMessage::BootProgress(stage, pct) => {
+                if let InspectorState::Booting { .. } = &mut self.state {
+                    self.state = InspectorState::Booting {
+                        progress: pct,
+                        stage,
+                    };
+                }
+                Task::none()
+            }
+            InspectorMessage::BootFinished(result) => {
+                match result {
+                    Ok(assistant) => {
+                        self.assistant = Some(assistant);
+                        self.state = InspectorState::Ready;
+                        self.messages.push(ChatMessage {
+                            role: "system".to_string(),
+                            content: "System Ready.".to_string(),
+                        });
+                    }
+                    Err(e) => {
+                        self.state = InspectorState::Error(e.clone());
+                        self.messages.push(ChatMessage {
+                            role: "system".to_string(),
+                            content: format!("Initialization Failed: {}", e),
+                        });
+                    }
+                }
+                Task::none()
+            }
             InspectorMessage::SendPressed => {
                 let text = self.input_content.text();
-                if text.trim().is_empty() || self.is_loading {
+                if text.trim().is_empty() {
                     return Task::none();
+                }
+
+                // If not ready, try boot?
+                if self.assistant.is_none() {
+                    return self.boot();
                 }
 
                 let user_msg = ChatMessage {
@@ -69,43 +184,73 @@ impl Inspector {
                     content: text.clone(),
                 };
                 self.messages.push(user_msg.clone());
-                self.input_content = text_editor::Content::new(); // Clear input
-                self.is_loading = true;
+                self.input_content = text_editor::Content::new();
+                self.state = InspectorState::Streaming;
 
-                let history: Vec<Message> = self
+                // Prepare history
+                let history: Vec<BrainMessage> = self
                     .messages
                     .iter()
-                    .map(|m| Message {
-                        role: m.role.clone(),
-                        content: m.content.clone(),
+                    .map(|m| match m.role.as_str() {
+                        "user" => BrainMessage::User(m.content.clone()),
+                        "assistant" => BrainMessage::Assistant(m.content.clone()),
+                        "system" => BrainMessage::System(m.content.clone()),
+                        _ => BrainMessage::User(m.content.clone()),
                     })
                     .collect();
 
-                let client = self.client.clone();
-                Task::perform(
-                    async move { client.chat(history).await },
-                    InspectorMessage::ResponseReceived,
-                )
+                // Set pending chat for subscription
+                self.pending_chat = Some((text.clone(), history));
+
+                // Add placeholder for assistant response
+                self.messages.push(ChatMessage {
+                    role: "assistant".into(),
+                    content: String::new(),
+                });
+
+                Task::none()
             }
-            InspectorMessage::ResponseReceived(result) => {
-                self.is_loading = false;
-                match result {
-                    Ok(content) => {
-                        self.messages.push(ChatMessage {
-                            role: "assistant".to_string(),
-                            content,
-                        });
-                    }
-                    Err(e) => {
-                        self.messages.push(ChatMessage {
-                            role: "system".to_string(),
-                            content: format!("Error: {}", e),
-                        });
+            InspectorMessage::StreamToken(t) => {
+                if let Some(msg) = self.messages.last_mut() {
+                    if msg.role == "assistant" {
+                        msg.content.push_str(&t);
                     }
                 }
                 Task::none()
             }
+            InspectorMessage::StreamFinished => {
+                self.state = InspectorState::Ready;
+                self.pending_chat = None;
+                Task::none()
+            }
+            InspectorMessage::ResponseReceived(_) => Task::none(), // Legacy
         }
+    }
+
+    pub fn subscription(&self) -> iced::Subscription<InspectorMessage> {
+        if let InspectorState::Streaming = self.state {
+            if let Some((prompt, history)) = &self.pending_chat {
+                if let Some(assistant) = &self.assistant {
+                    let assistant = assistant.as_ref().clone();
+                    let prompt = prompt.clone();
+                    let history = history.clone();
+
+                    use peak_intelligence::sipper::StreamExt;
+
+                    return iced::Subscription::run_with_id(
+                        (prompt.clone(), history.len()),
+                        StreamExt::map(
+                            assistant.reply(prompt, history, vec![]),
+                            |item| match item {
+                                (_, Token::Talking(s)) => InspectorMessage::StreamToken(s),
+                                _ => InspectorMessage::ResponseReceived(Ok(String::new())),
+                            },
+                        ),
+                    );
+                }
+            }
+        }
+        iced::Subscription::none()
     }
 
     pub fn view<'a>(&'a self, tokens: peak_theme::ThemeTokens) -> Element<'a, InspectorMessage> {

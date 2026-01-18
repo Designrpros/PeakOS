@@ -185,7 +185,8 @@ fn reply<'a>(
         let _ = sender.send(Event::ReplyAdded).await;
 
         let _reply = assistant
-            .reply(SYSTEM_PROMPT, messages, &[])
+            .clone()
+            .reply(SYSTEM_PROMPT.to_string(), messages.to_vec(), vec![])
             .with(|(reply, _new_token)| Event::ReplyChanged(reply))
             .run(sender)
             .await;
@@ -212,7 +213,10 @@ pub fn title(assistant: &Assistant, items: &[Item]) -> impl Straw<String, String
             title.trim().trim_matches('"').to_owned()
         }
 
-        let mut completion = assistant.complete(SYSTEM_PROMPT, &history, &request).pin();
+        let mut completion = assistant
+            .clone()
+            .complete(SYSTEM_PROMPT, history.clone(), request.to_vec())
+            .pin();
 
         while let Some(token) = completion.sip().await {
             if let Token::Talking(token) = token {

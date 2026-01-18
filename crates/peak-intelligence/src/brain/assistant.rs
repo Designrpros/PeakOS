@@ -207,12 +207,12 @@ impl Assistant {
         })
     }
 
-    pub fn reply<'a>(
-        &'a self,
-        prompt: &'a str,
-        messages: &'a [Message],
-        append: &'a [Message],
-    ) -> impl Straw<Reply, (Reply, Token), Error> + 'a {
+    pub fn reply(
+        self,
+        prompt: String,
+        messages: Vec<Message>,
+        append: Vec<Message>,
+    ) -> impl Straw<Reply, (Reply, Token), Error> + 'static {
         sipper(move |mut progress| async move {
             let mut reasoning = None;
             let mut reasoning_started_at: Option<Instant> = None;
@@ -271,19 +271,20 @@ impl Assistant {
         })
     }
 
-    pub fn complete<'a>(
-        &'a self,
-        system_prompt: &'a str,
-        messages: &'a [Message],
-        append: &'a [Message],
-    ) -> impl Straw<(), Token, Error> + 'a {
+    pub fn complete(
+        self,
+        system_prompt: impl Into<String>,
+        messages: Vec<Message>,
+        append: Vec<Message>,
+    ) -> impl Straw<(), Token, Error> + 'static {
+        let system_prompt = system_prompt.into();
         sipper(move |mut sender| async move {
             let client = reqwest::Client::new();
 
             let request = {
-                let messages: Vec<_> = [("system", system_prompt)]
+                let messages: Vec<_> = [("system", system_prompt.as_str())]
                     .into_iter()
-                    .chain(messages.iter().chain(append).map(Message::to_tuple))
+                    .chain(messages.iter().chain(append.iter()).map(Message::to_tuple))
                     .map(|(role, content)| {
                         json!({
                             "role": role,

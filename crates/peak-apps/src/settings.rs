@@ -1,5 +1,5 @@
 use iced::widget::{
-    Rule, button, column, container, horizontal_space, row, scrollable, text, vertical_space,
+    button, column, container, horizontal_space, row, scrollable, text, vertical_space, Rule,
 };
 use iced::{Alignment, Color, Element, Length, Task};
 pub use peak_core::apps::settings::{SettingsApp, SettingsMessage, SettingsTab, ThemeMode};
@@ -95,6 +95,12 @@ impl SettingsDesktopView for SettingsApp {
                 "focus.svg",
                 SettingsMessage::TabChanged(SettingsTab::Focus),
                 self.current_tab == SettingsTab::Focus,
+            )
+            .item(
+                "Intelligence",
+                "sparkles.svg",
+                SettingsMessage::TabChanged(SettingsTab::Intelligence),
+                self.current_tab == SettingsTab::Intelligence,
             );
 
         let content = scrollable(
@@ -132,7 +138,7 @@ impl SettingsDesktopView for SettingsApp {
                         container(iced::widget::text("").size(10))
                             .width(20)
                             .height(20)
-                            .style(move |_| container::Style {
+                            .style(move |_: &iced::Theme| container::Style {
                                 background: Some(if is_selected {
                                     accent_color.into()
                                 } else {
@@ -152,7 +158,7 @@ impl SettingsDesktopView for SettingsApp {
                 .on_press(SettingsMessage::TabChanged(tab))
                 .width(Length::Fill)
                 .padding(6)
-                .style(move |_, status| button::Style {
+                .style(move |_: &iced::Theme, status| button::Style {
                     background: if is_selected {
                         Some(if is_light {
                             Color::from_rgba(0.0, 0.0, 0.0, 0.05).into()
@@ -196,11 +202,13 @@ impl SettingsDesktopView for SettingsApp {
                                 .size(13)
                                 .color(Color::from_rgb(0.5, 0.5, 0.5))
                         ),
-                        Rule::horizontal(1).style(move |_| iced::widget::rule::Style {
-                            color: border_color,
-                            width: 1,
-                            radius: 0.0.into(),
-                            fill_mode: iced::widget::rule::FillMode::Full
+                        Rule::horizontal(1).style(move |_: &iced::Theme| {
+                            iced::widget::rule::Style {
+                                color: border_color,
+                                width: 1,
+                                radius: 0.0.into(),
+                                fill_mode: iced::widget::rule::FillMode::Full,
+                            }
                         }),
                         self.labeled_row(
                             "Model",
@@ -208,11 +216,13 @@ impl SettingsDesktopView for SettingsApp {
                                 .size(13)
                                 .color(Color::from_rgb(0.5, 0.5, 0.5))
                         ),
-                        Rule::horizontal(1).style(move |_| iced::widget::rule::Style {
-                            color: border_color,
-                            width: 1,
-                            radius: 0.0.into(),
-                            fill_mode: iced::widget::rule::FillMode::Full
+                        Rule::horizontal(1).style(move |_: &iced::Theme| {
+                            iced::widget::rule::Style {
+                                color: border_color,
+                                width: 1,
+                                radius: 0.0.into(),
+                                fill_mode: iced::widget::rule::FillMode::Full,
+                            }
                         }),
                         self.labeled_row(
                             "Version",
@@ -239,13 +249,11 @@ impl SettingsDesktopView for SettingsApp {
             SettingsTab::Appearance => column![
                 self.section(
                     "Appearance",
-                    column![
-                        row![
-                            self.theme_preview("Light", ThemeMode::Light, is_light),
-                            self.theme_preview("Dark", ThemeMode::Dark, is_light),
-                        ]
-                        .spacing(20)
-                    ],
+                    column![row![
+                        self.theme_preview("Light", ThemeMode::Light, is_light),
+                        self.theme_preview("Dark", ThemeMode::Dark, is_light),
+                    ]
+                    .spacing(20)],
                     is_light
                 ),
                 vertical_space().height(20),
@@ -271,7 +279,7 @@ impl SettingsDesktopView for SettingsApp {
                                 )
                                 .width(Length::Fill)
                                 .height(Length::Fill)
-                                .style(move |_| container::Style {
+                                .style(move |_: &iced::Theme| container::Style {
                                     border: iced::Border {
                                         radius: 8.0.into(),
                                         width: 3.0,
@@ -284,7 +292,7 @@ impl SettingsDesktopView for SettingsApp {
                             .width(160)
                             .height(100)
                             .padding(0)
-                            .style(|_, _| button::Style::default())
+                            .style(|_: &iced::Theme, _| button::Style::default())
                             .into()
                         }))
                         .spacing(15)
@@ -301,16 +309,14 @@ impl SettingsDesktopView for SettingsApp {
             SettingsTab::WiFi => column![
                 self.section(
                     "Wi-Fi",
-                    column![
-                        row![
-                            text("Wi-Fi").size(13),
-                            horizontal_space(),
-                            iced::widget::toggler(self.wifi_enabled)
-                                .on_toggle(SettingsMessage::ToggleWiFi)
-                                .width(Length::Shrink)
-                        ]
-                        .align_y(Alignment::Center)
-                    ],
+                    column![row![
+                        text("Wi-Fi").size(13),
+                        horizontal_space(),
+                        iced::widget::toggler(self.wifi_enabled)
+                            .on_toggle(SettingsMessage::ToggleWiFi)
+                            .width(Length::Shrink)
+                    ]
+                    .align_y(Alignment::Center)],
                     is_light
                 ),
                 vertical_space().height(10),
@@ -324,11 +330,13 @@ impl SettingsDesktopView for SettingsApp {
                                     .size(13)
                                     .color(Color::from_rgb(0.0, 0.8, 0.0))
                             ),
-                            Rule::horizontal(1).style(move |_| iced::widget::rule::Style {
-                                color: border_color,
-                                width: 1,
-                                radius: 0.0.into(),
-                                fill_mode: iced::widget::rule::FillMode::Full
+                            Rule::horizontal(1).style(move |_: &iced::Theme| {
+                                iced::widget::rule::Style {
+                                    color: border_color,
+                                    width: 1,
+                                    radius: 0.0.into(),
+                                    fill_mode: iced::widget::rule::FillMode::Full,
+                                }
                             }),
                             self.labeled_row(
                                 "Office",
@@ -349,16 +357,14 @@ impl SettingsDesktopView for SettingsApp {
             SettingsTab::Bluetooth => column![
                 self.section(
                     "Bluetooth",
-                    column![
-                        row![
-                            text("Bluetooth").size(13),
-                            horizontal_space(),
-                            iced::widget::toggler(self.bluetooth_enabled)
-                                .on_toggle(SettingsMessage::ToggleBluetooth)
-                                .width(Length::Shrink)
-                        ]
-                        .align_y(Alignment::Center)
-                    ],
+                    column![row![
+                        text("Bluetooth").size(13),
+                        horizontal_space(),
+                        iced::widget::toggler(self.bluetooth_enabled)
+                            .on_toggle(SettingsMessage::ToggleBluetooth)
+                            .width(Length::Shrink)
+                    ]
+                    .align_y(Alignment::Center)],
                     is_light
                 ),
                 vertical_space().height(10),
@@ -372,11 +378,13 @@ impl SettingsDesktopView for SettingsApp {
                                     .size(13)
                                     .color(Color::from_rgb(0.5, 0.5, 0.5))
                             ),
-                            Rule::horizontal(1).style(move |_| iced::widget::rule::Style {
-                                color: border_color,
-                                width: 1,
-                                radius: 0.0.into(),
-                                fill_mode: iced::widget::rule::FillMode::Full
+                            Rule::horizontal(1).style(move |_: &iced::Theme| {
+                                iced::widget::rule::Style {
+                                    color: border_color,
+                                    width: 1,
+                                    radius: 0.0.into(),
+                                    fill_mode: iced::widget::rule::FillMode::Full,
+                                }
                             }),
                             self.labeled_row(
                                 "Magic Keyboard",
@@ -407,11 +415,290 @@ impl SettingsDesktopView for SettingsApp {
             )]
             .into(),
 
-            _ => column![
-                text("Placeholder for future settings.")
-                    .size(13)
-                    .color(Color::from_rgb(0.5, 0.5, 0.5))
+            SettingsTab::Intelligence => column![
+                self.section(
+                    "Peak Intelligence",
+                    column![
+                        self.labeled_row("Status", {
+                            let active_model = self
+                                .recommended_models
+                                .iter()
+                                .chain(self.custom_models.iter())
+                                .find(|m| m.is_active);
+                            match active_model {
+                                Some(m) => text(format!("Active ({})", m.name))
+                                    .size(13)
+                                    .color(Color::from_rgb(0.0, 0.8, 0.0)),
+                                None => text("No Active Model")
+                                    .size(13)
+                                    .color(Color::from_rgb(0.5, 0.5, 0.5)),
+                            }
+                        }),
+                        Rule::horizontal(1).style(move |_: &iced::Theme| {
+                            iced::widget::rule::Style {
+                                color: border_color,
+                                width: 1,
+                                radius: 0.0.into(),
+                                fill_mode: iced::widget::rule::FillMode::Full,
+                            }
+                        }),
+                        self.labeled_row(
+                            "Captions",
+                            iced::widget::toggler(self.captions_enabled)
+                                .on_toggle(SettingsMessage::ToggleCaptions)
+                                .width(Length::Shrink)
+                        ),
+                    ],
+                    is_light
+                ),
+                vertical_space().height(20),
+                self.section(
+                    "Models",
+                    column![
+                        // Recommended & Custom Models
+                        column(
+                            self.recommended_models
+                                .iter()
+                                .chain(self.custom_models.iter())
+                                .cloned()
+                                .map(|model| {
+                                    let is_downloaded = model.is_downloaded;
+                                    let is_active = model.is_active;
+
+                                    container(
+                                        row![
+                                            column![
+                                                row![
+                                                    text(model.name).size(13).font(iced::Font {
+                                                        weight: iced::font::Weight::Bold,
+                                                        ..Default::default()
+                                                    }),
+                                                    if model.min_ram_gb > 0 {
+                                                        Element::<
+                                                            SettingsMessage,
+                                                            iced::Theme,
+                                                            iced::Renderer,
+                                                        >::from(
+                                                            container(
+                                                                text(format!(
+                                                                    "{}GB+",
+                                                                    model.min_ram_gb
+                                                                ))
+                                                                .size(9)
+                                                                .color(Color::WHITE),
+                                                            )
+                                                            .padding([2, 5])
+                                                            .style(|_: &iced::Theme| {
+                                                                container::Style {
+                                                                    background: Some(
+                                                                        Color::from_rgb(
+                                                                            0.3, 0.3, 0.35,
+                                                                        )
+                                                                        .into(),
+                                                                    ),
+                                                                    border: iced::Border {
+                                                                        radius: 8.0.into(),
+                                                                        ..Default::default()
+                                                                    },
+                                                                    ..Default::default()
+                                                                }
+                                                            }),
+                                                        )
+                                                    } else {
+                                                        horizontal_space().width(0).into()
+                                                    }
+                                                ]
+                                                .spacing(6)
+                                                .align_y(iced::Alignment::Center),
+                                                text(model.description)
+                                                    .size(11)
+                                                    .color(Color::from_rgb(0.5, 0.5, 0.5)),
+                                                text(model.id.clone())
+                                                    .size(10)
+                                                    .color(Color::from_rgb(0.7, 0.7, 0.7)),
+                                                if let Some(err) = &model.last_error {
+                                                    Element::<
+                                                        SettingsMessage,
+                                                        iced::Theme,
+                                                        iced::Renderer,
+                                                    >::from(
+                                                        text(format!("Error: {}", err))
+                                                            .size(10)
+                                                            .color(Color::from_rgb(1.0, 0.0, 0.0)),
+                                                    )
+                                                } else {
+                                                    Element::<
+                                                        SettingsMessage,
+                                                        iced::Theme,
+                                                        iced::Renderer,
+                                                    >::from(
+                                                        horizontal_space().width(0)
+                                                    )
+                                                }
+                                            ]
+                                            .spacing(4)
+                                            .width(Length::Fill),
+                                            if is_active {
+                                                Element::<
+                                                    SettingsMessage,
+                                                    iced::Theme,
+                                                    iced::Renderer,
+                                                >::from(
+                                                    button(text("Active").size(12))
+                                                        .style(move |_: &iced::Theme, _| {
+                                                            button::Style {
+                                                                background: Some(
+                                                                    Color::from_rgb(0.0, 0.8, 0.0)
+                                                                        .into(),
+                                                                ),
+                                                                text_color: Color::WHITE,
+                                                                border: iced::Border {
+                                                                    radius: 12.0.into(),
+                                                                    ..Default::default()
+                                                                },
+                                                                ..Default::default()
+                                                            }
+                                                        })
+                                                        .padding([5, 10]),
+                                                )
+                                            } else if let Some(progress) = model.download_progress {
+                                                Element::<
+                                                    SettingsMessage,
+                                                    iced::Theme,
+                                                    iced::Renderer,
+                                                >::from(
+                                                    row![
+                                                        text(format!(
+                                                            "Downloading {:.0}%",
+                                                            progress * 100.0
+                                                        ))
+                                                        .size(12)
+                                                        .color(Color::from_rgb(0.5, 0.5, 0.5)),
+                                                        button(text("✖").size(10))
+                                                            .on_press(SettingsMessage::ModelDownloadCancel(
+                                                                model.id.clone()
+                                                            ))
+                                                            .padding([2, 6])
+                                                            .style(move |_: &iced::Theme, _| {
+                                                                button::Style {
+                                                                    background: Some(
+                                                                        Color::from_rgb(0.8, 0.2, 0.2)
+                                                                            .into(),
+                                                                    ),
+                                                                    text_color: Color::WHITE,
+                                                                    border: iced::Border {
+                                                                        radius: 10.0.into(),
+                                                                        ..Default::default()
+                                                                    },
+                                                                    ..Default::default()
+                                                                }
+                                                            })
+                                                    ]
+                                                    .spacing(8)
+                                                    .align_y(iced::Alignment::Center),
+                                                )
+                                            } else if is_downloaded {
+                                                Element::<
+                                                    SettingsMessage,
+                                                    iced::Theme,
+                                                    iced::Renderer,
+                                                >::from(
+                                                    button(text("Activate").size(12))
+                                                        .on_press(SettingsMessage::ModelActivate(
+                                                            model.id.clone(),
+                                                        ))
+                                                        .style(move |_: &iced::Theme, _| {
+                                                            button::Style {
+                                                                background: Some(
+                                                                    Color::from_rgb(0.2, 0.2, 0.2)
+                                                                        .into(),
+                                                                ),
+                                                                text_color: Color::WHITE,
+                                                                border: iced::Border {
+                                                                    radius: 12.0.into(),
+                                                                    ..Default::default()
+                                                                },
+                                                                ..Default::default()
+                                                            }
+                                                        })
+                                                        .padding([5, 10]),
+                                                )
+                                            } else {
+                                                Element::<
+                                                    SettingsMessage,
+                                                    iced::Theme,
+                                                    iced::Renderer,
+                                                >::from(
+                                                    button(text("Download").size(12))
+                                                        .on_press(SettingsMessage::ModelDownload(
+                                                            model.id.clone(),
+                                                        ))
+                                                        .style(move |_: &iced::Theme, _| {
+                                                            button::Style {
+                                                                background: Some(
+                                                                    Color::from_rgb(0.0, 0.4, 1.0)
+                                                                        .into(),
+                                                                ),
+                                                                text_color: Color::WHITE,
+                                                                border: iced::Border {
+                                                                    radius: 12.0.into(),
+                                                                    ..Default::default()
+                                                                },
+                                                                ..Default::default()
+                                                            }
+                                                        })
+                                                        .padding([5, 10]),
+                                                )
+                                            }
+                                        ]
+                                        .align_y(iced::Alignment::Center)
+                                        .spacing(10),
+                                    )
+                                    .padding(10)
+                                    .style(move |_: &iced::Theme| container::Style {
+                                        background: Some(if is_light {
+                                            Color::from_rgba(0.0, 0.0, 0.0, 0.02).into()
+                                        } else {
+                                            Color::from_rgba(1.0, 1.0, 1.0, 0.05).into()
+                                        }),
+                                        border: iced::Border {
+                                            radius: 6.0.into(),
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    })
+                                    .into()
+                                })
+                                .collect::<Vec<_>>()
+                        )
+                        .spacing(10),
+                        vertical_space().height(15),
+                        text("Add Model")
+                            .size(12)
+                            .color(Color::from_rgb(0.5, 0.5, 0.5)),
+                        row![
+                            iced::widget::text_input(
+                                "Enter HuggingFace ID (e.g. author/repo)",
+                                &self.add_model_input
+                            )
+                            .on_input(SettingsMessage::AddModelInputChanged)
+                            .on_submit(SettingsMessage::AddModelPressed)
+                            .padding(8)
+                            .width(Length::Fill),
+                            button(text("Add").size(13))
+                                .on_press(SettingsMessage::AddModelPressed)
+                                .padding([8, 15])
+                        ]
+                        .spacing(10)
+                    ],
+                    is_light
+                )
             ]
+            .into(),
+
+            _ => column![text("Placeholder for future settings.")
+                .size(13)
+                .color(Color::from_rgb(0.5, 0.5, 0.5))]
             .into(),
         }
     }
@@ -434,7 +721,7 @@ impl SettingsDesktopView for SettingsApp {
             container(content)
                 .width(Length::Fill)
                 .padding(10)
-                .style(move |_| container::Style {
+                .style(move |_: &iced::Theme| container::Style {
                     background: Some(if is_light {
                         Color::WHITE.into()
                     } else {
@@ -485,7 +772,7 @@ impl SettingsDesktopView for SettingsApp {
                     container(iced::widget::horizontal_space())
                         .width(Length::Fill)
                         .height(Length::Fill)
-                        .style(move |_| container::Style {
+                        .style(move |_: &iced::Theme| container::Style {
                             background: Some(match mode {
                                 ThemeMode::Light => Color::WHITE.into(),
                                 ThemeMode::Dark => Color::from_rgb8(30, 30, 30).into(),
@@ -500,7 +787,7 @@ impl SettingsDesktopView for SettingsApp {
                 .width(120)
                 .height(80)
                 .padding(4)
-                .style(move |_| container::Style {
+                .style(move |_: &iced::Theme| container::Style {
                     border: iced::Border {
                         width: 2.0,
                         color: border_color,
@@ -514,7 +801,7 @@ impl SettingsDesktopView for SettingsApp {
             .align_x(Alignment::Center),
         )
         .on_press(SettingsMessage::ThemeChanged(mode))
-        .style(|_, _| button::Style::default())
+        .style(|_: &iced::Theme, _| button::Style::default())
         .into()
     }
 }

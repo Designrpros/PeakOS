@@ -32,7 +32,6 @@ impl Model {
 
         let request = client.get(format!("{API_URL}/models")).query(&[
             ("search", query.as_ref()),
-            ("filter", "text-generation"),
             ("filter", "gguf"),
             ("limit", "100"),
             ("full", "true"),
@@ -79,7 +78,7 @@ impl fmt::Display for Model {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Id(pub(crate) String);
+pub struct Id(pub String);
 
 impl Id {
     pub fn name(&self) -> &str {
