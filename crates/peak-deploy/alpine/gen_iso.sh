@@ -51,13 +51,21 @@ cargo update -p dlopen2_derive --precise 0.4.1 || true
 cargo update -p async-lock --precise 3.4.1 || true
 
 # Use architecture-specific build directory
+# Use architecture-specific build directory
 export CARGO_TARGET_DIR=/build/target/$ARCH
-# Build without --target to use host musl environment correctly
+# Clean target dir to avoid contamination
+# ENABLED INCREMENTAL BUILD: Commented out to speed up verification
+# rm -rf "$CARGO_TARGET_DIR"
+
+# Build with explicit target to avoid host confusion
+# REVERT: Explicit target causes "can't find crate for core" on system rust. 
+# We trust the host (Alpine) to build for itself (musl).
 cargo build --release --manifest-path /project/crates/modes/desktop/Cargo.toml
 
 # Copy binary
 echo "Searching for binary..."
-BIN_PATH=/build/target/$ARCH/release/peak-desktop
+# Without --target, it puts release in target/release, not target/$TARGET/release
+BIN_PATH="/build/target/$ARCH/release/peak-desktop"
 cp "$BIN_PATH" /build/rootfs/peak-desktop
 chmod +x /build/rootfs/peak-desktop
 

@@ -30,7 +30,7 @@ pub struct PeakLayerShell {
 
 impl Application for PeakLayerShell {
     type Message = LayerMessage;
-    type Flags = String;
+    type Flags = crate::app::PeakNativeFlags;
     type Theme = iced::Theme;
     type Executor = iced::executor::Default;
 

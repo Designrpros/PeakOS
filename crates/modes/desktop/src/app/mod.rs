@@ -22,6 +22,20 @@ mod window_handling;
 // Re-export public types
 pub use state::{AppState, Message};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LaunchMode {
+    #[default]
+    Desktop,
+    Bar,
+    Dock,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct PeakNativeFlags {
+    pub mode: String,
+    pub launch_mode: LaunchMode,
+}
+
 // Main application struct
 pub struct PeakNative {
     pub state: AppState,
@@ -32,6 +46,7 @@ pub struct PeakNative {
     pub games: Vec<MediaItem>, // Keep for now as source of truth? Or remove if hydration is enough. Keep for hydration.
     pub cortex_state: crate::pages::cortex::State,
     pub mode: ShellMode,
+    pub launch_mode: LaunchMode,
     pub custom_wallpaper: Option<String>,
 
     pub inspector: Inspector,

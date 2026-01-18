@@ -6,6 +6,12 @@ use iced::{Color, Element, Length};
 
 impl PeakNative {
     pub fn view(&self) -> Element<'_, Message> {
+        // FIXED: Subprocesses (Bar/Dock) must always render their specific views,
+        // ignoring the AppState (which defaults to Setup on fresh boot).
+        if self.launch_mode != crate::app::LaunchMode::Desktop {
+            return self.view_desktop();
+        }
+
         let content = match &self.state {
             AppState::Setup(wizard_state) => self.view_setup(wizard_state),
             AppState::Login(_) => self.view_login_new(),

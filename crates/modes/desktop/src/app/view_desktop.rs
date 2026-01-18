@@ -24,6 +24,76 @@ impl PeakNative {
     }
 
     pub fn view_desktop(&self) -> Element<'_, Message> {
+        // --- SEPARATE PROCESS MODES ---
+        if self.launch_mode == crate::app::LaunchMode::Bar {
+            return container(menubar::view(self.tokens).map(Message::MenubarAction))
+                .width(Length::Fill)
+                .height(Length::Fill) // Layer Shell handles sizing
+                .align_y(iced::alignment::Vertical::Top)
+                .into();
+        }
+
+        if self.launch_mode == crate::app::LaunchMode::Dock {
+            let mut standard_pinned = Vec::new();
+            let mut repo_pinned = Vec::new();
+            for &id in &self.pinned_apps {
+                if id.is_repo() {
+                    repo_pinned.push(id);
+                } else {
+                    standard_pinned.push(id);
+                }
+            }
+            let mut standard_running = Vec::new();
+            let mut repo_running = Vec::new();
+            let all_running: Vec<_> = self.window_manager.window_states.keys().cloned().collect();
+            for &id in &all_running {
+                if id.is_repo() {
+                    if !repo_pinned.contains(&id) {
+                        repo_running.push(id);
+                    }
+                } else {
+                    if !standard_pinned.contains(&id) {
+                        standard_running.push(id);
+                    }
+                }
+            }
+            let mut repos = repo_pinned;
+            for r in repo_running {
+                if !repos.contains(&r) {
+                    repos.push(r);
+                }
+            }
+
+            let dock_element = dock::view(
+                &standard_pinned,
+                &standard_running,
+                &repos,
+                self.dragging_app,
+                self.context_menu_app,
+                &all_running,
+                self.tokens,
+            )
+            .map(Message::DockInteraction);
+
+            return container(dock_element)
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .align_x(iced::alignment::Horizontal::Center)
+                .align_y(iced::alignment::Vertical::Bottom)
+                .padding(iced::Padding {
+                    bottom: 0.0, // Layer shell should handle positioning? Or padding needed?
+                    ..Default::default()
+                })
+                .into();
+        }
+
+        // --- DESKTOP MODE (Wallpaper + Windows + Inspector) ---
+        // TODO: If using separate processes, we might want to optionally HIDE the bar/dock in this view.
+        // For now, if we are in 'Desktop' mode, we render the full desktop environment,
+        // but if we spawned subprocesses (checked via some flag? or just always if linux?), we might duplicate.
+        // BUT: iced_layershell logic dictates we only get a surface for the "Desktop" layer (Background).
+        // So the Bar and Dock overlays won't work in the same "Window" if it is a LayerShell surface at Bottom.
+
         let is_light = self.theme == peak_core::theme::Theme::Light;
         let wallpaper_path = if let Some(custom) = &self.custom_wallpaper {
             peak_core::utils::assets::get_asset_path(&format!("wallpapers/{}", custom))
@@ -141,51 +211,11 @@ impl PeakNative {
             }
         }
 
-        let mut standard_pinned = Vec::new();
-        let mut repo_pinned = Vec::new();
-
-        for &id in &self.pinned_apps {
-            if id.is_repo() {
-                repo_pinned.push(id);
-            } else {
-                standard_pinned.push(id);
-            }
-        }
-
-        let mut standard_running = Vec::new();
-        let mut repo_running = Vec::new();
-
-        let all_running: Vec<_> = self.window_manager.window_states.keys().cloned().collect();
-
-        for &id in &all_running {
-            if id.is_repo() {
-                if !repo_pinned.contains(&id) {
-                    repo_running.push(id);
-                }
-            } else {
-                if !standard_pinned.contains(&id) {
-                    standard_running.push(id);
-                }
-            }
-        }
-
-        let mut repos = repo_pinned;
-        for r in repo_running {
-            if !repos.contains(&r) {
-                repos.push(r);
-            }
-        }
-
-        let dock_element = dock::view(
-            &standard_pinned,
-            &standard_running,
-            &repos,
-            self.dragging_app,
-            self.context_menu_app,
-            &all_running,
-            self.tokens,
-        )
-        .map(Message::DockInteraction);
+        // Dock Logic Reuse (If we wanted to show dock in Desktop mode as well, e.g. for inspection)
+        // But for now, we assume if we are Refactored, we DON'T show them here.
+        // However, existing code logic for Pinned Apps calculation is deep in here.
+        // ...
+        // Simplification: We remove Dock/Bar from THIS view.
 
         let workspace =
             crate::components::desktop_container::view(&wallpaper_path, workspace_stack.into());
@@ -203,28 +233,79 @@ impl PeakNative {
 
         let mut final_view = Stack::new().push(workspace_and_inspector);
 
-        // Menubar overlay (top)
-        final_view = final_view.push(
+        // Menubar overlay (top) -- REMOVED for separate process
+        // RESTORED for macOS/Windows (Integrated Mode)
+        #[cfg(not(target_os = "linux"))]
+        let mut final_view = final_view.push(
             container(menubar::view(self.tokens).map(Message::MenubarAction))
                 .width(Length::Fill)
                 .height(Length::Shrink)
                 .align_y(iced::alignment::Vertical::Top),
         );
 
-        // Dock overlay (bottom center)
-        if self.dock_visible {
-            final_view = final_view.push(
-                container(dock_element)
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .align_x(iced::alignment::Horizontal::Center)
-                    .align_y(iced::alignment::Vertical::Bottom)
-                    .padding(iced::Padding {
-                        bottom: 10.0,
-                        ..Default::default()
-                    }),
-            );
-        }
+        // Dock overlay (bottom center) -- REMOVED for separate process
+        // RESTORED for macOS/Windows (Integrated Mode)
+        #[cfg(not(target_os = "linux"))]
+        let mut final_view = {
+            if self.dock_visible {
+                // Duplicate Dock Data Logic for Integrated Mode
+                let mut standard_pinned = Vec::new();
+                let mut repo_pinned = Vec::new();
+                for &id in &self.pinned_apps {
+                    if id.is_repo() {
+                        repo_pinned.push(id);
+                    } else {
+                        standard_pinned.push(id);
+                    }
+                }
+                let mut standard_running = Vec::new();
+                let mut repo_running = Vec::new();
+                let all_running: Vec<_> =
+                    self.window_manager.window_states.keys().cloned().collect();
+                for &id in &all_running {
+                    if id.is_repo() {
+                        if !repo_pinned.contains(&id) {
+                            repo_running.push(id);
+                        }
+                    } else {
+                        if !standard_pinned.contains(&id) {
+                            standard_running.push(id);
+                        }
+                    }
+                }
+                let mut repos = repo_pinned;
+                for r in repo_running {
+                    if !repos.contains(&r) {
+                        repos.push(r);
+                    }
+                }
+
+                let dock_element = dock::view(
+                    &standard_pinned,
+                    &standard_running,
+                    &repos,
+                    self.dragging_app,
+                    self.context_menu_app,
+                    &all_running,
+                    self.tokens,
+                )
+                .map(Message::DockInteraction);
+
+                final_view.push(
+                    container(dock_element)
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .align_x(iced::alignment::Horizontal::Center)
+                        .align_y(iced::alignment::Vertical::Bottom)
+                        .padding(iced::Padding {
+                            bottom: 10.0,
+                            ..Default::default()
+                        }),
+                )
+            } else {
+                final_view
+            }
+        };
 
         if self.show_omnibar {
             final_view = final_view.push(

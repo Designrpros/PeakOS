@@ -13,14 +13,24 @@ use peak_shell::app_switcher::AppSwitcher;
 use sysinfo::System;
 
 impl PeakNative {
-    pub fn new(mode_str: String) -> (Self, Task<Message>) {
+    pub fn new(flags: crate::app::PeakNativeFlags) -> (Self, Task<Message>) {
+        let mode_str = flags.mode;
+        let launch_mode = flags.launch_mode;
+
         let theme = peak_core::theme::Theme::Light;
 
         // Initialize apps
         let final_games = MediaItem::scan_system();
 
         // Initialize Audio (One-time, optional)
-        let stream = audio::init();
+        // ONLY valid for Desktop mode to avoid fighting for audio device, or shared?
+        // Let's keep it simple: Only Desktop process handles audio for now.
+        let stream = if launch_mode == crate::app::LaunchMode::Desktop {
+            audio::init()
+        } else {
+            None
+        };
+
         if stream.is_some() {
             audio::set_volume(0.5);
         }
@@ -63,6 +73,7 @@ impl PeakNative {
             } else {
                 ShellMode::Peak
             },
+            launch_mode,
             custom_wallpaper: None,
             inspector: Inspector::new(),
             current_desktop: 0,
