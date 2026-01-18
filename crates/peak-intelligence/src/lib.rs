@@ -1,3 +1,4 @@
+pub mod brain;
 pub mod kernel;
 pub mod llm;
 pub mod mcp;

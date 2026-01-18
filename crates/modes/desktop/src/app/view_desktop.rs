@@ -231,12 +231,12 @@ impl PeakNative {
             }
         ];
 
-        let mut final_view = Stack::new().push(workspace_and_inspector);
+        let final_view = Stack::new().push(workspace_and_inspector);
 
         // Menubar overlay (top) -- REMOVED for separate process
         // RESTORED for macOS/Windows (Integrated Mode)
         #[cfg(not(target_os = "linux"))]
-        let mut final_view = final_view.push(
+        let final_view = final_view.push(
             container(menubar::view(self.tokens).map(Message::MenubarAction))
                 .width(Length::Fill)
                 .height(Length::Shrink)
