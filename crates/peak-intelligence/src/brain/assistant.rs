@@ -12,12 +12,14 @@ use std::time::{Duration, Instant};
 #[derive(Debug, Clone)]
 pub struct Assistant {
     file: model::File,
+    #[cfg(feature = "llm")]
     _instance: Arc<llama_server::Instance>,
 }
 
 impl Assistant {
     const HOST_PORT: u32 = 8080;
 
+    #[cfg(feature = "llm")]
     pub fn boot(
         directory: model::Directory,
         file: model::File,
@@ -205,6 +207,15 @@ impl Assistant {
                 _instance: Arc::new(instance),
             })
         })
+    }
+
+    #[cfg(not(feature = "llm"))]
+    pub fn boot(
+        _directory: model::Directory,
+        _file: model::File,
+        _backend: Backend,
+    ) -> impl Straw<Self, BootEvent, Error> {
+        sipper(move |_| async move { Err(Error::NoExecutorAvailable) })
     }
 
     pub fn reply(

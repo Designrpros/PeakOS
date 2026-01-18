@@ -49,17 +49,21 @@ cargo update -p smithay-clipboard --precise 0.7.2 || true
 cargo update -p dlopen2_derive --precise 0.4.1 || true
 # Pin async-lock
 cargo update -p async-lock --precise 3.4.1 || true
+# Pin url to avoid zerovec issues
+cargo update -p url --precise 2.5.4 || true
+# Pin iced_graphics to match iced_renderer 0.13.0
+cargo update -p iced_graphics --precise 0.13.0 || true
 
 # Use architecture-specific build directory
 # Use architecture-specific build directory
 export CARGO_TARGET_DIR=/build/target/$ARCH
-# Clean target dir to avoid contamination
-# ENABLED INCREMENTAL BUILD: Commented out to speed up verification
-# rm -rf "$CARGO_TARGET_DIR"
+# Clean target dir to ensure llama-server is not cached
+rm -rf "$CARGO_TARGET_DIR"
 
 # Build with explicit target to avoid host confusion
 # REVERT: Explicit target causes "can't find crate for core" on system rust. 
 # We trust the host (Alpine) to build for itself (musl).
+# peak-intelligence has default-features = false in peak-desktop/Cargo.toml to skip llama-server
 cargo build --release --manifest-path /project/crates/modes/desktop/Cargo.toml
 
 # Copy binary
@@ -110,7 +114,9 @@ apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untr
     adwaita-icon-theme \
     ttf-dejavu font-noto font-noto-cjk \
     dbus networkmanager networkmanager-cli networkmanager-wifi wpa_supplicant \
-    firefox ca-certificates fbida-fbi
+    firefox ca-certificates fbida-fbi \
+    bluez bluez-tools bluez-deprecated \
+    alsa-utils
 
 
 
@@ -139,6 +145,14 @@ panel-position=none
 background-color=0xff000000
 cursor-theme=Adwaita
 cursor-size=24
+
+[output]
+name=Virtual-1
+mode=1920x1080
+
+[output]
+name=card0-Virtual-1
+mode=1920x1080
 
 # [autolaunch] is not supported by desktop-shell, we launch manually in init_peak.sh
 EOF
@@ -238,6 +252,9 @@ ln -sf /etc/init.d/dbus /build/rootfs/etc/runlevels/default/dbus
 ln -sf /etc/init.d/networkmanager /build/rootfs/etc/runlevels/default/networkmanager
 ln -sf /etc/init.d/wpa_supplicant /build/rootfs/etc/runlevels/default/wpa_supplicant
 
+# Enable Bluetooth
+ln -sf /etc/init.d/bluetooth /build/rootfs/etc/runlevels/default/bluetooth
+
 # Keep serial console for debugging
 echo "$SERIAL_CONSOLE::respawn:/sbin/getty -L 0 $SERIAL_CONSOLE vt100" >> /build/rootfs/etc/inittab
 
@@ -330,9 +347,11 @@ cp /build/rootfs/boot/vmlinuz-lts /build/iso/boot/vmlinuz
 # Note: rdinit=/init tells kernel to execute our script.
 cat > /build/iso/boot/grub/grub.cfg <<EOF
 set timeout=3
+set gfxmode=1920x1080
+set gfxpayload=keep
 menuentry "PeakOS ($ARCH)" {
     search --no-floppy --set=root --label PeakOS
-    linux /boot/vmlinuz root=/dev/ram0 rdinit=/init console=$SERIAL_CONSOLE console=tty0 $EARLYCON debug keep_bootcon
+    linux /boot/vmlinuz root=/dev/ram0 rdinit=/init console=$SERIAL_CONSOLE console=tty0 $EARLYCON debug keep_bootcon video=1920x1080
     initrd /boot/initrd
 }
 EOF

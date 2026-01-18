@@ -1,3 +1,7 @@
+//! Voice module for Speech-to-Text (STT) and Text-to-Speech (TTS)
+//! This module is optional and only compiled with the `voice` feature.
+#![allow(unused)]
+
 use once_cell::sync::Lazy;
 use std::path::PathBuf;
 use tokio::sync::Mutex as TokioMutex;
@@ -11,6 +15,7 @@ use tts::Tts;
 #[cfg(feature = "voice")]
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
+#[allow(dead_code)]
 pub struct VoiceManager {
     #[cfg(feature = "voice")]
     whisper_context: Option<Arc<WhisperContext>>,

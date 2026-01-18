@@ -231,11 +231,10 @@ impl PeakNative {
             }
         ];
 
-        let final_view = Stack::new().push(workspace_and_inspector);
+        let mut final_view = Stack::new().push(workspace_and_inspector);
 
-        // Menubar overlay (top) -- REMOVED for separate process
+        // Menubar overlay (top)
         // RESTORED for macOS/Windows (Integrated Mode)
-        #[cfg(not(target_os = "linux"))]
         let final_view = final_view.push(
             container(menubar::view(self.tokens).map(Message::MenubarAction))
                 .width(Length::Fill)
@@ -243,9 +242,8 @@ impl PeakNative {
                 .align_y(iced::alignment::Vertical::Top),
         );
 
-        // Dock overlay (bottom center) -- REMOVED for separate process
+        // Dock overlay (bottom center)
         // RESTORED for macOS/Windows (Integrated Mode)
-        #[cfg(not(target_os = "linux"))]
         let mut final_view = {
             if self.dock_visible {
                 // Duplicate Dock Data Logic for Integrated Mode

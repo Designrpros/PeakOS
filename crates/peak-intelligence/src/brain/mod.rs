@@ -27,6 +27,7 @@ pub enum Error {
     IOFailed(Arc<io::Error>),
     #[error("docker operation failed: {0}")]
     DockerFailed(&'static str),
+    #[cfg(feature = "llm")]
     #[error("llama-server failed: {0:?}")]
     ExecutorFailed(llama_server::Error),
     #[error("JSON deserialization failed: {0}")]
@@ -85,6 +86,7 @@ impl From<task::JoinError> for Error {
     }
 }
 
+#[cfg(feature = "llm")]
 impl From<llama_server::Error> for Error {
     fn from(error: llama_server::Error) -> Self {
         Self::ExecutorFailed(error)

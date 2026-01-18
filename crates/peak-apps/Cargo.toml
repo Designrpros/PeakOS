@@ -8,7 +8,7 @@ iced = { version = "0.13", features = ["tokio", "canvas", "advanced", "wgpu", "i
 rodio = "0.17"
 rand = "0.8"
 portable-pty = "0.8"
-peak-intelligence = { path = "../peak-intelligence" }
+peak-intelligence = { path = "../peak-intelligence", default-features = false }
 peak-core = { path = "../peak-core" }
 peak-ui = { path = "../peak-ui" }
 tokio = { version = "1", features = ["full"] }

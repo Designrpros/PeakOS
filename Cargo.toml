@@ -16,6 +16,7 @@ members = [
     "crates/peak-system", "crates/peak-theme",
     "crates/peak-shell",
     "crates/peak-installer",
+    "crates/peak-drop",
 ]
 resolver = "2"
 

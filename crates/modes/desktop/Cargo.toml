@@ -9,7 +9,7 @@ rodio = "0.17"
 rand = "0.8"
 cpal = { version = "0.15", optional = true }
 portable-pty = "0.8"
-peak-intelligence = { path = "../../peak-intelligence" }
+peak-intelligence = { path = "../../peak-intelligence", default-features = false }
 peak-core = { path = "../../peak-core" }
 peak-apps = { path = "../../peak-apps" }
 peak-ui = { path = "../../peak-ui" }
