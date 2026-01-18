@@ -75,7 +75,10 @@ impl Inspector {
 
         Task::perform(
             async move {
-                let lib = brain::model::Library::default();
+                let directory = brain::model::Directory::default();
+                let lib = brain::model::Library::scan(&directory)
+                    .await
+                    .map_err(|e| format!("Failed to scan models: {}", e))?;
                 // TODO: Load configured model from settings
                 // For now, we attempt to find *any* model or fail
                 let files = lib.files();
