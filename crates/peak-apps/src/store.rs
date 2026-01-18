@@ -168,9 +168,7 @@ impl StoreApp {
                     return Task::done(StoreMessage::LaunchUrl(url));
                 } else {
                     let bin_name = name.to_lowercase();
-                    // Intercept browser launches to use internal managed browser
-                    if bin_name.contains("firefox")
-                        || bin_name.contains("chrome")
+                    if bin_name.contains("chrome")
                         || bin_name.contains("brave")
                         || bin_name == "netscape"
                     {

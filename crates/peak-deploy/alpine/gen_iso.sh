@@ -146,12 +146,24 @@ background-color=0xff000000
 cursor-theme=Adwaita
 cursor-size=24
 
+cursor-size=24
+
+# Force 1920x1080 on all outputs
 [output]
 name=Virtual-1
 mode=1920x1080
 
 [output]
 name=card0-Virtual-1
+mode=1920x1080
+
+[output]
+name=WHL-1
+mode=1920x1080
+
+# Fallback for any other output (Weston doesn't support wildcard names perfectly, but we list common ones)
+[output]
+name=HDMI-A-1
 mode=1920x1080
 
 # [autolaunch] is not supported by desktop-shell, we launch manually in init_peak.sh
