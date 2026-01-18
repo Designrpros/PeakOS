@@ -226,11 +226,12 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
 
             // Find all related shards if it's a sharded model
             let mut shards_to_download = Vec::new();
+            let mut total_shards_str = None;
             if file.name.contains("-00001-of-") {
                 let base_name = file.name.split("-00001-of-").next().unwrap();
                 let suffix = file.name.split("-of-").last().unwrap();
-                let total_shards_str = suffix.split('.').next().unwrap();
-                if let Ok(total_count) = total_shards_str.parse::<u32>() {
+                let total_shards_str_val = suffix.split('.').next().unwrap().to_string();
+                if let Ok(total_count) = total_shards_str_val.parse::<u32>() {
                     // Try to find all shards in the original list
                     let all_files: Vec<_> = files.values().flat_map(|v| v).collect();
                     for i in 1..=total_count {
@@ -242,7 +243,10 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
                         }
                     }
                 }
+                total_shards_str = Some(total_shards_str_val);
             }
+
+            let total_shards_label = total_shards_str.as_deref().unwrap_or("1");
 
             if shards_to_download.is_empty() {
                 shards_to_download.push(file);
@@ -295,7 +299,7 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
                                 format!(
                                     "Failed to download shard {}/{}",
                                     idx + 1,
-                                    total_shards_str
+                                    total_shards_label
                                 ),
                             ),
                         ))
