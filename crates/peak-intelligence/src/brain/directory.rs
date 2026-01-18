@@ -1,19 +1,19 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 
 pub fn config() -> &'static Path {
-    PROJECT
-        .as_ref()
-        .map(directories::ProjectDirs::config_dir)
-        .unwrap_or(Path::new("./config"))
+    CONFIG.as_path()
 }
 
 pub fn data() -> &'static Path {
-    PROJECT
-        .as_ref()
-        .map(directories::ProjectDirs::data_dir)
-        .unwrap_or(Path::new("./data"))
+    DATA.as_path()
 }
 
-static PROJECT: LazyLock<Option<directories::ProjectDirs>> =
-    LazyLock::new(|| directories::ProjectDirs::from("rs.icebreaker", "", "icebreaker"));
+static DATA: LazyLock<PathBuf> = LazyLock::new(|| {
+    let home = std::env::var("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("."));
+    home.join(".peak").join("intelligence")
+});
+
+static CONFIG: LazyLock<PathBuf> = LazyLock::new(|| DATA.join("config"));

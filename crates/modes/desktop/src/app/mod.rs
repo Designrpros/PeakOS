@@ -223,50 +223,94 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
             };
 
             let directory = peak_intelligence::brain::model::Directory::default();
-            let mut stream = Box::pin(file.download(&directory));
 
-            output
-                .send(Message::Settings(
-                    peak_apps::settings::SettingsMessage::ModelDownloadProgress(id.clone(), 0.0),
-                ))
-                .await
-                .ok();
+            // Find all related shards if it's a sharded model
+            let mut shards_to_download = Vec::new();
+            if file.name.contains("-00001-of-") {
+                let base_name = file.name.split("-00001-of-").next().unwrap();
+                let suffix = file.name.split("-of-").last().unwrap();
+                let total_shards_str = suffix.split('.').next().unwrap();
+                if let Ok(total_count) = total_shards_str.parse::<u32>() {
+                    // Try to find all shards in the original list
+                    let all_files: Vec<_> = files.values().flat_map(|v| v).collect();
+                    for i in 1..=total_count {
+                        let shard_pattern = format!("{:05}-of-{}", i, suffix);
+                        if let Some(shard_file) = all_files.iter().find(|f| {
+                            f.name.contains(&shard_pattern) && f.name.starts_with(base_name)
+                        }) {
+                            shards_to_download.push((*shard_file).clone());
+                        }
+                    }
+                }
+            }
 
-            while let Some(progress) = stream.next().await {
-                let total = progress.total.unwrap_or(progress.downloaded.max(1));
-                let percent = progress.downloaded as f32 / total as f32;
+            if shards_to_download.is_empty() {
+                shards_to_download.push(file);
+            }
+
+            let mut total_downloaded: u64 = 0;
+            let mut total_size: u64 = shards_to_download
+                .iter()
+                .filter_map(|s| s.size.as_ref().map(|sz| sz.0))
+                .sum();
+            if total_size == 0 {
+                total_size = 1;
+            } // Avoid div by zero
+
+            for (idx, shard) in shards_to_download.into_iter().enumerate() {
+                let mut stream = Box::pin(shard.download(&directory));
+
                 output
                     .send(Message::Settings(
                         peak_apps::settings::SettingsMessage::ModelDownloadProgress(
                             id.clone(),
-                            percent,
+                            total_downloaded as f32 / total_size as f32,
                         ),
                     ))
                     .await
                     .ok();
-            }
 
-            match stream.await {
-                Ok(_) => {
+                while let Some(progress) = stream.next().await {
+                    let current_total = total_downloaded + progress.downloaded;
                     output
                         .send(Message::Settings(
-                            peak_apps::settings::SettingsMessage::ModelDownloadComplete(id.clone()),
-                        ))
-                        .await
-                        .ok();
-                }
-                Err(e) => {
-                    output
-                        .send(Message::Settings(
-                            peak_apps::settings::SettingsMessage::ModelDownloadFailed(
+                            peak_apps::settings::SettingsMessage::ModelDownloadProgress(
                                 id.clone(),
-                                e.to_string(),
+                                current_total as f32 / total_size as f32,
                             ),
                         ))
                         .await
                         .ok();
                 }
+
+                if let Ok(path) = stream.await {
+                    if let Ok(meta) = std::fs::metadata(path) {
+                        total_downloaded += meta.len();
+                    }
+                } else {
+                    output
+                        .send(Message::Settings(
+                            peak_apps::settings::SettingsMessage::ModelDownloadFailed(
+                                id.clone(),
+                                format!(
+                                    "Failed to download shard {}/{}",
+                                    idx + 1,
+                                    total_shards_str
+                                ),
+                            ),
+                        ))
+                        .await
+                        .ok();
+                    return;
+                }
             }
+
+            output
+                .send(Message::Settings(
+                    peak_apps::settings::SettingsMessage::ModelDownloadComplete(id.clone()),
+                ))
+                .await
+                .ok();
         }),
     )
 }

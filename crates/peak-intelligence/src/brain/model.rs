@@ -401,13 +401,20 @@ impl Library {
                         continue;
                     }
 
+                    let name = file.file_name().display().to_string();
+
+                    // If it's a sharded model, only register the first shard as the model entry
+                    if name.contains("-of-") && !name.contains("-00001-of-") {
+                        continue;
+                    }
+
                     files.push(File {
                         model: Id(format!(
                             "{}/{}",
                             author.file_name().display(),
                             model.file_name().display(),
                         )),
-                        name: file.file_name().display().to_string(),
+                        name,
                         size: Some(Size(file.metadata().await?.len())),
                     });
                 }
