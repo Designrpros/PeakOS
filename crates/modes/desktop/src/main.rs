@@ -4,6 +4,7 @@ mod components;
 #[cfg(target_os = "linux")]
 mod layer_app;
 mod pages;
+mod recorder;
 mod systems;
 
 use app::PeakNative;

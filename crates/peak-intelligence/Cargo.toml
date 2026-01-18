@@ -34,3 +34,12 @@ uuid = { version = "1.10", features = ["v4", "serde"] }
 
 # Git Dependency
 llama-server = { git = "https://github.com/hecrj/llama-server.git", rev = "e7e016577ce11ff419628f5eca23732949990894" }
+
+# Voice Integration (Optional)
+whisper-rs = { version = "0.13", optional = true }
+tts = { version = "0.26", optional = true }
+cpal = { version = "0.15", optional = true }
+
+[features]
+default = []
+voice = ["whisper-rs", "tts", "cpal"]

@@ -64,6 +64,7 @@ pub enum SettingsMessage {
     AddModelInputChanged(String),
     AddModelPressed,
     ToggleCaptions(bool),
+    ToggleVoice(bool),
 }
 
 pub struct SettingsApp {
@@ -80,6 +81,7 @@ pub struct SettingsApp {
     pub custom_models: Vec<ModelInfo>,
     pub add_model_input: String,
     pub captions_enabled: bool,
+    pub voice_enabled: bool,
 }
 
 impl SettingsApp {
@@ -142,6 +144,7 @@ impl SettingsApp {
             custom_models: Vec::new(),
             add_model_input: String::new(),
             captions_enabled: false,
+            voice_enabled: false,
         }
     }
 }
@@ -281,6 +284,9 @@ impl PeakApp for SettingsApp {
 
             SettingsMessage::ToggleCaptions(enabled) => {
                 self.captions_enabled = enabled;
+            }
+            SettingsMessage::ToggleVoice(enabled) => {
+                self.voice_enabled = enabled;
             }
         }
         Task::none()

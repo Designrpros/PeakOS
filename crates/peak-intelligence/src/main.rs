@@ -1,6 +1,12 @@
 mod mcp;
 mod terminal;
 mod tools;
+mod voice;
+
+#[cfg(feature = "voice")]
+use crate::voice::VoiceManager;
+#[cfg(feature = "voice")]
+use voice::VOICE;
 
 use crate::mcp::{
     CallToolParams, CallToolResult, JsonRpcRequest, JsonRpcResponse, ListToolsResult, Tool,
@@ -15,6 +21,7 @@ use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 
 static TERMINAL: Lazy<TerminalManager> = Lazy::new(|| TerminalManager::new());
+// No longer here
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -214,6 +221,30 @@ async fn handle_request(req: JsonRpcRequest, tx: mpsc::Sender<String>) -> JsonRp
                         "required": ["query", "base_path"]
                     }),
                 },
+                Tool {
+                    name: "intelligence/stt".into(),
+                    description: "Convert PCM audio data (f32, 16kHz) to text using Whisper."
+                        .into(),
+                    input_schema: json!({
+                        "type": "object",
+                        "properties": {
+                            "audio": { "type": "array", "items": { "type": "number" } }
+                        },
+                        "required": ["audio"]
+                    }),
+                },
+                Tool {
+                    name: "intelligence/tts".into(),
+                    description: "Convert text to speech samples (f32, 22kHz) using Piper.".into(),
+                    input_schema: json!({
+                        "type": "object",
+                        "properties": {
+                            "text": { "type": "string" },
+                            "voice": { "type": "string", "default": "en_US-lessac-medium" }
+                        },
+                        "required": ["text"]
+                    }),
+                },
             ];
 
             JsonRpcResponse::success(
@@ -387,6 +418,44 @@ async fn handle_request(req: JsonRpcRequest, tx: mpsc::Sender<String>) -> JsonRp
                                         "Missing arguments".into(),
                                     );
                                 }
+                            }
+                            #[cfg(feature = "voice")]
+                            "intelligence/stt" => {
+                                let args = p
+                                    .arguments
+                                    .ok_or_else(|| anyhow::anyhow!("Missing arguments"))?;
+                                let audio_val = args
+                                    .get("audio")
+                                    .ok_or_else(|| anyhow::anyhow!("Missing 'audio' argument"))?;
+                                let audio_arr = audio_val
+                                    .as_array()
+                                    .ok_or_else(|| anyhow::anyhow!("'audio' must be an array"))?;
+
+                                let samples: Vec<f32> = audio_arr
+                                    .iter()
+                                    .filter_map(|v| v.as_f64().map(|f| f as f32))
+                                    .collect();
+
+                                let mut manager = VOICE.lock().await;
+                                manager.init_whisper("tiny.en").await?;
+                                manager.transcribe(&samples).await.map(|s| json!(s))
+                            }
+                            #[cfg(feature = "voice")]
+                            "intelligence/tts" => {
+                                let args = p
+                                    .arguments
+                                    .ok_or_else(|| anyhow::anyhow!("Missing arguments"))?;
+                                let text = args.get("text").and_then(|v| v.as_str()).unwrap_or("");
+                                let voice = args
+                                    .get("voice")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("en_US-lessac-medium");
+
+                                let mut manager = VOICE.lock().await;
+                                manager
+                                    .synthesize(text, voice)
+                                    .await
+                                    .map(|samples| json!({ "samples": samples }))
                             }
                             _ => {
                                 return JsonRpcResponse::error(

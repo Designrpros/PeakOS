@@ -154,11 +154,12 @@ sudo dd if=peakos.iso of=/dev/sdX bs=1M status=progress
 - [ ] Steam/Gaming integration
 - [ ] Electron app sandboxing
 
-### Phase 3: AI Integration 🔄
+### Phase 3: AI Integration ✅
 - [x] Peak Intelligence framework
 - [x] Omnibar AI queries
-- [ ] Local model support (Ollama)
-- [ ] Context-aware assistance
+- [x] Local model support (via `llama-server`)
+- [x] Context-aware assistance (Inspector sync)
+- [x] Multi-shard GGUF support
 - [ ] Voice input/output
 
 ### Phase 4: Polish & Release 📅

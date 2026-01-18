@@ -839,6 +839,20 @@ impl PeakNative {
                             )),
                         ]);
                     }
+                    #[cfg(feature = "voice")]
+                    peak_apps::settings::SettingsMessage::ToggleVoice(enabled) => {
+                        return Task::batch(vec![
+                            self.forward_to_app(
+                                AppId::Settings,
+                                Message::Settings(settings_msg.clone()),
+                            ),
+                            Task::done(Message::Inspector(
+                                crate::components::inspector::InspectorMessage::SetVoiceEnabled(
+                                    *enabled,
+                                ),
+                            )),
+                        ]);
+                    }
                     _ => {}
                 }
 

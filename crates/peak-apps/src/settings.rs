@@ -448,6 +448,20 @@ impl SettingsDesktopView for SettingsApp {
                                 .on_toggle(SettingsMessage::ToggleCaptions)
                                 .width(Length::Shrink)
                         ),
+                        Rule::horizontal(1).style(move |_: &iced::Theme| {
+                            iced::widget::rule::Style {
+                                color: border_color,
+                                width: 1,
+                                radius: 0.0.into(),
+                                fill_mode: iced::widget::rule::FillMode::Full,
+                            }
+                        }),
+                        self.labeled_row(
+                            "Voice",
+                            iced::widget::toggler(self.voice_enabled)
+                                .on_toggle(SettingsMessage::ToggleVoice)
+                                .width(Length::Shrink)
+                        ),
                     ],
                     is_light
                 ),

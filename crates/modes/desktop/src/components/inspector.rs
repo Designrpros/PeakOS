@@ -1,4 +1,6 @@
-use iced::widget::{button, column, container, row, scrollable, text, text_editor, vertical_space};
+#[cfg(feature = "voice")]
+use crate::recorder::Recorder;
+use iced::widget::{button, column, container, scrollable, text, text_editor, vertical_space};
 use iced::{Alignment, Color, Element, Length, Task};
 use peak_intelligence::brain::assistant::{Assistant, Backend, Message as BrainMessage, Token};
 use peak_intelligence::brain::{self};
@@ -17,6 +19,14 @@ pub enum InspectorMessage {
     BootFinished(Result<Arc<Assistant>, String>),
     StreamToken(String),
     StreamFinished,
+    #[cfg(feature = "voice")]
+    VoicePressed,
+    #[cfg(feature = "voice")]
+    RecordingFinished(Vec<f32>),
+    #[cfg(feature = "voice")]
+    TranscriptionFinished(String),
+    #[cfg(feature = "voice")]
+    SetVoiceEnabled(bool),
     SetActiveModel(String),
 }
 
@@ -30,9 +40,14 @@ struct ChatMessage {
 #[allow(dead_code)]
 pub enum InspectorState {
     Idle,
-    Booting { progress: u32, stage: String },
+    Booting {
+        progress: u32,
+        stage: String,
+    },
     Ready,
     Streaming,
+    #[cfg(feature = "voice")]
+    Recording,
     Error(String),
 }
 
@@ -44,6 +59,10 @@ pub struct Inspector {
     assistant: Option<Arc<Assistant>>,
     pending_chat: Option<(String, Vec<BrainMessage>)>,
     active_model_id: Option<String>,
+    #[cfg(feature = "voice")]
+    recorder: Option<Recorder>,
+    #[cfg(feature = "voice")]
+    pub voice_enabled: bool,
 }
 
 impl Inspector {
@@ -59,6 +78,10 @@ impl Inspector {
             assistant: None,
             pending_chat: None,
             active_model_id: None,
+            #[cfg(feature = "voice")]
+            recorder: None,
+            #[cfg(feature = "voice")]
+            voice_enabled: false,
         };
 
         // We defer boot to first update or explicit call to avoid blocking init
@@ -224,13 +247,90 @@ impl Inspector {
             InspectorMessage::StreamFinished => {
                 self.state = InspectorState::Ready;
                 self.pending_chat = None;
+
+                #[cfg(feature = "voice")]
+                if self.voice_enabled {
+                    if let Some(msg) = self.messages.last() {
+                        if msg.role == "assistant" {
+                            let content = msg.content.clone();
+                            return Task::perform(
+                                async move {
+                                    let mut manager = peak_intelligence::voice::VOICE.lock().await;
+                                    manager.synthesize(&content, "default").await.ok();
+                                },
+                                |_| InspectorMessage::ResponseReceived(Ok(String::new())), // Dummy
+                            );
+                        }
+                    }
+                }
                 Task::none()
             }
             InspectorMessage::ResponseReceived(_) => Task::none(), // Legacy
+            #[cfg(feature = "voice")]
+            InspectorMessage::VoicePressed => match self.state {
+                InspectorState::Ready | InspectorState::Error(_) => {
+                    match Recorder::start() {
+                        Ok(r) => {
+                            self.state = InspectorState::Recording;
+                            self.recorder = Some(r);
+                        }
+                        Err(e) => {
+                            self.state = InspectorState::Error(e.to_string());
+                        }
+                    }
+                    Task::none()
+                }
+                InspectorState::Recording => {
+                    let samples = if let Some(recorder) = self.recorder.take() {
+                        recorder.stop()
+                    } else {
+                        Vec::new()
+                    };
+                    self.state = InspectorState::Ready;
+                    Task::done(InspectorMessage::RecordingFinished(samples))
+                }
+                _ => Task::none(),
+            },
+            #[cfg(feature = "voice")]
+            InspectorMessage::RecordingFinished(audio) => {
+                if audio.is_empty() {
+                    self.state = InspectorState::Ready;
+                    return Task::none();
+                }
+
+                Task::perform(
+                    async move {
+                        let mut manager = peak_intelligence::voice::VOICE.lock().await;
+                        // For convenience in dev, we assume model is there or fails gracefully
+                        manager.init_whisper("tiny.en").await?;
+                        manager.transcribe(&audio).await
+                    },
+                    |res| match res {
+                        Ok(text) => InspectorMessage::TranscriptionFinished(text),
+                        Err(e) => InspectorMessage::ResponseReceived(Err(e.to_string())),
+                    },
+                )
+            }
+            #[cfg(feature = "voice")]
+            InspectorMessage::TranscriptionFinished(text) => {
+                self.state = InspectorState::Ready;
+                if !text.trim().is_empty() {
+                    self.input_content = text_editor::Content::with_text(&text);
+                    return Task::done(InspectorMessage::SendPressed);
+                }
+                Task::none()
+            }
+            #[cfg(feature = "voice")]
+            InspectorMessage::SetVoiceEnabled(enabled) => {
+                self.voice_enabled = enabled;
+                Task::none()
+            }
         }
     }
 
     pub fn subscription(&self) -> iced::Subscription<InspectorMessage> {
+        let mut subs = Vec::new();
+
         if let InspectorState::Streaming = self.state {
             if let Some((prompt, history)) = &self.pending_chat {
                 if let Some(assistant) = &self.assistant {
@@ -240,7 +340,7 @@ impl Inspector {
 
                     use peak_intelligence::sipper::StreamExt;
 
-                    return iced::Subscription::run_with_id(
+                    subs.push(iced::Subscription::run_with_id(
                         (prompt.clone(), history.len()),
                         StreamExt::map(
                             assistant.reply(prompt, history, vec![]),
@@ -249,11 +349,17 @@ impl Inspector {
                                 _ => InspectorMessage::ResponseReceived(Ok(String::new())),
                             },
                         ),
-                    );
+                    ));
                 }
             }
         }
-        iced::Subscription::none()
+
+        #[cfg(feature = "voice")]
+        if let InspectorState::Recording = self.state {
+            // Recording is now handled by the Recorder struct internally
+        }
+
+        iced::Subscription::batch(subs)
     }
 
     pub fn view<'a>(&'a self, tokens: peak_theme::ThemeTokens) -> Element<'a, InspectorMessage> {
@@ -321,12 +427,14 @@ impl Inspector {
         .height(Length::Fill);
 
         // Icons for toolbar
+        #[cfg(feature = "voice")]
         let hex_color = format!(
             "#{:02x}{:02x}{:02x}",
             (tokens.text.r * 255.0) as u8,
             (tokens.text.g * 255.0) as u8,
             (tokens.text.b * 255.0) as u8
         );
+        #[cfg(feature = "voice")]
         let mic_icon = peak_core::icons::get_ui_icon("microphone", &hex_color);
         let arrow_icon = peak_core::icons::get_ui_icon("arrow_up", "#FFFFFF"); // Action icon stays white
 
@@ -353,50 +461,79 @@ impl Inspector {
                 left: 0.0
             }),
             vertical_space().height(8),
-            row![
-                // Plus Icon
-                text("+").size(20).color(Color::from_rgb(0.6, 0.6, 0.6)),
-                // Breadcrumbs / Status
-                text("Planning")
-                    .size(12)
-                    .color(Color::from_rgb(0.6, 0.6, 0.6)),
-                text("Gemini 3 Pro (High)")
-                    .size(12)
-                    .color(Color::from_rgb(0.6, 0.6, 0.6)),
-                iced::widget::horizontal_space(),
-                // Mic
-                container(
-                    iced::widget::svg(mic_icon)
-                        .width(Length::Fixed(16.0))
-                        .height(Length::Fixed(16.0))
-                )
-                .padding(4),
-                // Send Button
-                button(container(
-                    iced::widget::svg(arrow_icon)
-                        .width(Length::Fixed(14.0))
-                        .height(Length::Fixed(14.0))
-                ))
-                .on_press(InspectorMessage::SendPressed)
-                .padding(8)
-                .style(move |_: &iced::Theme, status| {
-                    let mut bg = tokens.accent;
-                    if status != iced::widget::button::Status::Hovered {
-                        bg.a = 0.8;
-                    }
-                    button::Style {
-                        background: Some(bg.into()),
-                        text_color: Color::WHITE,
-                        border: iced::Border {
-                            radius: 20.0.into(),
+            {
+                let mut bar = iced::widget::Row::new()
+                    .push(
+                        // Plus Icon
+                        text("+").size(20).color(Color::from_rgb(0.6, 0.6, 0.6)),
+                    )
+                    .push(
+                        // Breadcrumbs / Status
+                        text("Planning")
+                            .size(12)
+                            .color(Color::from_rgb(0.6, 0.6, 0.6)),
+                    )
+                    .push(
+                        text("Gemini 3 Pro (High)")
+                            .size(12)
+                            .color(Color::from_rgb(0.6, 0.6, 0.6)),
+                    )
+                    .push(iced::widget::horizontal_space());
+
+                #[cfg(feature = "voice")]
+                {
+                    bar = bar.push(
+                        button(container(
+                            iced::widget::svg(mic_icon)
+                                .width(Length::Fixed(16.0))
+                                .height(Length::Fixed(16.0)),
+                        ))
+                        .on_press(InspectorMessage::VoicePressed)
+                        .padding(4)
+                        .style(move |_, status| {
+                            let mut bg = Color::TRANSPARENT;
+                            if status == iced::widget::button::Status::Hovered {
+                                bg = Color::from_rgba(1.0, 1.0, 1.0, 0.1);
+                            }
+                            button::Style {
+                                background: Some(bg.into()),
+                                border: iced::Border {
+                                    radius: 8.0.into(),
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            }
+                        }),
+                    );
+                }
+
+                bar = bar.push(
+                    button(container(
+                        iced::widget::svg(arrow_icon)
+                            .width(Length::Fixed(14.0))
+                            .height(Length::Fixed(14.0)),
+                    ))
+                    .on_press(InspectorMessage::SendPressed)
+                    .padding(8)
+                    .style(move |_: &iced::Theme, status| {
+                        let mut bg = tokens.accent;
+                        if status != iced::widget::button::Status::Hovered {
+                            bg.a = 0.8;
+                        }
+                        button::Style {
+                            background: Some(bg.into()),
+                            text_color: Color::WHITE,
+                            border: iced::Border {
+                                radius: 20.0.into(),
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
-                    }
-                })
-            ]
-            .spacing(12)
-            .align_y(Alignment::Center)
+                        }
+                    }),
+                );
+
+                bar.spacing(12).align_y(Alignment::Center)
+            }
         ])
         .padding(12)
         .style(move |_| container::Style {
