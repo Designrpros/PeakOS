@@ -12,21 +12,24 @@ if [ "$ARCH" = "aarch64" ]; then
     GRUB_TARGET="arm64-efi"
     EFI_NAME="BOOTAA64.EFI"
     SERIAL_CONSOLE="ttyAMA0"
+    TARGET="aarch64-unknown-linux-musl"
 else
     GRUB_TARGET="x86_64-efi"
     EFI_NAME="BOOTX64.EFI"
     SERIAL_CONSOLE="ttyS0"
-    # x86_64 typically uses standard VGA or defaults. 
-    # For earlycon on x86, typically uart8250,io,0x3f8 but often not needed if console=ttyS0 is set.
-    EARLYCON="" 
+    TARGET="x86_64-unknown-linux-musl"
+    EARLYCON=""
 fi
+
+# Ensure linking works by finding system libraries (Global)
+export RUSTFLAGS="-C link-arg=-L/usr/lib -C link-arg=-L/lib"
+export PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/share/pkgconfig"
 
 if [ "$ARCH" = "aarch64" ]; then
     # PL011 is common for QEMU/Virt ARM64
     EARLYCON="earlycon=pl011,mmio32,0x09000000"
 fi
 
-# Paths
 # Paths
 rm -rf /build/rootfs /build/iso
 mkdir -p /build/rootfs
@@ -35,24 +38,26 @@ mkdir -p /build/out
 
 # 1. Compile Peak Desktop
 echo "--- Compiling Peak Desktop ---"
-cd /project/crates/peak-desktop
-# Force MUSL target if needed, but on Alpine it's default
+cd /project/crates/modes/desktop
 # Generate a lockfile if missing so we can pin dependencies
 if [ ! -f Cargo.lock ]; then
     cargo generate-lockfile
 fi
-# Pin smithay-clipboard to 0.7.2 to avoid edition2024 error in 0.7.3 (broken on stable)
+# Pin smithay-clipboard
 cargo update -p smithay-clipboard --precise 0.7.2 || true
-# Pin dlopen2_derive to 0.4.1 (0.4.2+ seems to have edition 2024)
+# Pin dlopen2_derive
 cargo update -p dlopen2_derive --precise 0.4.1 || true
-# Pin async-lock to 3.4.1 to avoid rust 1.85 requirement in 3.4.2
+# Pin async-lock
 cargo update -p async-lock --precise 3.4.1 || true
-# Use architecture-specific build directory to avoid conflicts
+
+# Use architecture-specific build directory
 export CARGO_TARGET_DIR=/build/target/$ARCH
-cargo build --release -p peak-desktop
+# Build without --target to use host musl environment correctly
+cargo build --release --manifest-path /project/crates/modes/desktop/Cargo.toml
+
+# Copy binary
 echo "Searching for binary..."
-find $CARGO_TARGET_DIR -name "peak-desktop" -type f
-BIN_PATH=$(find $CARGO_TARGET_DIR -name "peak-desktop" -type f | head -n 1)
+BIN_PATH=/build/target/$ARCH/release/peak-desktop
 cp "$BIN_PATH" /build/rootfs/peak-desktop
 chmod +x /build/rootfs/peak-desktop
 
@@ -62,8 +67,6 @@ mkdir -p /build/rootfs/usr/share/peakos/assets
 cp -r /project/assets/* /build/rootfs/usr/share/peakos/assets/
 # Exclude legacy binaries
 rm -rf /build/rootfs/usr/share/peakos/assets/bin
-
-
 
 # Copy boot animation script
 cp /build/boot_animation.sh /build/rootfs/boot_animation.sh
@@ -85,6 +88,8 @@ elif [ "$ARCH" = "aarch64" ]; then
 else
     APK_ARCH="$ARCH"
 fi
+
+echo "   Updating crates.io index"
 
 # Install Base System + Kernel + Input Devices
 # wireless-tools/wpa_supplicant needed for wifi?

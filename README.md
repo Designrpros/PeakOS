@@ -30,11 +30,17 @@ Modern operating systems force you to choose:
 
 ## Key Features
 
-### 🦎 **Chameleon Architecture**
-- **Desktop Mode:** Clean, glassmorphic productivity environment.
-- **Console Mode:** "PlayStation-like" interface for gaming with controller support.
-- **TV Mode:** "Apple TV-like" 10-foot UI for media consumption.
-- **Robot Mode:** "Face-only" or headless mode for low-latency robotics control.
+### 🌍 Universal Compatibility (Hybrid OS)
+More than just a desktop. PeakOS adapts to your hardware:
+- **Desktop Mode:** Traditional window management for productivity.
+- **Mobile Mode:** Touch-optimized UI for Linux phones (PinePhone/Librem 5).
+- **TV Mode:** 10-foot interface for media consumption.
+- **Console Mode:** Controller-first gaming dashboard.
+- **Robot Mode:** High-performance headless/face-rendering state for robotics.
+- **Kiosk Mode:** Locked single-app environment.
+- **Auto Mode:** Dashboard UI for automotive use.
+- **Fireplace Mode:** Ambient aesthetic experience.
+- **Smarthome Mode:** IoT control dashboard.
 
 ### 🚀 **Blazing Fast & Safe**
 - **Native Rust shell** — GPU-accelerated, memory-safe, crash-proof.

@@ -4631,6 +4631,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "peak-auto"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "peak-core",
+ "peak-ui",
+]
+
+[[package]]
 name = "peak-browser"
 version = "0.1.0"
 dependencies = [
@@ -4720,6 +4729,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "peak-fireplace"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "peak-core",
+ "peak-ui",
+]
+
+[[package]]
 name = "peak-intelligence"
 version = "0.1.0"
 dependencies = [
@@ -4737,6 +4755,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "peak-kiosk"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "peak-core",
+ "peak-ui",
+]
+
+[[package]]
 name = "peak-mobile"
 version = "0.1.0"
 dependencies = [
@@ -4744,9 +4771,19 @@ dependencies = [
  "iced",
  "peak-apps",
  "peak-core",
+ "peak-theme",
  "peak-ui",
  "serde",
  "tokio",
+]
+
+[[package]]
+name = "peak-robot"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "peak-core",
+ "peak-ui",
 ]
 
 [[package]]
@@ -4773,6 +4810,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "peak-smarthome"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "peak-core",
+ "peak-ui",
+]
+
+[[package]]
 name = "peak-system"
 version = "0.1.0"
 dependencies = [
@@ -4789,6 +4835,15 @@ dependencies = [
  "iced",
  "peak-core",
  "serde",
+]
+
+[[package]]
+name = "peak-tv"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "peak-core",
+ "peak-ui",
 ]
 
 [[package]]
@@ -8815,9 +8870,9 @@ dependencies = [
 
 [[package]]
 name = "zmij"
-version = "1.0.14"
+version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd8f3f50b848df28f887acb68e41201b5aea6bc8a8dacc00fb40635ff9a72fea"
+checksum = "94f63c051f4fe3c1509da62131a678643c5b6fbdc9273b2b79d4378ebda003d2"
 
 [[package]]
 name = "zune-inflate"

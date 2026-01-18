@@ -1,7 +1,8 @@
 #![cfg(target_os = "linux")]
 
 use crate::app::{Message, PeakNative};
-use iced_layershell::reexport::{Anchor, KeyboardInteractivity, Layer, LayershellCustomActions};
+use iced_layershell::actions::LayershellCustomActions;
+use iced_layershell::reexport::{Anchor, KeyboardInteractivity, Layer};
 use iced_layershell::settings::LayerShellSettings;
 use iced_layershell::Application;
 
@@ -33,15 +34,15 @@ impl Application for PeakLayerShell {
     type Theme = iced::Theme;
     type Executor = iced::executor::Default;
 
-    fn new(flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
+    fn new(flags: Self::Flags) -> (Self, iced::Task<Self::Message>) {
         let (native, command) = PeakNative::new(flags);
         (Self { native }, command.map(LayerMessage::App))
     }
 
-    fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
+    fn update(&mut self, message: Self::Message) -> iced::Task<Self::Message> {
         match message {
             LayerMessage::App(msg) => self.native.update(msg).map(LayerMessage::App),
-            LayerMessage::Shell(_) => iced::Command::none(),
+            LayerMessage::Shell(_) => iced::Task::none(),
         }
     }
 
@@ -54,10 +55,6 @@ impl Application for PeakLayerShell {
         self.native.view_desktop().map(LayerMessage::App)
     }
 
-    fn title(&self) -> String {
-        self.native.title()
-    }
-
     fn theme(&self) -> Self::Theme {
         self.native.theme()
     }
@@ -65,18 +62,8 @@ impl Application for PeakLayerShell {
 
 pub fn get_menubar_settings() -> LayerShellSettings {
     LayerShellSettings {
-        anchor: Anchor::TOP | Anchor::LEFT | Anchor::RIGHT,
-        layer: Layer::TOP,
-        exclusive_zone: 40,
-        keyboard_interactivity: KeyboardInteractivity::None,
-        ..Default::default()
-    }
-}
-
-pub fn get_menubar_settings() -> LayerShellSettings {
-    LayerShellSettings {
-        anchor: Anchor::TOP | Anchor::LEFT | Anchor::RIGHT,
-        layer: Layer::TOP,
+        anchor: Anchor::Top | Anchor::Left | Anchor::Right,
+        layer: Layer::Top,
         exclusive_zone: 40,
         keyboard_interactivity: KeyboardInteractivity::None,
         ..Default::default()
@@ -85,9 +72,9 @@ pub fn get_menubar_settings() -> LayerShellSettings {
 
 pub fn get_dock_settings() -> LayerShellSettings {
     LayerShellSettings {
-        anchor: Anchor::BOTTOM,
-        layer: Layer::BOTTOM,
-        exclusive_zone: 80,
+        anchor: Anchor::Bottom,
+        layer: Layer::Bottom,
+        exclusive_zone: 100,
         keyboard_interactivity: KeyboardInteractivity::None,
         ..Default::default()
     }

@@ -1,0 +1,9 @@
+[package]
+name = "peak-auto"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = "0.13"
+peak-core = { path = "../../peak-core" }
+peak-ui = { path = "../../peak-ui" }

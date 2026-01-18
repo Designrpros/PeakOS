@@ -5,7 +5,7 @@ use std::sync::OnceLock;
 
 // Embed the sound into the binary so it's portable
 #[allow(dead_code)]
-static CLICK_BYTES: &[u8] = include_bytes!("../../../assets/sounds/click.wav");
+static CLICK_BYTES: &[u8] = include_bytes!("../../../../assets/sounds/click.wav");
 
 // Keep the handle globally accessible (it is Send + Sync)
 static AUDIO_HANDLE: OnceLock<OutputStreamHandle> = OnceLock::new();
