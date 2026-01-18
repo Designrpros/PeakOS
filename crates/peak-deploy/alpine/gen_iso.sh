@@ -21,9 +21,9 @@ else
     EARLYCON=""
 fi
 
-# Ensure linking works by finding system libraries (Global)
-export RUSTFLAGS="-C link-arg=-L/usr/lib -C link-arg=-L/lib"
-export PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/share/pkgconfig"
+# Export variables (System Rust on Alpine handles paths automatically now)
+# export RUSTFLAGS="..." # REMOVED
+# export PKG_CONFIG_PATH="..." # REMOVED
 
 if [ "$ARCH" = "aarch64" ]; then
     # PL011 is common for QEMU/Virt ARM64
