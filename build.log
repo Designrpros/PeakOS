@@ -603,3 +603,1370 @@ Building Docker image...
 
 #17 exporting to image
 #17 exporting layers
+#17 exporting layers 86.9s done
+#17 exporting manifest sha256:063cab1e438b20c75bcaeb64c7e01b9b99f1ca2fd7cf1f9c4ce09b45b9b1c4e8 done
+#17 exporting config sha256:d34875136c9c6a977f89d3a20b9835d0a781f2decac8515c1b5c1d14834b5374 done
+#17 exporting attestation manifest sha256:0e3143e2b6cf942a535c88799f984805c0d13ef8acbc225020187edac86d6516 0.0s done
+#17 exporting manifest list sha256:b5e32fe5d8a0cad33e952008106059230370d0204b28d06997652feb426533b7 0.0s done
+#17 naming to docker.io/library/peak-alpine-builder:latest 0.0s done
+#17 unpacking to docker.io/library/peak-alpine-builder:latest
+#17 unpacking to docker.io/library/peak-alpine-builder:latest 34.3s done
+#17 DONE 121.4s
+Starting Docker build process...
+=== PeakOS Builder (Alpine) ===
+Architecture: aarch64
+--- Compiling Peak Desktop ---
+    Updating crates.io index
+    Updating git repository `https://github.com/hecrj/llama-server.git`
+     Locking 929 packages to latest compatible versions
+      Adding cpal v0.15.3 (available: v0.17.1)
+      Adding directories v5.0.1 (available: v6.0.0)
+      Adding dirs v5.0.1 (available: v6.0.0)
+      Adding generic-array v0.14.7 (available: v0.14.9)
+      Adding iced v0.13.1 (available: v0.14.0)
+      Adding iced_layershell v0.13.7 (available: v0.14.2)
+      Adding mdns-sd v0.11.5 (available: v0.17.2)
+      Adding opener v0.6.1 (available: v0.8.3)
+      Adding portable-pty v0.8.1 (available: v0.9.0)
+      Adding rand v0.8.5 (available: v0.9.2)
+      Adding reqwest v0.11.27 (available: v0.13.1)
+      Adding reqwest v0.12.28 (available: v0.13.1)
+      Adding rfd v0.14.1 (available: v0.17.2)
+      Adding rodio v0.17.3 (available: v0.21.1)
+      Adding scraper v0.22.0 (available: v0.25.0)
+      Adding sysinfo v0.30.13 (available: v0.37.2)
+      Adding tao v0.30.8 (available: v0.34.5)
+      Adding thiserror v1.0.69 (available: v2.0.18)
+      Adding toml v0.8.2 (available: v0.8.23)
+      Adding toml_datetime v0.6.3 (available: v0.6.11)
+      Adding toml_edit v0.20.2 (available: v0.20.7)
+      Adding wayland-protocols v0.31.2 (available: v0.32.10)
+      Adding webkit2gtk v2.0.1 (available: v2.0.2)
+      Adding webkit2gtk-sys v2.0.1 (available: v2.0.2)
+      Adding wgpu v22.1.0 (available: v28.0.0)
+      Adding whisper-rs v0.13.2 (available: v0.15.1)
+      Adding winit v0.29.15 (available: v0.30.12)
+      Adding wry v0.47.2 (available: v0.54.1)
+    Updating crates.io index
+    Removing smithay-client-toolkit v0.20.0
+ Downgrading smithay-clipboard v0.7.3 -> v0.7.2
+    Removing wayland-protocols-experimental v20250721.0.1
+note: pass `--verbose` to see 28 unchanged dependencies behind latest
+    Updating crates.io index
+ Downgrading dlopen2_derive v0.4.3 -> v0.4.1
+note: pass `--verbose` to see 29 unchanged dependencies behind latest
+    Updating crates.io index
+ Downgrading async-lock v3.4.2 -> v3.4.1
+note: pass `--verbose` to see 30 unchanged dependencies behind latest
+    Updating crates.io index
+ Downgrading url v2.5.8 -> v2.5.4
+note: pass `--verbose` to see 31 unchanged dependencies behind latest
+    Updating crates.io index
+note: pass `--verbose` to see 32 unchanged dependencies behind latest
+ Downloading crates ...
+  Downloaded approx v0.5.1
+  Downloaded crypto-common v0.1.7
+  Downloaded clipboard_wayland v0.2.2
+  Downloaded compression-core v0.4.31
+  Downloaded clipboard_x11 v0.4.3
+  Downloaded cpufeatures v0.2.17
+  Downloaded async-executor v1.13.3
+  Downloaded autocfg v1.5.0
+  Downloaded byteorder v1.5.0
+  Downloaded crossbeam-deque v0.8.6
+  Downloaded cfg-if v1.0.4
+  Downloaded compression-codecs v0.4.36
+  Downloaded atk-sys v0.18.2
+  Downloaded bitflags v1.3.2
+  Downloaded bit-vec v0.6.3
+  Downloaded async-net v2.0.0
+  Downloaded cfg_aliases v0.2.1
+  Downloaded cairo-sys-rs v0.18.2
+  Downloaded async-fs v2.2.0
+  Downloaded async-channel v2.5.0
+  Downloaded async-broadcast v0.7.2
+  Downloaded arrayvec v0.7.6
+  Downloaded arrayref v0.3.9
+  Downloaded alsa-sys v0.3.1
+  Downloaded adler2 v2.0.1
+  Downloaded ab_glyph_rasterizer v0.1.10
+  Downloaded ab_glyph v0.2.32
+  Downloaded color_quant v1.1.0
+  Downloaded cfg_aliases v0.1.1
+  Downloaded calloop-wayland-source v0.4.1
+  Downloaded calloop-wayland-source v0.3.0
+  Downloaded by_address v1.2.1
+  Downloaded block-buffer v0.10.4
+  Downloaded bit_field v0.10.3
+  Downloaded bit-set v0.5.3
+  Downloaded atomic-waker v1.1.2
+  Downloaded as-raw-xcb-connection v1.0.1
+  Downloaded dirs-sys v0.5.0
+  Downloaded dirs-sys v0.4.1
+  Downloaded directories v5.0.1
+  Downloaded darling_macro v0.20.11
+  Downloaded cursor-icon v1.2.0
+  Downloaded ctor-lite v0.1.0
+  Downloaded convert_case v0.4.0
+  Downloaded concurrent-queue v2.5.0
+  Downloaded dirs-sys v0.3.7
+  Downloaded directories v6.0.0
+  Downloaded darling v0.20.11
+  Downloaded crossbeam-utils v0.8.21
+  Downloaded cookie v0.18.1
+  Downloaded cfg-expr v0.15.8
+  Downloaded bytemuck v1.24.0
+  Downloaded blocking v1.6.2
+  Downloaded dlib v0.5.2
+  Downloaded calloop v0.14.3
+  Downloaded displaydoc v0.2.5
+  Downloaded cssparser v0.34.0
+  Downloaded crc32fast v1.5.0
+  Downloaded dtoa-short v0.3.5
+  Downloaded claxon v0.4.3
+  Downloaded cc v1.2.53
+  Downloaded calloop v0.13.0
+  Downloaded bytes v1.11.0
+  Downloaded iced_renderer v0.13.0
+  Downloaded iced_futures v0.13.2
+  Downloaded dlv-list v0.3.0
+  Downloaded crossbeam-channel v0.5.15
+  Downloaded cpal v0.15.3
+  Downloaded iced_winit v0.13.0
+  Downloaded iced_wgpu v0.13.5
+  Downloaded iced_tiny_skia v0.13.0
+  Downloaded iced_runtime v0.13.2
+  Downloaded aho-corasick v1.1.4
+  Downloaded idna_adapter v1.2.1
+  Downloaded ident_case v1.0.1
+  Downloaded drm v0.14.1
+  Downloaded imagesize v0.12.0
+  Downloaded darling_core v0.20.11
+  Downloaded javascriptcore-rs-sys v1.1.1
+  Downloaded endi v1.1.1
+  Downloaded icu_properties v2.1.2
+  Downloaded ioctl-rs v0.1.6
+  Downloaded instant v0.1.13
+  Downloaded itoa v1.0.17
+  Downloaded icu_provider v2.1.1
+  Downloaded jobserver v0.1.34
+  Downloaded ego-tree v0.10.0
+  Downloaded ipnet v2.11.0
+  Downloaded javascriptcore-rs v1.1.2
+  Downloaded chrono v0.4.43
+  Downloaded lebe v0.5.3
+  Downloaded manyhow-macros v0.11.4
+  Downloaded lru v0.12.5
+  Downloaded mac v0.1.1
+  Downloaded lyon v1.0.16
+  Downloaded lru-slab v0.1.2
+  Downloaded lazy_static v1.5.0
+  Downloaded is-wsl v0.4.0
+  Downloaded is-docker v0.2.0
+  Downloaded async-compression v0.4.37
+  Downloaded manyhow v0.11.4
+  Downloaded mime v0.3.17
+  Downloaded memoffset v0.6.5
+  Downloaded lock_api v0.4.14
+  Downloaded libloading v0.8.9
+  Downloaded layershellev v0.13.7
+  Downloaded khronos-egl v6.0.0
+  Downloaded num-conv v0.1.0
+  Downloaded markup5ever v0.14.1
+  Downloaded lyon_algorithms v1.0.16
+  Downloaded libloading v0.7.4
+  Downloaded num_cpus v1.17.0
+  Downloaded litemap v0.8.1
+  Downloaded fnv v1.0.7
+  Downloaded match_token v0.1.0
+  Downloaded nu-ansi-term v0.50.3
+  Downloaded function v0.2.0
+  Downloaded option-ext v0.2.0
+  Downloaded openssl-probe v0.1.6
+  Downloaded ogg v0.8.0
+  Downloaded lyon_geom v1.0.18
+  Downloaded native-tls v0.2.14
+  Downloaded icu_normalizer v2.1.1
+  Downloaded openssl-macros v0.1.1
+  Downloaded kamadak-exif v0.5.5
+  Downloaded icu_locale_core v2.1.1
+  Downloaded iced_layershell v0.13.7
+  Downloaded iced_core v0.13.2
+  Downloaded memmap2 v0.9.9
+  Downloaded owned_ttf_parser v0.25.1
+  Downloaded float-cmp v0.9.0
+  Downloaded errno v0.3.14
+  Downloaded icu_normalizer_data v2.1.1
+  Downloaded opener v0.6.1
+  Downloaded ordered-stream v0.2.0
+  Downloaded ordered-multimap v0.4.3
+  Downloaded ordered-float v4.6.0
+  Downloaded once_cell v1.21.3
+  Downloaded log v0.4.29
+  Downloaded bstr v1.12.1
+  Downloaded percent-encoding v2.3.2
+  Downloaded phf_generator v0.11.3
+  Downloaded open v5.3.3
+  Downloaded num-traits v0.2.19
+  Downloaded pathdiff v0.2.3
+  Downloaded parking v2.2.1
+  Downloaded pango-sys v0.18.0
+  Downloaded palette_derive v0.7.6
+  Downloaded pin-utils v0.1.0
+  Downloaded phf_shared v0.11.3
+  Downloaded pango v0.18.3
+  Downloaded pico-args v0.5.0
+  Downloaded form_urlencoded v1.2.2
+  Downloaded icu_collections v2.1.1
+  Downloaded piper v0.2.4
+  Downloaded event-listener-strategy v0.5.4
+  Downloaded pollster v0.3.0
+  Downloaded phf_macros v0.11.3
+  Downloaded pin-project-lite v0.2.16
+  Downloaded phf v0.11.3
+  Downloaded indexmap v2.13.0
+  Downloaded pkg-config v0.3.32
+  Downloaded parking_lot v0.12.5
+  Downloaded parking_lot_core v0.9.12
+  Downloaded lewton v0.10.2
+  Downloaded lyon_path v1.0.16
+  Downloaded proc-macro-crate v2.0.2
+  Downloaded precomputed-hash v0.1.1
+  Downloaded powerfmt v0.2.0
+  Downloaded potential_utf v0.1.4
+  Downloaded iced_widget v0.13.4
+  Downloaded proc-macro-crate v3.4.0
+  Downloaded proc-macro-crate v1.3.1
+  Downloaded gdk-pixbuf-sys v0.18.0
+  Downloaded foreign-types v0.3.2
+  Downloaded portable-pty v0.8.1
+  Downloaded ppv-lite86 v0.2.21
+  Downloaded new_debug_unreachable v1.0.6
+  Downloaded miniz_oxide v0.8.9
+  Downloaded futures-task v0.3.31
+  Downloaded mutate_once v0.1.2
+  Downloaded equivalent v1.0.2
+  Downloaded enumflags2_derive v0.7.12
+  Downloaded iced_layershell_macros v0.13.7
+  Downloaded proc-macro-error-attr v1.0.4
+  Downloaded dtoa v1.0.11
+  Downloaded memchr v2.7.6
+  Downloaded idna v1.1.0
+  Downloaded drm-sys v0.8.0
+  Downloaded dlopen2 v0.7.0
+  Downloaded base64 v0.22.1
+  Downloaded proc-macro-error v1.0.4
+  Downloaded icu_properties_data v2.1.2
+  Downloaded rand_chacha v0.3.1
+  Downloaded proc-macro-utils v0.10.0
+  Downloaded base64 v0.21.7
+  Downloaded ash v0.37.3+1.3.251
+  Downloaded mio v1.1.1
+  Downloaded renderdoc-sys v1.1.0
+  Downloaded futures-sink v0.3.31
+  Downloaded float_next_after v1.0.0
+  Downloaded rand_chacha v0.9.0
+  Downloaded rand_core v0.6.4
+  Downloaded openssl-sys v0.9.111
+  Downloaded iced_glyphon v0.6.0
+  Downloaded iri-string v0.7.10
+  Downloaded futures-core v0.3.31
+  Downloaded drm-fourcc v2.2.0
+  Downloaded drm-ffi v0.9.0
+  Downloaded raw-window-handle v0.6.2
+  Downloaded dpi v0.1.2
+  Downloaded quote v1.0.43
+  Downloaded quinn-udp v0.5.14
+  Downloaded downcast-rs v1.2.1
+  Downloaded dlopen2_derive v0.4.1
+  Downloaded derive_more v0.99.20
+  Downloaded cairo-rs v0.18.5
+  Downloaded bitflags v2.10.0
+  Downloaded async-trait v0.1.89
+  Downloaded rgb v0.8.52
+  Downloaded async-io v2.6.0
+  Downloaded rustc-hash v2.1.1
+  Downloaded rustc_version v0.4.1
+  Downloaded kurbo v0.11.3
+  Downloaded ashpd v0.8.1
+  Downloaded gdkwayland-sys v0.18.2
+  Downloaded anyhow v1.0.100
+  Downloaded alsa v0.9.1
+  Downloaded allocator-api2 v0.2.21
+  Downloaded ahash v0.7.8
+  Downloaded dirs v4.0.0
+  Downloaded digest v0.10.7
+  Downloaded deranged v0.5.5
+  Downloaded scoped-tls v1.0.1
+  Downloaded decoder v0.0.3
+  Downloaded data-url v0.3.2
+  Downloaded dasp_sample v0.11.0
+  Downloaded dark-light v1.1.1
+  Downloaded cssparser-macros v0.6.1
+  Downloaded crossbeam-epoch v0.9.18
+  Downloaded codespan-reporting v0.11.1
+  Downloaded gethostname v1.1.0
+  Downloaded atk v0.18.2
+  Downloaded rangemap v1.7.1
+  Downloaded libm v0.2.15
+  Downloaded rustls-pemfile v1.0.4
+  Downloaded async-task v4.7.1
+  Downloaded async-lock v3.4.1
+  Downloaded serde_repr v0.1.20
+  Downloaded iced_graphics v0.13.0
+  Downloaded serial-core v0.4.0
+  Downloaded same-file v1.0.6
+  Downloaded serial v0.4.0
+  Downloaded serde_urlencoded v0.7.1
+  Downloaded serial-unix v0.4.0
+  Downloaded serde_spanned v1.0.4
+  Downloaded shell-words v1.1.1
+  Downloaded sct v0.7.1
+  Downloaded scraper v0.22.0
+  Downloaded rfd v0.14.1
+  Downloaded serde_spanned v0.6.9
+  Downloaded self_cell v1.2.2
+  Downloaded gpu-alloc-types v0.3.0
+  Downloaded futures-macro v0.3.31
+  Downloaded sha1 v0.10.6
+  Downloaded semver v1.0.27
+  Downloaded heck v0.5.0
+  Downloaded bytemuck_derive v1.10.2
+  Downloaded ahash v0.8.12
+  Downloaded qoi v0.4.1
+  Downloaded siphasher v1.0.1
+  Downloaded rustls-pki-types v1.14.0
+  Downloaded heck v0.4.1
+  Downloaded dirs v5.0.1
+  Downloaded decoder_value v0.0.3
+  Downloaded dconf_rs v0.3.0
+  Downloaded servo_arc v0.4.3
+  Downloaded smol_str v0.2.2
+  Downloaded shlex v1.3.0
+  Downloaded roxmltree v0.20.0
+  Downloaded sha2 v0.10.9
+  Downloaded signal-hook-registry v1.4.8
+  Downloaded rayon-core v1.13.0
+  Downloaded quinn v0.11.9
+  Downloaded simd-adler32 v0.3.8
+  Downloaded gdkx11-sys v0.18.2
+  Downloaded futures-io v0.3.31
+  Downloaded simplecss v0.2.2
+  Downloaded resvg v0.42.0
+  Downloaded lyon_tessellation v1.0.16
+  Downloaded slab v0.4.11
+  Downloaded http-body v0.4.6
+  Downloaded stable_deref_trait v1.2.1
+  Downloaded ryu v1.0.22
+  Downloaded rand v0.8.5
+  Downloaded strict-num v0.1.1
+  Downloaded string_cache_codegen v0.5.4
+  Downloaded selectors v0.26.0
+  Downloaded sctk-adwaita v0.10.1
+  Downloaded symphonia v0.5.5
+  Downloaded http-body v1.0.1
+  Downloaded svg_fmt v0.4.5
+  Downloaded rodio v0.17.3
+  Downloaded serde_derive v1.0.228
+  Downloaded serde_core v1.0.228
+  Downloaded gpu-descriptor-types v0.1.2
+  Downloaded soup3-sys v0.5.0
+  Downloaded rand v0.9.2
+  Downloaded string_cache v0.8.9
+  Downloaded hex v0.4.3
+  Downloaded spirv v0.3.0+sdk-1.3.268.0
+  Downloaded png v0.17.16
+  Downloaded smithay-clipboard v0.7.2
+  Downloaded sharded-slab v0.1.7
+  Downloaded hyper-tls v0.6.0
+  Downloaded soup3 v0.5.0
+  Downloaded sync_wrapper v1.0.2
+  Downloaded rustls-webpki v0.103.9
+  Downloaded symphonia-metadata v0.5.5
+  Downloaded serde v1.0.228
+  Downloaded hexf-parse v0.2.1
+  Downloaded gpu-descriptor v0.2.4
+  Downloaded socket2 v0.6.1
+  Downloaded socket2 v0.5.10
+  Downloaded softbuffer v0.4.8
+  Downloaded sys-locale v0.3.2
+  Downloaded slotmap v1.1.1
+  Downloaded svgtypes v0.15.3
+  Downloaded time-core v0.1.7
+  Downloaded system-deps v6.2.2
+  Downloaded target-lexicon v0.12.16
+  Downloaded hyper-tls v0.5.0
+  Downloaded termcolor v1.4.1
+  Downloaded thiserror v2.0.18
+  Downloaded thread_local v1.1.9
+  Downloaded thiserror-impl v2.0.18
+  Downloaded thiserror-impl v1.0.69
+  Downloaded thiserror v1.0.69
+  Downloaded termios v0.2.2
+  Downloaded httpdate v1.0.3
+  Downloaded time-macros v0.2.25
+  Downloaded tinystr v0.8.2
+  Downloaded tiny-xlib v0.2.4
+  Downloaded toml_datetime v0.6.3
+  Downloaded tokio-macros v2.6.0
+  Downloaded reqwest v0.12.28
+  Downloaded tendril v0.4.3
+  Downloaded tokio-native-tls v0.3.1
+  Downloaded enumflags2 v0.7.12
+  Downloaded tower-layer v0.3.3
+  Downloaded tower-service v0.3.3
+  Downloaded symphonia-bundle-mp3 v0.5.5
+  Downloaded either v1.15.0
+  Downloaded regex v1.12.2
+  Downloaded memoffset v0.9.1
+  Downloaded reqwest v0.11.27
+  Downloaded toml_datetime v0.7.5+spec-1.1.0
+  Downloaded try-lock v0.2.5
+  Downloaded fastrand v2.3.0
+  Downloaded palette v0.7.6
+  Downloaded field-offset v0.3.6
+  Downloaded unicode-ccc v0.2.0
+  Downloaded toml_writer v1.0.6+spec-1.1.0
+  Downloaded tokio-rustls v0.26.4
+  Downloaded tokio-rustls v0.24.1
+  Downloaded unicode-vo v0.1.0
+  Downloaded filedescriptor v0.8.3
+  Downloaded unicode-linebreak v0.1.5
+  Downloaded tokio-stream v0.1.18
+  Downloaded tracing-log v0.2.0
+  Downloaded nix v0.25.1
+  Downloaded untrusted v0.9.0
+  Downloaded symphonia-core v0.5.5
+  Downloaded fxhash v0.2.1
+  Downloaded foreign-types-shared v0.1.1
+  Downloaded tinyvec v1.10.0
+  Downloaded unicode-xid v0.2.6
+  Downloaded urlencoding v2.1.3
+  Downloaded toml_parser v1.0.6+spec-1.1.0
+  Downloaded futf v0.1.5
+  Downloaded version-compare v0.2.1
+  Downloaded smithay-client-toolkit v0.19.2
+  Downloaded version_check v0.9.5
+  Downloaded toml v0.8.2
+  Downloaded want v0.3.1
+  Downloaded rustls-webpki v0.101.7
+  Downloaded generic-array v0.14.7
+  Downloaded unicode-ident v1.0.22
+  Downloaded unicode-properties v0.1.4
+  Downloaded walkdir v2.5.0
+  Downloaded tracing-core v0.1.36
+  Downloaded tracing-attributes v0.1.31
+  Downloaded gdkx11 v0.18.2
+  Downloaded unicode-bidi v0.3.18
+  Downloaded rayon v1.11.0
+  Downloaded wayland-sys v0.31.8
+  Downloaded wayland-protocols-misc v0.3.10
+  Downloaded quick-xml v0.38.4
+  Downloaded wayland-cursor v0.31.12
+  Downloaded wayland-protocols-wlr v0.3.10
+  Downloaded typenum v1.19.0
+  Downloaded window_clipboard v0.4.1
+  Downloaded toml_edit v0.23.10+spec-1.0.0
+  Downloaded toml_edit v0.19.15
+  Downloaded waycrate_xkbkeycode v0.13.7
+  Downloaded uuid v1.19.0
+  Downloaded openssl v0.10.75
+  Downloaded phf_codegen v0.11.3
+  Downloaded rustc-hash v1.1.0
+  Downloaded nix v0.29.0
+  Downloaded url v2.5.4
+  Downloaded quinn-proto v0.11.13
+  Downloaded wayland-scanner v0.31.8
+  Downloaded xkbcommon-dl v0.4.2
+  Downloaded xcursor v0.3.10
+  Downloaded profiling v1.0.17
+  Downloaded yoke-derive v0.8.1
+  Downloaded zbus_names v3.0.0
+  Downloaded xmlwriter v0.1.0
+  Downloaded tower v0.5.3
+  Downloaded webkit2gtk-sys v2.0.1
+  Downloaded wayland-client v0.31.12
+  Downloaded rust-ini v0.18.0
+  Downloaded zerofrom v0.1.6
+  Downloaded scopeguard v1.2.0
+  Downloaded detect-desktop-environment v0.2.0
+  Downloaded sipper v0.1.0
+  Downloaded writeable v0.6.2
+  Downloaded yoke v0.8.1
+  Downloaded zvariant_utils v2.1.0
+  Downloaded zvariant_derive v4.2.0
+  Downloaded unicode-segmentation v1.12.0
+  Downloaded wayland-backend v0.3.12
+  Downloaded weezl v0.1.12
+  Downloaded zbus_macros v4.4.0
+  Downloaded subtle v2.6.1
+  Downloaded strsim v0.11.1
+  Downloaded wayland-protocols-plasma v0.3.10
+  Downloaded wgpu-types v0.19.2
+  Downloaded sync_wrapper v0.1.2
+  Downloaded zerovec-derive v0.11.2
+  Downloaded yazi v0.1.6
+  Downloaded iced v0.13.1
+  Downloaded zeno v0.2.3
+  Downloaded tinyvec_macros v0.1.1
+  Downloaded zune-inflate v0.2.54
+  Downloaded x11 v2.21.0
+  Downloaded webkit2gtk v2.0.1
+  Downloaded x11-dl v2.21.0
+  Downloaded unicode-bidi-mirroring v0.2.0
+  Downloaded sysinfo v0.30.13
+  Downloaded tokio-util v0.7.18
+  Downloaded rustybuzz v0.14.1
+  Downloaded rustls v0.21.12
+  Downloaded utf8_iter v1.0.4
+  Downloaded utf-8 v0.7.6
+  Downloaded ttf-parser v0.20.0
+  Downloaded zerotrie v0.2.3
+  Downloaded swash v0.1.19
+  Downloaded usvg v0.42.0
+  Downloaded fdeflate v0.3.7
+  Downloaded gdk-pixbuf v0.18.5
+  Downloaded fast-srgb8 v1.0.0
+  Downloaded zerocopy-derive v0.8.33
+  Downloaded syn v1.0.109
+  Downloaded zvariant v4.2.0
+  Downloaded ttf-parser v0.21.1
+  Downloaded time v0.3.45
+  Downloaded xkeysym v0.2.1
+  Downloaded wgpu v0.19.4
+  Downloaded wayland-protocols v0.32.10
+  Downloaded guillotiere v0.6.2
+  Downloaded futures-executor v0.3.31
+  Downloaded gtk3-macros v0.18.2
+  Downloaded tracing-subscriber v0.3.22
+  Downloaded zerovec v0.11.5
+  Downloaded regex-syntax v0.8.8
+  Downloaded winnow v0.5.40
+  Downloaded syn v2.0.114
+  Downloaded hyper-rustls v0.24.2
+  Downloaded vcpkg v0.2.15
+  Downloaded rustls v0.23.36
+  Downloaded rustix v1.1.3
+  Downloaded x11rb v0.13.2
+  Downloaded rustix v0.38.44
+  Downloaded wgpu-core v0.19.4
+  Downloaded unicode-width v0.1.14
+  Downloaded webpki-roots v0.25.4
+  Downloaded naga v0.19.2
+  Downloaded xdg-home v1.3.0
+  Downloaded webpki-roots v1.0.5
+  Downloaded zerofrom-derive v0.1.6
+  Downloaded etagere v0.2.15
+  Downloaded http-body-util v0.1.3
+  Downloaded gobject-sys v0.18.0
+  Downloaded zerocopy v0.8.33
+  Downloaded font-types v0.7.3
+  Downloaded jpeg-decoder v0.3.2
+  Downloaded tracing v0.1.44
+  Downloaded regex-automata v0.4.13
+  Downloaded rand_core v0.9.5
+  Downloaded libc v0.2.180
+  Downloaded synstructure v0.13.2
+  Downloaded static_assertions v1.1.0
+  Downloaded winit v0.30.12
+  Downloaded kurbo v0.10.4
+  Downloaded futures-channel v0.3.31
+  Downloaded event-listener v5.4.1
+  Downloaded find-msvc-tools v0.1.8
+  Downloaded fontconfig-parser v0.5.8
+  Downloaded getrandom v0.2.17
+  Downloaded getopts v0.2.24
+  Downloaded tokio v1.49.0
+  Downloaded hyper-rustls v0.27.7
+  Downloaded hound v3.5.1
+  Downloaded iana-time-zone v0.1.64
+  Downloaded wayland-csd-frame v0.3.0
+  Downloaded web-time v1.1.0
+  Downloaded zeroize v1.8.2
+  Downloaded httparse v1.10.1
+  Downloaded futures-lite v2.6.1
+  Downloaded gif v0.13.3
+  Downloaded cosmic-text v0.12.1
+  Downloaded ring v0.17.14
+  Downloaded tiny-skia-path v0.11.4
+  Downloaded tempfile v3.24.0
+  Downloaded tiff v0.9.1
+  Downloaded futures v0.3.31
+  Downloaded linux-raw-sys v0.6.5
+  Downloaded half v2.7.1
+  Downloaded glib-macros v0.18.5
+  Downloaded getrandom v0.3.4
+  Downloaded gpu-alloc v0.6.0
+  Downloaded linux-raw-sys v0.4.15
+  Downloaded zmij v1.0.15
+  Downloaded polling v3.11.0
+  Downloaded smallvec v1.15.1
+  Downloaded tao v0.30.8
+  Downloaded toml v0.9.11+spec-1.1.0
+  Downloaded unicode-script v0.5.8
+  Downloaded linux-raw-sys v0.11.0
+  Downloaded glib-sys v0.18.1
+  Downloaded gdk-sys v0.18.2
+  Downloaded flate2 v1.1.8
+  Downloaded html5ever v0.29.1
+  Downloaded proc-macro2 v1.0.105
+  Downloaded gio-sys v0.18.1
+  Downloaded euclid v0.22.11
+  Downloaded gdk v0.18.2
+  Downloaded fontdb v0.16.2
+  Downloaded hashbrown v0.12.3
+  Downloaded toml_edit v0.20.2
+  Downloaded http v0.2.12
+  Downloaded http v1.4.0
+  Downloaded hyper-util v0.1.19
+  Downloaded fontdb v0.18.0
+  Downloaded image v0.24.9
+  Downloaded hashbrown v0.16.1
+  Downloaded tower-http v0.6.8
+  Downloaded zbus v4.4.0
+  Downloaded wry v0.47.2
+  Downloaded ttf-parser v0.25.1
+  Downloaded tiny-skia v0.11.4
+  Downloaded hyper v0.14.32
+  Downloaded exr v1.74.0
+  Downloaded glib v0.18.5
+  Downloaded skrifa v0.22.3
+  Downloaded unicode-width v0.2.2
+  Downloaded wgpu-hal v0.19.5
+  Downloaded h2 v0.3.27
+  Downloaded read-fonts v0.22.7
+  Downloaded gio v0.18.4
+  Downloaded glam v0.25.0
+  Downloaded gtk v0.18.2
+  Downloaded winnow v0.7.14
+  Downloaded serde_json v1.0.149
+  Downloaded h2 v0.4.13
+  Downloaded glow v0.13.1
+  Downloaded futures-util v0.3.31
+  Downloaded hyper v1.8.1
+  Downloaded x11rb-protocol v0.13.2
+  Downloaded gtk-sys v0.18.2
+  Downloaded hashbrown v0.14.5
+  Downloaded encoding_rs v0.8.35
+   Compiling proc-macro2 v1.0.105
+   Compiling unicode-ident v1.0.22
+   Compiling quote v1.0.43
+   Compiling libc v0.2.180
+   Compiling cfg-if v1.0.4
+   Compiling pkg-config v0.3.32
+   Compiling smallvec v1.15.1
+   Compiling once_cell v1.21.3
+   Compiling bitflags v2.10.0
+   Compiling hashbrown v0.16.1
+   Compiling equivalent v1.0.2
+   Compiling log v0.4.29
+   Compiling pin-project-lite v0.2.16
+   Compiling version_check v0.9.5
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling slab v0.4.11
+   Compiling futures-core v0.3.31
+   Compiling winnow v0.5.40
+   Compiling autocfg v1.5.0
+   Compiling indexmap v2.13.0
+   Compiling shlex v1.3.0
+   Compiling target-lexicon v0.12.16
+   Compiling find-msvc-tools v0.1.8
+   Compiling cc v1.2.53
+   Compiling syn v2.0.114
+   Compiling memchr v2.7.6
+   Compiling cfg-expr v0.15.8
+   Compiling heck v0.5.0
+   Compiling version-compare v0.2.1
+   Compiling futures-io v0.3.31
+   Compiling futures-sink v0.3.31
+   Compiling pin-utils v0.1.0
+   Compiling futures-channel v0.3.31
+   Compiling thiserror v1.0.69
+   Compiling rustix v1.1.3
+   Compiling futures-task v0.3.31
+   Compiling linux-raw-sys v0.11.0
+   Compiling crossbeam-utils v0.8.21
+   Compiling parking_lot_core v0.9.12
+   Compiling scopeguard v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling libm v0.2.15
+   Compiling parking_lot v0.12.5
+   Compiling bytes v1.11.0
+   Compiling tracing-core v0.1.36
+   Compiling toml_datetime v0.6.3
+   Compiling serde_spanned v0.6.9
+   Compiling stable_deref_trait v1.2.1
+   Compiling toml_edit v0.20.2
+   Compiling getrandom v0.2.17
+   Compiling num-traits v0.2.19
+   Compiling libloading v0.7.4
+   Compiling errno v0.3.14
+   Compiling signal-hook-registry v1.4.8
+   Compiling socket2 v0.6.1
+   Compiling mio v1.1.1
+   Compiling zerocopy v0.8.33
+   Compiling arrayvec v0.7.6
+   Compiling synstructure v0.13.2
+   Compiling percent-encoding v2.3.2
+   Compiling num_cpus v1.17.0
+   Compiling siphasher v1.0.1
+   Compiling litemap v0.8.1
+   Compiling writeable v0.6.2
+   Compiling rand_core v0.6.4
+   Compiling rand v0.8.5
+   Compiling phf_shared v0.11.3
+   Compiling dlib v0.5.2
+   Compiling wayland-sys v0.31.8
+   Compiling downcast-rs v1.2.1
+   Compiling icu_properties_data v2.1.2
+   Compiling toml v0.8.2
+   Compiling icu_normalizer_data v2.1.1
+   Compiling wayland-backend v0.3.12
+   Compiling parking v2.2.1
+   Compiling system-deps v6.2.2
+   Compiling phf_generator v0.11.3
+   Compiling itoa v1.0.17
+   Compiling simd-adler32 v0.3.8
+   Compiling bitflags v1.3.2
+   Compiling atomic-waker v1.1.2
+   Compiling concurrent-queue v2.5.0
+   Compiling fastrand v2.3.0
+   Compiling scoped-tls v1.0.1
+   Compiling wayland-client v0.31.12
+   Compiling futures-macro v0.3.31
+   Compiling thiserror-impl v1.0.69
+   Compiling tracing-attributes v0.1.31
+   Compiling zerofrom-derive v0.1.6
+   Compiling yoke-derive v0.8.1
+   Compiling bytemuck_derive v1.10.2
+   Compiling serde_derive v1.0.228
+   Compiling futures-util v0.3.31
+   Compiling zerovec-derive v0.11.2
+   Compiling tokio-macros v2.6.0
+   Compiling tracing v0.1.44
+   Compiling zerofrom v0.1.6
+   Compiling yoke v0.8.1
+   Compiling bytemuck v1.24.0
+   Compiling displaydoc v0.2.5
+   Compiling zerocopy-derive v0.8.33
+   Compiling polling v3.11.0
+   Compiling tokio v1.49.0
+   Compiling zerovec v0.11.5
+   Compiling zerotrie v0.2.3
+   Compiling tinystr v0.8.2
+   Compiling icu_locale_core v2.1.1
+   Compiling futures-executor v0.3.31
+   Compiling potential_utf v0.1.4
+   Compiling icu_collections v2.1.1
+   Compiling icu_provider v2.1.1
+   Compiling icu_normalizer v2.1.1
+   Compiling icu_properties v2.1.2
+   Compiling quick-xml v0.38.4
+   Compiling glib-sys v0.18.1
+   Compiling adler2 v2.0.1
+   Compiling crc32fast v1.5.0
+   Compiling miniz_oxide v0.8.9
+   Compiling form_urlencoded v1.2.2
+   Compiling memmap2 v0.9.9
+   Compiling memoffset v0.9.1
+   Compiling typenum v1.19.0
+   Compiling utf8_iter v1.0.4
+   Compiling wayland-scanner v0.31.8
+   Compiling idna_adapter v1.2.1
+   Compiling idna v1.1.0
+   Compiling gobject-sys v0.18.0
+   Compiling event-listener v5.4.1
+   Compiling generic-array v0.14.7
+   Compiling winnow v0.7.14
+   Compiling url v2.5.4
+   Compiling event-listener-strategy v0.5.4
+   Compiling flate2 v1.1.8
+   Compiling cfg_aliases v0.2.1
+   Compiling toml_datetime v0.7.5+spec-1.1.0
+   Compiling futures-lite v2.6.1
+   Compiling crossbeam-epoch v0.9.18
+   Compiling rayon-core v1.13.0
+   Compiling getrandom v0.3.4
+   Compiling raw-window-handle v0.6.2
+   Compiling crossbeam-deque v0.8.6
+   Compiling toml_parser v1.0.6+spec-1.1.0
+   Compiling phf_macros v0.11.3
+   Compiling zvariant_utils v2.1.0
+   Compiling rustix v0.38.44
+   Compiling static_assertions v1.1.0
+   Compiling async-task v4.7.1
+   Compiling toml_edit v0.23.10+spec-1.0.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling async-channel v2.5.0
+   Compiling gio-sys v0.18.1
+   Compiling enumflags2_derive v0.7.12
+   Compiling piper v0.2.4
+   Compiling phf v0.11.3
+   Compiling async-io v2.6.0
+   Compiling proc-macro-crate v3.4.0
+   Compiling libloading v0.8.9
+   Compiling linux-raw-sys v0.4.15
+   Compiling blocking v1.6.2
+   Compiling enumflags2 v0.7.12
+   Compiling digest v0.10.7
+   Compiling zvariant_derive v4.2.0
+   Compiling nix v0.29.0
+   Compiling ppv-lite86 v0.2.21
+   Compiling cpufeatures v0.2.17
+   Compiling ahash v0.7.8
+   Compiling either v1.15.0
+   Compiling endi v1.1.1
+   Compiling tinyvec_macros v0.1.1
+   Compiling tinyvec v1.10.0
+   Compiling rand_chacha v0.3.1
+   Compiling rayon v1.11.0
+   Compiling zvariant v4.2.0
+   Compiling async-lock v3.4.1
+   Compiling euclid v0.22.11
+   Compiling ring v0.17.14
+   Compiling slotmap v1.1.1
+   Compiling byteorder v1.5.0
+   Compiling async-fs v2.2.0
+   Compiling zbus_names v3.0.0
+   Compiling sha1 v0.10.6
+   Compiling zbus_macros v4.4.0
+   Compiling async-executor v1.13.3
+   Compiling async-broadcast v0.7.2
+   Compiling async-trait v0.1.89
+   Compiling serde_repr v0.1.20
+   Compiling xdg-home v1.3.0
+   Compiling ahash v0.8.12
+   Compiling ordered-stream v0.2.0
+   Compiling hex v0.4.3
+   Compiling roxmltree v0.20.0
+   Compiling cfg_aliases v0.1.1
+   Compiling hashbrown v0.12.3
+   Compiling fdeflate v0.3.7
+   Compiling fontconfig-parser v0.5.8
+   Compiling proc-macro-error-attr v1.0.4
+   Compiling dlv-list v0.3.0
+   Compiling syn v1.0.109
+   Compiling rustc-hash v1.1.0
+   Compiling fnv v1.0.7
+   Compiling float-cmp v0.9.0
+   Compiling smol_str v0.2.2
+   Compiling ttf-parser v0.21.1
+   Compiling strict-num v0.1.1
+   Compiling ordered-multimap v0.4.3
+   Compiling png v0.17.16
+   Compiling wayland-protocols v0.32.10
+   Compiling tokio-util v0.7.18
+   Compiling font-types v0.7.3
+   Compiling dirs-sys v0.3.7
+   Compiling zbus v4.4.0
+   Compiling proc-macro-error v1.0.4
+   Compiling palette v0.7.6
+   Compiling dark-light v1.1.1
+   Compiling unicode-ccc v0.2.0
+   Compiling untrusted v0.9.0
+   Compiling arrayref v0.3.9
+   Compiling vcpkg v0.2.15
+   Compiling unicode-script v0.5.8
+   Compiling unicode-properties v0.1.4
+   Compiling unicode-bidi-mirroring v0.2.0
+   Compiling base64 v0.22.1
+   Compiling by_address v1.2.1
+   Compiling palette_derive v0.7.6
+   Compiling tiny-skia-path v0.11.4
+   Compiling openssl-sys v0.9.111
+   Compiling rustybuzz v0.14.1
+   Compiling read-fonts v0.22.7
+   Compiling dirs v4.0.0
+   Compiling rust-ini v0.18.0
+   Compiling lyon_geom v1.0.18
+   Compiling futures v0.3.31
+   Compiling gdk-sys v0.18.2
+   Compiling approx v0.5.1
+   Compiling dconf_rs v0.3.0
+   Compiling weezl v0.1.12
+   Compiling unicode-bidi v0.3.18
+   Compiling rustc-hash v2.1.1
+   Compiling xkeysym v0.2.1
+   Compiling detect-desktop-environment v0.2.0
+   Compiling httparse v1.10.1
+   Compiling as-raw-xcb-connection v1.0.1
+   Compiling fast-srgb8 v1.0.0
+   Compiling lyon_path v1.0.16
+   Compiling jpeg-decoder v0.3.2
+   Compiling gethostname v1.1.0
+   Compiling http v1.4.0
+   Compiling x11rb-protocol v0.13.2
+   Compiling zeno v0.2.3
+   Compiling skrifa v0.22.3
+   Compiling termcolor v1.4.1
+   Compiling unicode-width v0.1.14
+   Compiling yazi v0.1.6
+   Compiling color_quant v1.1.0
+   Compiling tower-service v0.3.3
+   Compiling bit-vec v0.6.3
+   Compiling glam v0.25.0
+   Compiling allocator-api2 v0.2.21
+   Compiling try-lock v0.2.5
+   Compiling khronos-egl v6.0.0
+   Compiling web-time v1.1.0
+   Compiling xcursor v0.3.10
+   Compiling ash v0.37.3+1.3.251
+   Compiling ttf-parser v0.20.0
+   Compiling wayland-cursor v0.31.12
+   Compiling want v0.3.1
+   Compiling hashbrown v0.14.5
+   Compiling iced_core v0.13.2
+   Compiling bit-set v0.5.3
+   Compiling gif v0.13.3
+   Compiling fontdb v0.16.2
+   Compiling swash v0.1.19
+   Compiling codespan-reporting v0.11.1
+   Compiling wayland-protocols-wlr v0.3.10
+   Compiling tiny-skia v0.11.4
+   Compiling x11rb v0.13.2
+   Compiling wgpu-hal v0.19.5
+   Compiling calloop v0.13.0
+   Compiling half v2.7.1
+   Compiling zune-inflate v0.2.54
+   Compiling proc-macro-crate v2.0.2
+   Compiling gpu-descriptor-types v0.1.2
+   Compiling spirv v0.3.0+sdk-1.3.268.0
+   Compiling gpu-alloc-types v0.3.0
+   Compiling bit_field v0.10.3
+   Compiling unicode-segmentation v1.12.0
+   Compiling rangemap v1.7.1
+   Compiling lebe v0.5.3
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling self_cell v1.2.2
+   Compiling drm-sys v0.8.0
+   Compiling hexf-parse v0.2.1
+   Compiling sys-locale v0.3.2
+   Compiling unicode-xid v0.2.6
+   Compiling unicode-linebreak v0.1.5
+   Compiling heck v0.4.1
+   Compiling cursor-icon v1.2.0
+   Compiling cosmic-text v0.12.1
+   Compiling glib-macros v0.18.5
+   Compiling wayland-csd-frame v0.3.0
+   Compiling naga v0.19.2
+   Compiling exr v1.74.0
+   Compiling gpu-alloc v0.6.0
+   Compiling gpu-descriptor v0.2.4
+   Compiling calloop-wayland-source v0.3.0
+   Compiling iced_futures v0.13.2
+   Compiling tiff v0.9.1
+   Compiling wgpu-core v0.19.4
+   Compiling qoi v0.4.1
+   Compiling gdk-pixbuf-sys v0.18.0
+   Compiling pango-sys v0.18.0
+   Compiling cairo-sys-rs v0.18.2
+   Compiling phf_codegen v0.11.3
+   Compiling kurbo v0.11.3
+   Compiling socket2 v0.5.10
+   Compiling wgpu-types v0.19.2
+   Compiling mutate_once v0.1.2
+   Compiling renderdoc-sys v1.1.0
+   Compiling glow v0.13.1
+   Compiling lazy_static v1.5.0
+   Compiling drm-fourcc v2.2.0
+   Compiling profiling v1.0.17
+   Compiling linux-raw-sys v0.6.5
+   Compiling foreign-types-shared v0.1.1
+   Compiling openssl v0.10.75
+   Compiling foreign-types v0.3.2
+   Compiling svgtypes v0.15.3
+   Compiling kamadak-exif v0.5.5
+   Compiling image v0.24.9
+   Compiling glib v0.18.5
+   Compiling http-body v1.0.1
+   Compiling fontdb v0.18.0
+   Compiling wgpu v0.19.4
+   Compiling atk-sys v0.18.2
+   Compiling openssl-macros v0.1.1
+   Compiling x11-dl v2.21.0
+   Compiling tiny-xlib v0.2.4
+   Compiling simplecss v0.2.2
+   Compiling data-url v0.3.2
+   Compiling xmlwriter v0.1.0
+   Compiling zeroize v1.8.2
+   Compiling pico-args v0.5.0
+   Compiling native-tls v0.2.14
+   Compiling unicode-vo v0.1.0
+   Compiling svg_fmt v0.4.5
+   Compiling imagesize v0.12.0
+   Compiling new_debug_unreachable v1.0.6
+   Compiling rustls-pki-types v1.14.0
+   Compiling usvg v0.42.0
+   Compiling iced_graphics v0.13.0
+   Compiling drm-ffi v0.9.0
+   Compiling rgb v0.8.52
+   Compiling encoding_rs v0.8.35
+   Compiling ctor-lite v0.1.0
+   Compiling thiserror v2.0.18
+   Compiling openssl-probe v0.1.6
+   Compiling ttf-parser v0.25.1
+   Compiling float_next_after v1.0.0
+   Compiling lyon_tessellation v1.0.16
+   Compiling resvg v0.42.0
+   Compiling owned_ttf_parser v0.25.1
+   Compiling drm v0.14.1
+   Compiling etagere v0.2.15
+   Compiling h2 v0.4.13
+   Compiling lyon_algorithms v1.0.16
+   Compiling xkbcommon-dl v0.4.2
+   Compiling http v0.2.12
+   Compiling thiserror-impl v2.0.18
+   Compiling string_cache_codegen v0.5.4
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling ipnet v2.11.0
+   Compiling dpi v0.1.2
+   Compiling zmij v1.0.15
+   Compiling precomputed-hash v0.1.1
+   Compiling mac v0.1.1
+   Compiling option-ext v0.2.0
+   Compiling lru v0.12.5
+   Compiling rustls v0.23.36
+   Compiling gio v0.18.4
+   Compiling futf v0.1.5
+   Compiling markup5ever v0.14.1
+   Compiling ab_glyph v0.2.32
+   Compiling lyon v1.0.16
+   Compiling softbuffer v0.4.8
+   Compiling tokio-native-tls v0.3.1
+   Compiling rustls-webpki v0.103.9
+   Compiling guillotiere v0.6.2
+   Compiling smithay-clipboard v0.7.2
+   Compiling winit v0.30.12
+   Compiling gtk-sys v0.18.2
+   Compiling kurbo v0.10.4
+   Compiling hyper v1.8.1
+   Compiling memoffset v0.6.5
+   Compiling dtoa v1.0.11
+   Compiling rustls v0.21.12
+   Compiling subtle v2.6.1
+   Compiling serde_json v1.0.149
+   Compiling compression-core v0.4.31
+   Compiling utf-8 v0.7.6
+   Compiling tendril v0.4.3
+   Compiling compression-codecs v0.4.36
+   Compiling hyper-util v0.1.19
+   Compiling dtoa-short v0.3.5
+   Compiling iced_tiny_skia v0.13.0
+   Compiling clipboard_wayland v0.2.2
+   Compiling sctk-adwaita v0.10.1
+   Compiling clipboard_x11 v0.4.3
+   Compiling iced_glyphon v0.6.0
+   Compiling iced_wgpu v0.13.5
+   Compiling string_cache v0.8.9
+   Compiling http-body v0.4.6
+   Compiling h2 v0.3.27
+   Compiling http-body-util v0.1.3
+   Compiling selectors v0.26.0
+   Compiling iced_runtime v0.13.2
+   Compiling wayland-protocols-plasma v0.3.10
+   Compiling sct v0.7.1
+   Compiling rustls-webpki v0.101.7
+   Compiling cssparser-macros v0.6.1
+   Compiling ioctl-rs v0.1.6
+   Compiling termios v0.2.2
+   Compiling serial-core v0.4.0
+   Compiling aho-corasick v1.1.4
+   Compiling sync_wrapper v1.0.2
+   Compiling tower-layer v0.3.3
+   Compiling httpdate v1.0.3
+   Compiling ryu v1.0.22
+   Compiling anyhow v1.0.100
+   Compiling regex-syntax v0.8.8
+   Compiling regex-automata v0.4.13
+   Compiling serde_urlencoded v0.7.1
+   Compiling hyper v0.14.32
+   Compiling tower v0.5.3
+   Compiling serial-unix v0.4.0
+   Compiling cssparser v0.34.0
+   Compiling iced_renderer v0.13.0
+   Compiling tokio-rustls v0.26.4
+   Compiling window_clipboard v0.4.1
+   Compiling async-compression v0.4.37
+   Compiling webpki-roots v1.0.5
+   Compiling fxhash v0.2.1
+   Compiling match_token v0.1.0
+   Compiling derive_more v0.99.20
+   Compiling ordered-float v4.6.0
+   Compiling servo_arc v0.4.3
+   Compiling iri-string v0.7.10
+   Compiling mime v0.3.17
+   Compiling unicode-width v0.2.2
+   Compiling semver v1.0.27
+   Compiling rustc_version v0.4.1
+   Compiling getopts v0.2.24
+   Compiling tower-http v0.6.8
+   Compiling html5ever v0.29.1
+   Compiling decoder_value v0.0.3
+   Compiling hyper-rustls v0.27.7
+   Compiling iced_winit v0.13.0
+   Compiling nix v0.25.1
+   Compiling iced_widget v0.13.4
+   Compiling tokio-rustls v0.24.1
+   Compiling serial v0.4.0
+   Compiling hyper-tls v0.6.0
+   Compiling dirs-sys v0.5.0
+   Compiling dirs-sys v0.4.1
+   Compiling sharded-slab v0.1.7
+   Compiling filedescriptor v0.8.3
+   Compiling serde_spanned v1.0.4
+   Compiling tracing-log v0.2.0
+   Compiling thread_local v1.1.9
+   Compiling nu-ansi-term v0.50.3
+   Compiling ego-tree v0.10.0
+   Compiling shell-words v1.1.1
+   Compiling same-file v1.0.6
+   Compiling base64 v0.21.7
+   Compiling iana-time-zone v0.1.64
+   Compiling toml_writer v1.0.6+spec-1.1.0
+   Compiling toml v0.9.11+spec-1.1.0
+   Compiling rustls-pemfile v1.0.4
+   Compiling chrono v0.4.43
+   Compiling portable-pty v0.8.1
+   Compiling walkdir v2.5.0
+   Compiling iced v0.13.1
+   Compiling scraper v0.22.0
+   Compiling tracing-subscriber v0.3.22
+   Compiling directories v6.0.0
+   Compiling reqwest v0.12.28
+   Compiling hyper-rustls v0.24.2
+   Compiling decoder v0.0.3
+   Compiling field-offset v0.3.6
+   Compiling gdk-pixbuf v0.18.5
+   Compiling pango v0.18.3
+   Compiling hyper-tls v0.5.0
+   Compiling bstr v1.12.1
+   Compiling cairo-rs v0.18.5
+   Compiling sipper v0.1.0
+   Compiling sysinfo v0.30.13
+   Compiling uuid v1.19.0
+   Compiling tokio-stream v0.1.18
+   Compiling soup3-sys v0.5.0
+   Compiling javascriptcore-rs-sys v1.1.1
+   Compiling toml_edit v0.19.15
+   Compiling x11 v2.21.0
+   Compiling webpki-roots v0.25.4
+   Compiling sync_wrapper v0.1.2
+   Compiling function v0.2.0
+   Compiling peak-intelligence v0.1.0 (/project/crates/peak-intelligence)
+   Compiling reqwest v0.11.27
+   Compiling gdk v0.18.2
+   Compiling opener v0.6.1
+   Compiling proc-macro-crate v1.3.1
+   Compiling dirs v5.0.1
+   Compiling directories v5.0.1
+   Compiling regex v1.12.2
+   Compiling sha2 v0.10.9
+   Compiling webkit2gtk-sys v2.0.1
+   Compiling gdkx11-sys v0.18.2
+   Compiling gtk v0.18.2
+   Compiling alsa-sys v0.3.1
+   Compiling strsim v0.11.1
+   Compiling ident_case v1.0.1
+   Compiling darling_core v0.20.11
+   Compiling peak-core v0.1.0 (/project/crates/peak-core)
+   Compiling gtk3-macros v0.18.2
+   Compiling atk v0.18.2
+   Compiling symphonia-core v0.5.5
+   Compiling num-conv v0.1.0
+   Compiling powerfmt v0.2.0
+   Compiling time-core v0.1.7
+   Compiling time-macros v0.2.25
+   Compiling deranged v0.5.5
+   Compiling symphonia-metadata v0.5.5
+   Compiling calloop v0.14.3
+   Compiling proc-macro-utils v0.10.0
+   Compiling cookie v0.18.1
+   Compiling cpal v0.15.3
+   Compiling time v0.3.45
+   Compiling manyhow-macros v0.11.4
+   Compiling alsa v0.9.1
+   Compiling symphonia-bundle-mp3 v0.5.5
+   Compiling darling_macro v0.20.11
+   Compiling javascriptcore-rs v1.1.2
+   Compiling soup3 v0.5.0
+   Compiling peak-theme v0.1.0 (/project/crates/peak-theme)
+   Compiling ogg v0.8.0
+   Compiling async-net v2.0.0
+   Compiling dlopen2_derive v0.4.1
+   Compiling is-docker v0.2.0
+   Compiling rfd v0.14.1
+   Compiling dasp_sample v0.11.0
+   Compiling wry v0.47.2
+   Compiling is-wsl v0.4.0
+   Compiling peak-ui v0.1.0 (/project/crates/peak-ui)
+   Compiling dlopen2 v0.7.0
+   Compiling ashpd v0.8.1
+   Compiling lewton v0.10.2
+   Compiling darling v0.20.11
+   Compiling symphonia v0.5.5
+   Compiling manyhow v0.11.4
+   Compiling waycrate_xkbkeycode v0.13.7
+   Compiling calloop-wayland-source v0.4.1
+   Compiling gdkx11 v0.18.2
+   Compiling gdkwayland-sys v0.18.2
+   Compiling wayland-protocols-misc v0.3.10
+   Compiling tempfile v3.24.0
+   Compiling crossbeam-channel v0.5.15
+   Compiling instant v0.1.13
+   Compiling pollster v0.3.0
+   Compiling claxon v0.4.3
+   Compiling urlencoding v2.1.3
+   Compiling hound v3.5.1
+   Compiling pathdiff v0.2.3
+   Compiling layershellev v0.13.7
+   Compiling open v5.3.3
+   Compiling rodio v0.17.3
+   Compiling iced_layershell_macros v0.13.7
+   Compiling peak-system v0.1.0 (/project/crates/peak-system)
+   Compiling peak-shell v0.1.0 (/project/crates/peak-shell)
+   Compiling iced_layershell v0.13.7
+   Compiling webkit2gtk v2.0.1
+   Compiling tao v0.30.8
+   Compiling peak-apps v0.1.0 (/project/crates/peak-apps)
+   Compiling peak-desktop v0.1.0 (/project/crates/modes/desktop)
+warning: constant `ID_DOCK` is never used
+ --> crates/modes/desktop/src/layer_app.rs:9:11
+  |
+9 | pub const ID_DOCK: &str = "dock";
+  |           ^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: variant `Shell` is never constructed
+  --> crates/modes/desktop/src/layer_app.rs:14:5
+   |
+12 | pub enum LayerMessage {
+   |          ------------ variant in this enum
+13 |     App(Message),
+14 |     Shell(LayershellCustomActions),
+   |     ^^^^^
+   |
+   = note: `LayerMessage` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: hiding a lifetime that's elided elsewhere is confusing
+  --> crates/modes/desktop/src/layer_app.rs:53:13
+   |
+53 |     fn view(&self) -> iced::Element<Self::Message> {
+   |             ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the same lifetime is hidden here
+   |             |
+   |             the lifetime is elided here
+   |
+   = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+   = note: `#[warn(mismatched_lifetime_syntaxes)]` on by default
+help: use `'_` for type paths
+   |
+53 |     fn view(&self) -> iced::Element<'_, Self::Message> {
+   |                                     +++
+
+error: linking with `cc` failed: exit status: 1
+  |
+  = note:  "cc" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crt1.o" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crti.o" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtbegin.o" "/tmp/rustcp4yakK/symbols.o" "<17 object files omitted>" "-Wl,--as-needed" "-Wl,-Bstatic" "/build/target/aarch64/release/deps/{libiced_layershell-d1d8f23a00a71972,liblayershellev-927f40bfb8ea5552,libtempfile-56f93c5ac9b0c065,libcalloop_wayland_source-a3da5729a05efd3e,libwayland_protocols_misc-6fb0742dc2fc253f,libwaycrate_xkbkeycode-56ef081cc74da1e9,libcalloop-f927d6b53f62bedf,librodio-60d5bf5009914c7f,libhound-622e6d01b6f1eb24,liblewton-9895fe85f35757de,libogg-3e14f68f1b8ff3d7,libclaxon-ad44ec67f8651dc5,libsymphonia-771289862bfc145c,libsymphonia_metadata-7e1865d32700b127,libsymphonia_bundle_mp3-898d763158ce271b,libsymphonia_core-15b03b050621c324,libcpal-e761048833a474b5,libdasp_sample-6cdbf41c88b67dbd,libalsa-f644dab60812cff1,libalsa_sys-a4ee6968eb61dccc}.rlib" "-lasound" "/build/target/aarch64/release/deps/{libpeak_intelligence-190fd4bd4f2b86a1,libscraper-ecf1c910d0ae1c2f,libego_tree-b485df89ad3f2a9c,libselectors-1a596b59020b1835,libfxhash-44a5dbdac77e052f,libservo_arc-97571b68fa602060,libcssparser-ae80adad60cdc6a7,libdtoa_short-092575b146e9a29e,libdtoa-0f41fab81e6180e8,libhtml5ever-352648a673317f3a,libmarkup5ever-001c527e218d3e06,libstring_cache-976a4da7ef3a0c82,libprecomputed_hash-1d1c288b3f5839cc,libtendril-dafe41ab2a0eb1e9,libutf8-e624c44906668599,libfutf-d132e0f7808b8247,libdebug_unreachable-d47cbb05d9f299e3,libmac-f4dee3977828d79e,libtoml-8fc3306815bbdb12,libtoml_writer-70442c4bf1e6653c,libtoml_parser-38ed4da54efb63d0,libwinnow-50b6af6541830d9b,libserde_spanned-82bb0400804f186f,libtoml_datetime-1da253867559d439,libwalkdir-5d0c892b1252b8a3,libsame_file-2361ebc0685a20c6,libreqwest-a90a43d9bb11f615,libhyper_rustls-1884bd84ff1b84dd,libwebpki_roots-0093617368d5ab60,libhyper_tls-d0f9641574690370,libtokio_rustls-1a36dbb8133f4eb9,librustls-72669df7d2951e46,libsubtle-bc1cdfec7ed07870,libwebpki-6e8931c87185c7fd,librustls_pki_types-09016e5950ced411,libzeroize-18aa886ae17c168e,libtower_http-68849b46c7204cb2,libiri_string-db69c8c7dfad634a,libasync_compression-293b215e2cb5bf43,libcompression_codecs-ecd1bdfe8106dd31,libcompression_core-afd1045642eeb872,libtower-9d410841f944695f,libtower_layer-259c95e34a69c411,libhyper_util-d6bdbf3fdd9fe6cc,libhyper-e46f6246db704e56,libh2-84afd1ce9d474bcf,libhttp_body_util-7fd2cdafa439570a,libhttp_body-535bdc79048ea0f6,libsync_wrapper-b69e4a41284b81da,libuuid-13bd5eda3f0b1603,libfunction-76cf7c450369facd,libdecoder-2c7c47900a881a8b,libdecoder_value-4db66f8e52727938,libordered_float-fd558e1bf67136a0,libsipper-27985bba655b875a,libpeak_apps-1dcf2490c9c2fb9a,librfd-5676cfa1fbdc1c54,libpollster-2f25ea548e864ffe,libashpd-5be68ef7e45b2931,libasync_net-ffa359c1b06c933b,libpeak_ui-7416e2dc98c4cac2,libwry-9ceb3039fe9330d0,libcookie-34629f24ba555e2e,libtime-e70d87b08676f114,libtime_core-ccaa21b603ccd04e,libnum_conv-de56890b3f0dccc2,libderanged-a965b7f39ddc0347,libpowerfmt-6f769edd6d1611f7,libwebkit2gtk-bd0dbb93a188499e,libsoup-e852eae7465fb995,libwebkit2gtk_sys-a6b8a7a74ac56d00}.rlib" "-lwebkit2gtk-4.1" "-lgtk-3" "-lgdk-3" "-lz" "-lpangocairo-1.0" "-lcairo-gobject" "-lgdk_pixbuf-2.0" "-latk-1.0" "-lpango-1.0" "-lcairo" "-lharfbuzz" "-lsoup-3.0" "-lgio-2.0" "-lgmodule-2.0" "-ljavascriptcoregtk-4.1" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/libsoup3_sys-24582cf1bc89b834.rlib" "-lsoup-3.0" "-lgio-2.0" "-lgobject-2.0" "-lgmodule-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/{libjavascriptcore-d31e126b0aa75794,libjavascriptcore_rs_sys-4b7fb536439f617f}.rlib" "-ljavascriptcoregtk-4.1" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/{libhttp-8037312b1d9d2803,libgdkx11-90c190284b7ac822,libtao-a56b8fb90eafbb88,libgdk_x11_sys-16bf7f1458a71415}.rlib" "-lgdk-3" "-lz" "-lpangocairo-1.0" "-lpango-1.0" "-lharfbuzz" "-lgdk_pixbuf-2.0" "-lcairo-gobject" "-lgobject-2.0" "-lglib-2.0" "-lintl" "-lcairo" "/build/target/aarch64/release/deps/{libx11-d9e0e55ef26fa667,libgdk_wayland_sys-4fb9de264725943d,libdlopen2-f0b7bb84ff107687,libcrossbeam_channel-68ff6fa083375ead,libgtk-92983f543add5b3b,libfield_offset-bc124d3e42ceaee7,libgdk-ac4dae27c2bcd7d6,libpango-04512ef0ace3b9ef,libgdk_pixbuf-037a0d18d9009a62,libgio-eaacb34a3bc057d8,libcairo-7ca0bcb3d1e6c57a,libatk-89ba81e5284c4ef6,libglib-0d35988950a6fa0c}.rlib" "-lgobject-2.0" "/build/target/aarch64/release/deps/libgtk_sys-c05821f0ccb2476f.rlib" "-lgtk-3" "-lgdk-3" "-lz" "-lpangocairo-1.0" "-lcairo-gobject" "-lgdk_pixbuf-2.0" "-latk-1.0" "-lpango-1.0" "-lcairo" "-lharfbuzz" "-lgio-2.0" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/libatk_sys-1bafcdda29badd6a.rlib" "-latk-1.0" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/libgdk_sys-f17723d8a975ee49.rlib" "-lgdk-3" "-lz" "-lpangocairo-1.0" "-lpango-1.0" "-lharfbuzz" "-lgdk_pixbuf-2.0" "-lcairo-gobject" "-lgobject-2.0" "-lglib-2.0" "-lintl" "-lcairo" "/build/target/aarch64/release/deps/libpango_sys-84e552b068d44078.rlib" "-lpango-1.0" "-lharfbuzz" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/libgdk_pixbuf_sys-b9531090b0aaf13a.rlib" "-lgdk_pixbuf-2.0" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/libgio_sys-5b99f7fb3e0e5704.rlib" "-lgio-2.0" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/libcairo_sys-e8859456600e7c0c.rlib" "-lcairo-gobject" "-lcairo" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/libgobject_sys-812e6b087ee20044.rlib" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/libglib_sys-089f3998b1fcdcdb.rlib" "-lgobject-2.0" "-lglib-2.0" "-lintl" "/build/target/aarch64/release/deps/{libinstant-fa887709dd332ded,libsysinfo-b2f4d5b439a81fbc,libpeak_shell-c7e8f86fdb839592,libchrono-ca99289e7d1b3b4b,libiana_time_zone-8c0d7dee5b946e4b,libpeak_theme-7ec5521839fd3eaa,libpeak_core-6a2582f7f7da52d9,libreqwest-75b89295509984af,librustls_pemfile-55ee8270aa9f62b7,libhyper_rustls-ac2c263225c66964,libhyper_tls-8ade5fe9fbd83380,libserde_urlencoded-cb54e28e392d7765,libryu-099d56d3f3aa8ae4,libwebpki_roots-211ec23d9f625a73,libbase64-3b5a0ea13b8736f8,libipnet-8842fd2e432e921e,libtokio_native_tls-553dc321eea81c69,libtokio_rustls-683709cdc183a91a,libmime-df4795394bc561e6,libencoding_rs-29ff4d9e56551e96,libserde_json-cba268b9111eac72,libzmij-b17e74fa16ab52a9,librustls-14ac1f925b9e1e4b,libsct-b60a0d86d53e2859,libwebpki-25b7052fa6c03256,libring-5981880c243ff887,libuntrusted-e9da22d29021695a,libnative_tls-1e682dd7408e33ea,libopenssl_probe-1192aaec6c5d8580,libopenssl-ec7cd3c10ce5c785,libforeign_types-5aa30fd1b6393957,libforeign_types_shared-0688ea8e3aa4e4f3,libopenssl_sys-d2084a8b151beaec,libhyper-1d357f109765d77a,libwant-eb744197c617313c,libtry_lock-d65b425fa04fb774,libsocket2-2554ccbd6f9a2447,libhttparse-9072becb877797e1,libh2-5bdc4eaf5bb430af,libtokio_util-000af372488340fa,libtower_service-40240acf1382bfda,libsync_wrapper-fa57a35ba12daabd,libhttp_body-b9e4061e2e474f1d,libhttp-8c62dbb00dd430a6,libitoa-131df861f0f5acbd,libfnv-6aea8cea0feee16b,libdirectories-83b0a6e4c00222e6,libopener-2f999d95945dea09,libbstr-6935ead856ed60f6,libdirs-e64fd1ea28985d98,libdirs_sys-d4e593e1df25ee0a,liboption_ext-5c786337cf664a43,liblazy_static-25b20dbb95fa83c9,libsha2-5d8eef859679296a,libregex-1b2002883af4014a,libregex_automata-768b9c763424b8d6,libaho_corasick-685afa38098a17d2,libregex_syntax-2fefca1a1eb8afdd,libportable_pty-d8276d504a09cf90,libshell_words-564feb73e48d990f,libserial-7a43e1e7cab6829d,libserial_unix-58d57996cad0e56f,libioctl_rs-ac31839757f1ada6,libtermios-e3c9f8bf1dbef6e8}.rlib" "-lc" "/build/target/aarch64/release/deps/{libserial_core-256ee5a0809f9812,libfiledescriptor-6620ad55eebbd256,libnix-9088b3a82918043d,libmemoffset-44c67a1b87142fc6,libanyhow-48610e8cad023e2b,libiced-3b3f4c1e256abe95,libiced_winit-8dc7ce1aac95ce9c,libwindow_clipboard-f483f7a3507b2271,libclipboard_x11-747b770d0e2ca910,libthiserror-669f85cd7b73b8d0,libclipboard_wayland-c16de758540094fe,libsmithay_clipboard-bdb001af0114ead7,libwinit-a02873a43690a108,libsctk_adwaita-63c4d71fa878aa46,libab_glyph-a85aa0fced5c1504,libowned_ttf_parser-370e1960da40b67e,libttf_parser-44863ee83171b79c,libab_glyph_rasterizer-b6342a8f5c93436f,libwayland_protocols_plasma-ab8db4933cffe6fa,libsmithay_client_toolkit-0384d6c1b26d925e,libwayland_cursor-a10ea53865f57127,libxcursor-6980c3cd0c1200d5,libwayland_protocols_wlr-aac193400a1cfa2c,libwayland_protocols-268fe7f83c4c3abe,libwayland_csd_frame-a4e38c82643d26fd,libcalloop_wayland_source-505c8e32a7e93c3d,libcalloop-bc5b23647db8079f,libx11_dl-f88cc918afa9887c}.rlib" "-ldl" "/build/target/aarch64/release/deps/{libxkbcommon_dl-595d3bf516aecaae,libxkeysym-efa8f487b1cc50f9,libcursor_icon-ae2dd52247234ef5,libdpi-cefb75256487fea9,libiced_widget-e44238916eb4be9f,libiced_runtime-729dfbf522d48ffe,libiced_renderer-3a4dd24594dc1099,libiced_tiny_skia-3abbc8015d6fa02f,libkurbo-1522e431788bb630,libsoftbuffer-8f6c37f48a6ce7a5,libtiny_xlib-f2375f39ffde7df8,libctor_lite-b74bfbda79e3d2e7,libx11rb-51c690b6b5d92edb,libgethostname-baeec6133fd2d398,libx11rb_protocol-30f0dd6ffd3aa51b,libas_raw_xcb_connection-49d4f0813df1a0b7,libwayland_client-4dee853fdf47bb84,libwayland_backend-5af3ebf8faf0b469,libdowncast_rs-6f938a2b323a0eeb,libscoped_tls-77d673220e209324,libwayland_sys-0f1783ca34d86d85,libdlib-eb776ee98b7981c4,libdrm-81911e164401e24b,libdrm_ffi-be0a6d94726a8f84,librustix-38b555957b608825,liblinux_raw_sys-9fe082f367cb4d74,libdrm_sys-e2fdd5de25edd19f,liblinux_raw_sys-f11a1183989959d2,libdrm_fourcc-dc927103be0b05b0,libiced_wgpu-648292655f16b6ac,libiced_glyphon-a46f71689b9958e4,liblru-0453f33d44b3c590,libetagere-8581e46177ada6a2,libiced_graphics-4949786f59963027,libexif-2ead0f1c3a2a5071,libmutate_once-793e0c0279ddb7b8,libiced_futures-815c636d3673d016,libtokio-b5c216f292c433a1,libsignal_hook_registry-b54af30854093b0e,liberrno-4ae23727d5c8fb17,libsocket2-a6b58c129199cea6,libmio-5a45283485bd87ff,libfutures-224d4c1e8daabd7a,libfutures_executor-fa1c4595e08baaf3,libnum_cpus-f762717f4457da19,libiced_core-0f4891f817ae6251,libdark_light-4afa50be229a7dfc,libdirs-187dde7889516597,libdirs_sys-b5e5f828fff8b968,libdconf_rs-f1f7f7fc0e0913a5,libzbus-224aab3af85b7698,libasync_fs-c53190f8e3633dff,libblocking-640894c233d5c1fe,libpiper-ac17e4944ea91a73,libatomic_waker-7f159573acf0bab1,libasync_channel-097c60d8de5e9d90,libhex-2518fd1c5b495096,libasync_lock-51184001f9dd2ea8,libasync_executor-d21fb5fcb537df9c,libasync_task-8ff9b114c7bb1179,librand-e68fb9b17b8cec14,librand_chacha-ba4aa107ce7696fd,libppv_lite86-ca576cd24105b32b,librand_core-04fcc25f71b9ac88,libxdg_home-61077f95f4d6026d,libsha1-5d1d516874b6fa66,libdigest-cd957e1262a14da1,libblock_buffer-326647fa17ded378,libcrypto_common-5c67355075533bfc,libgeneric_array-e01c58bbdd9cb0fe,libtypenum-6433f7ecbcaad006,libfutures_util-eb88890dabb7f22f,libmemchr-2353a0646c8c58ca,libfutures_channel-d9471ce87b9ee7e9,libfutures_sink-0568cd3ae4c651cb,libfutures_task-e43bea4f35b691c1,libpin_utils-ea2827fdc0927b7c,libtracing-9f6d5b1b1b7325bb,libtracing_core-2284243189208f36,libordered_stream-04e68ca8e5aabcb6,libasync_broadcast-d81e880befd4b8de,libevent_listener_strategy-64c794f1f1aea659,libevent_listener-7174454e504b686d,libnix-df447d6009ad023c,libmemoffset-c0a7f803984cac17,libasync_io-779dbed9ee5151a4,libslab-c4963e8ae1cc8bde,libpolling-ab6fe22203fd4a57,libconcurrent_queue-12047d0f64d38b5d,librustix-9ebac0f25b3dffe7,liblinux_raw_sys-0121bc24446c451a,libfutures_lite-54071b7239f1ef5d,libfutures_core-91194a07fee638a7,libparking-1d92cba33440a4b8,libpin_project_lite-635678994c78db0f,libfastrand-4e08877a0fa9106b,libfutures_io-0a1c3661b7a350a9,libzbus_names-7c86822bb53d0431,libzvariant-feb5db0011cce6ac,liburl-4b6f03d0a0cfb594,libidna-7881d63a327e91eb,libutf8_iter-da5cb490670dbd39,libidna_adapter-b8dc8a2e42d9580f,libicu_properties-2c32d54d3722d44d,libicu_properties_data-699806066dde75c8,libicu_normalizer-42aa3a73246a297b,libicu_normalizer_data-3844f070fdc567d3,libicu_collections-c222a330ae9bb6fb,libpotential_utf-cb19db58f3fe909a,libicu_provider-0ffcbb3f05c771af,libicu_locale_core-9908c065b7b112de,libtinystr-9453b1c288180ac4,liblitemap-324362146c3205be,libwriteable-73ecd6b4baad7d11,libzerovec-a44a973aa21ce9a2,libzerotrie-31a2c2dbd0b1e4db,libyoke-32360ea2aac26f8a,libstable_deref_trait-e1c42377c3776c64,libzerofrom-81c69de221933abb,libform_urlencoded-4845631bdb4247a1,libpercent_encoding-b128c4bdae8364a9,libenumflags2-683b777203c9d334,libendi-b14820cbd6a9c86c,libserde-82642f0bdf0c7431,libini-c3de79ae30025e14,libordered_multimap-28bad9a0ed00064e,libhashbrown-c58e863949416b9f,libahash-c42c022f9bc45a89,libgetrandom-093efbd5104919c1,libdlv_list-04c2c96eaed41617,libdetect_desktop_environment-8286f515bffb5024,libsmol_str-972ca378f4ad07e9,libglam-deb97785459c4c41,libweb_time-cc027dc5505519f1,libpalette-426cc1a910436214,libfast_srgb8-4f2b4d50c4fbbe9c,libphf-a85495b1bf127f9f,libphf_shared-3c8be2e5e42c25c1,libapprox-267cec2fd0f4367c,libbytes-20c9b1f4aa023bc1,libcosmic_text-8ced4c35b66da1dd,libunicode_linebreak-dd171743ebd19faa,libsys_locale-7bc262e8480f8b74,libswash-f02151e612ba9662,libyazi-3c0231f879541f76,libskrifa-6d85f48dce05f1cb,libread_fonts-1df5b3fcaffdc9a2,libfont_types-12114fe3b4cc43f5,libzeno-6ff8b31b7eb08238,libself_cell-ccac779ac79d216f,libunicode_segmentation-ec26d4db10141e69,libfontdb-d61a80dfcfd13d0c,libttf_parser-eb3090aa6e5b4a96,librangemap-bfcce0c8a1ec9f76,libimage-80579a43116ecd1d,libqoi-1c332d4b21dd433f,libexr-7375d1d47664ccba,libzune_inflate-b9388dd2521b5247,libbit_field-c1c6358ca3556869,liblebe-78bd9e20d81acef5,libbyteorder-2452433cdf017f2c,libtiff-eeb3845689d47a69,libhalf-a8a2c77ef1b9019c,libresvg-a3bd4aa4a4432db9,libgif-df91544f7e955ad4,libcolor_quant-7e5d119feeb4ab1c,libweezl-65209caae75402d4,libjpeg_decoder-5c40279e792a71dd,librayon-b4c1e34a14da17c3,librayon_core-e7c1dc0d134c1bed,libcrossbeam_deque-3ce778933918fa5c,libcrossbeam_epoch-a686068ba7a3adbc,libcrossbeam_utils-a0fdb9438cde1c56,libeither-cb9f136d5c5a9e40,librgb-3677abb9f836cd6e,libusvg-39fd4a026b437098,libbase64-b21e44b148b7231c,libunicode_bidi-d76d4128a44714d5,libunicode_vo-0856393f4577a7ff,libimagesize-800b0f88349bc448,libdata_url-402a9d28f575a6a8,libxmlwriter-4e05a71732347a42,librustybuzz-d74059a0765430bf,libunicode_bidi_mirroring-b4feabf2412832ea,libunicode_script-1d145eff5b836496,libunicode_ccc-3aa0c73c6d3dcb82,libunicode_properties-e2a71ceb8913a2a0,libsimplecss-7c1969fa26fc6d2e,libsvgtypes-b54a2d48a730b0c9,libkurbo-6f360597ee191120,libsiphasher-3bffc86cca1ee389,libfontdb-20eb367cc2318561,libfontconfig_parser-33b9da3120cd5441,libroxmltree-eb2e684627ce8955,libmemmap2-65128cb8b51fa27c,libtinyvec-9970bd56c5b02197,libtinyvec_macros-9fb6accc516fbd70,libslotmap-42e0def753638acf,libttf_parser-e60b1b567eb892dc,libtiny_skia-812e20b857cecd8f,libpng-91455d13c7b14928,libbitflags-0e11717081d525a1,libflate2-07cabe1eb80eeed4,libminiz_oxide-304c96bec82f65c4,libfdeflate-674855e74122d580,libsimd_adler32-64698b0d490afd9f,libcrc32fast-9ab2d3425f2d7a1d,libtiny_skia_path-973f5e20c2ece214,libstrict_num-a43add6d4dcde0f0,libfloat_cmp-b3891aef9a3afb29,libarrayref-e323acb8a11437fc,libguillotiere-0fceb0b4a0f7b48a,libsvg_fmt-e9823d356fddf6da,libbytemuck-53002440d1b22e03,liblyon-1899eb9d1b00f62b,liblyon_tessellation-42e626bd7e7acb21,libfloat_next_after-806d2334c0e173b9,liblyon_algorithms-895ec374856616d0,liblyon_path-9b57151de70ab2d8,liblyon_geom-5a8211463c3c7f56,libeuclid-865c7e5c78e044ab,libnum_traits-8ab2ac8b25477a05,libwgpu-575bd5a00de7f329,libstatic_assertions-123b92c97595c3bf,libwgpu_core-6afd2763663ef5a8,libwgpu_hal-815e8b7b331e796f,librenderdoc_sys-148fb772215770c7,libgpu_descriptor-c6cfaac4aa06eae9,libhashbrown-d298d31962693eaa,libahash-ea1625af5f0112b7,libgetrandom-65a868e314e40bed,libonce_cell-cbf1149876de3f76,libzerocopy-bc6890be5a1bf72b,liballocator_api2-34f6da783bb5f436,libgpu_descriptor_types-a31e632ea06b2f56,libkhronos_egl-75e83d17683e7620,liblibloading-f7878721a1aa2f8e}.rlib" "-ldl" "/build/target/aarch64/release/deps/{libprofiling-0ab2002217539d4d,libgpu_alloc-14fa85c76a87e132,libgpu_alloc_types-7ea4d3c2a3e02e79,libash-c5ef0aae8c725167,liblibloading-76f852693fae964e}.rlib" "-ldl" "/build/target/aarch64/release/deps/{libnaga-cfe3154096acf7ef,librustc_hash-73620dbecbeb064d,libhexf_parse-a9a98deeb5fe6412,libunicode_xid-92c4f217ee13a1bd,libindexmap-ec36bd0a4b553326,libequivalent-f8deab5add2cac29,libserde_core-68af78963c8d78a0,libhashbrown-492ed4c96690ae0b,liblog-ff0104d80b8e398f,libcodespan_reporting-1ac5613b9a6c6182,libunicode_width-ece07be86e27aff2,libtermcolor-bf13a2097af25152,libspirv-e0ccbd38d374a579,libbit_set-9a39f998b0d9ba27,libbit_vec-468cb9e00e7fb2b5,libraw_window_handle-544057693605a7a4,libglow-bd1673de584ceb58,libthiserror-4cb461ca7654e910,libwgpu_types-c1bafefb563af162,libbitflags-07c5a6e56e9eb647,libparking_lot-d2f8976639432852,libparking_lot_core-e170d69ec2d57663,liblibc-687cc35ec71d4eb7,libcfg_if-765c32b48d1d9016,libsmallvec-ff94d8f7b260a285,liblock_api-b564f8d23d7088ef,libscopeguard-efaf95b221edfa2c,libarrayvec-0756e900df70f8d1,librustc_hash-35b613562d4e1eea}.rlib" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/{libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,libcfg_if-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*}.rlib" "-lunwind" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/liblibc-*.rlib" "-lc" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/{librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "-L" "/tmp/rustcp4yakK/raw-dylibs" "-Wl,-Bdynamic" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-nostartfiles" "-L" "/build/target/aarch64/release/build/ring-d9236fe9620fe9e9/out" "-L" "/usr/lib" "-L" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained" "-L" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib" "-o" "/build/target/aarch64/release/deps/peak_desktop-52210c8858070a41" "-Wl,--gc-sections" "-static" "-no-pie" "-Wl,-z,relro,-z,now" "-Wl,-O1" "-Wl,--strip-debug" "-nodefaultlibs" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtend.o" "<sysroot>/lib/rustlib/aarch64-unknown-linux-musl/lib/self-contained/crtn.o"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lasound: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the asound library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lwebkit2gtk-4.1: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the webkit2gtk-4.1 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgtk-3: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gtk-3 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk-3: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk-3 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the z library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpangocairo-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pangocairo-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo-gobject: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo-gobject library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk_pixbuf-2.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk_pixbuf-2.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -latk-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the atk-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpango-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pango-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lharfbuzz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the harfbuzz library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lsoup-3.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the soup-3.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -ljavascriptcoregtk-4.1: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the javascriptcoregtk-4.1 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lsoup-3.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the soup-3.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -ljavascriptcoregtk-4.1: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the javascriptcoregtk-4.1 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk-3: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk-3 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the z library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpangocairo-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pangocairo-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpango-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pango-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lharfbuzz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the harfbuzz library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk_pixbuf-2.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk_pixbuf-2.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo-gobject: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo-gobject library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgtk-3: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gtk-3 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk-3: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk-3 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the z library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpangocairo-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pangocairo-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo-gobject: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo-gobject library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk_pixbuf-2.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk_pixbuf-2.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -latk-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the atk-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpango-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pango-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lharfbuzz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the harfbuzz library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -latk-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the atk-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk-3: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk-3 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the z library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpangocairo-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pangocairo-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpango-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pango-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lharfbuzz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the harfbuzz library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk_pixbuf-2.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk_pixbuf-2.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo-gobject: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo-gobject library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lpango-1.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the pango-1.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lharfbuzz: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the harfbuzz library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lgdk_pixbuf-2.0: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the gdk_pixbuf-2.0 library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo-gobject: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo-gobject library ?
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: cannot find -lcairo: No such file or directory
+          /usr/lib/gcc/aarch64-alpine-linux-musl/15.2.0/../../../../aarch64-alpine-linux-musl/bin/ld: have you installed the static version of the cairo library ?
+          collect2: error: ld returned 1 exit status
+          
+
+warning: `peak-desktop` (bin "peak-desktop") generated 3 warnings
+error: could not compile `peak-desktop` (bin "peak-desktop") due to 1 previous error; 3 warnings emitted
