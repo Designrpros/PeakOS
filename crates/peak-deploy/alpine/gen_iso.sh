@@ -73,6 +73,7 @@ cargo build --release --manifest-path /project/crates/modes/desktop/Cargo.toml
 echo "Searching for binary..."
 # Without --target, it puts release in target/release, not target/$TARGET/release
 BIN_PATH="/build/target/$ARCH/release/peak-desktop"
+mkdir -p /build/rootfs/usr/bin
 cp "$BIN_PATH" /build/rootfs/usr/bin/peak-desktop
 chmod +x /build/rootfs/usr/bin/peak-desktop
 
