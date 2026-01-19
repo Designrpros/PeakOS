@@ -125,6 +125,7 @@ apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untr
     bluez bluez-tools bluez-deprecated \
     alsa-utils \
     glib openssl fontconfig libxcb vulkan-loader \
+    arc-theme \
     mesa-gl
 
 # Configure doas and sudo compatibility
@@ -155,7 +156,7 @@ cat > /build/rootfs/etc/xdg/labwc/rc.xml <<EOF
     <decoration>server</decoration>
   </core>
   <theme>
-    <name>Adwaita</name>
+    <name>Arc-Dark</name>
     <cornerRadius>8</cornerRadius>
   </theme>
   <focus>
