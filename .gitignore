@@ -37,3 +37,6 @@ target/
 out/
 crates/peak-deploy/alpine/rootfs/
 crates/peak-deploy/alpine/iso/
+
+# Logs
+*.log

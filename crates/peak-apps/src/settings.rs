@@ -55,6 +55,13 @@ pub trait SettingsDesktopView {
         mode: ShellMode,
         is_light: bool,
     ) -> Element<'a, SettingsMessage>;
+
+    fn shell_style_preview<'a>(
+        &self,
+        label: &'a str,
+        style: peak_core::registry::ShellStyle,
+        is_light: bool,
+    ) -> Element<'a, SettingsMessage>;
 }
 
 
@@ -305,8 +312,8 @@ impl SettingsDesktopView for SettingsApp {
                                 );
 
                                 // Debug: print path if file doesn't exist
-                                if !std::path::Path::new(&image_path).exists() {
-                                    eprintln!("⚠️ Wallpaper not found: {}", image_path);
+                                if !image_path.exists() {
+                                    eprintln!("⚠️ Wallpaper not found: {}", image_path.display());
                                 }
 
                                  button(
@@ -371,6 +378,21 @@ impl SettingsDesktopView for SettingsApp {
                         ]
                         .align_y(Alignment::Center),
                         is_light
+                    ),
+                    vertical_space().height(20),
+                    self.section(
+                        "Desktop Interface",
+                        scrollable(
+                            row![
+                                self.shell_style_preview("Cupertino", peak_core::registry::ShellStyle::Cupertino, is_light),
+                                self.shell_style_preview("Redmond", peak_core::registry::ShellStyle::Redmond, is_light),
+                                self.shell_style_preview("AI", peak_core::registry::ShellStyle::AI, is_light),
+                                self.shell_style_preview("Console", peak_core::registry::ShellStyle::Console, is_light),
+                                self.shell_style_preview("TV", peak_core::registry::ShellStyle::TV, is_light),
+                            ]
+                            .spacing(12)
+                        ).direction(iced::widget::scrollable::Direction::Horizontal(iced::widget::scrollable::Scrollbar::default())),
+                        is_light,
                     ),
                     vertical_space().height(20),
                     text("Wallpaper")
@@ -1003,6 +1025,80 @@ impl SettingsDesktopView for SettingsApp {
         })
         .into()
     }
+
+    fn shell_style_preview<'a>(
+        &self,
+        label: &'a str,
+        style: peak_core::registry::ShellStyle,
+        is_light: bool,
+    ) -> Element<'a, SettingsMessage> {
+        let is_selected = self.current_shell_style == style;
+        let border_color = if is_selected {
+            Color::from_rgb8(0, 122, 255)
+        } else {
+            Color::TRANSPARENT
+        };
+
+        button(
+            column![
+                container(
+                    container(
+                        text(match style {
+                            peak_core::registry::ShellStyle::Cupertino => "◈",
+                            peak_core::registry::ShellStyle::Redmond => "⊞",
+                            peak_core::registry::ShellStyle::AI => "✧",
+                            peak_core::registry::ShellStyle::Console => "🎮",
+                            peak_core::registry::ShellStyle::TV => "📺",
+                        })
+                        .size(24)
+                        .color(if is_light { Color::BLACK } else { Color::WHITE })
+                    )
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .center_x(Length::Fill)
+                    .center_y(Length::Fill)
+                    .style(move |_: &iced::Theme| {
+                        container::Style {
+                            background: Some(if is_selected { 
+                                Color::from_rgba(0.0, 0.48, 1.0, 0.2).into() 
+                            } else { 
+                                Color::from_rgba(0.5, 0.5, 0.5, 0.1).into() 
+                            }),
+                            border: iced::Border {
+                                radius: 6.0.into(),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        }
+                    })
+                )
+                .width(100)
+                .height(64)
+                .padding(2)
+                .style(move |_: &iced::Theme| container::Style {
+                    border: iced::Border {
+                        width: 2.0,
+                        color: border_color,
+                        radius: 8.0.into(),
+                    },
+                    ..Default::default()
+                }),
+                text(label)
+                    .size(11)
+                    .color(if is_light { Color::BLACK } else { Color::WHITE })
+                    .align_x(Alignment::Center),
+            ]
+            .spacing(6)
+            .align_x(Alignment::Center),
+        )
+        .on_press(SettingsMessage::ShellStyleChanged(style))
+        .padding(4)
+        .style(move |_, _| button::Style {
+            background: None,
+            ..Default::default()
+        })
+        .into()
+    }
 }
 // Wrapper for Registry
 pub struct DesktopSettingsApp {
@@ -1050,7 +1146,7 @@ impl DesktopSettingsApp {
         // Pre-load handles
         let mut handles = std::collections::HashMap::new();
         for wp in &wallpapers {
-            let path = format!("{}/{}", wallpapers_dir, wp);
+            let path = wallpapers_dir.join(wp);
             handles.insert(wp.clone(), iced::widget::image::Handle::from_path(path));
         }
 

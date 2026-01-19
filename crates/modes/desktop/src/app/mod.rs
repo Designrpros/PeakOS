@@ -47,6 +47,7 @@ pub struct PeakNative {
     pub games: Vec<MediaItem>, // Keep for now as source of truth? Or remove if hydration is enough. Keep for hydration.
     pub cortex_state: crate::pages::cortex::State,
     pub mode: ShellMode,
+    pub shell_style: peak_core::registry::ShellStyle, // Visual layout (Cupertino/Redmond/AI)
     pub launch_mode: LaunchMode,
     pub custom_wallpaper: Option<String>,
 
@@ -76,7 +77,7 @@ pub struct PeakNative {
     pub networks: Vec<String>,
     pub vector_bg: crate::components::vector_background::VectorBackground,
     pub show_app_grid: bool,
-    pub browser_process: Option<std::process::Child>,
+    // browser_process removed - using external Firefox
     pub window_position: iced::Point,
     pub is_polling_window: bool,
     pub polling_attempts: usize,

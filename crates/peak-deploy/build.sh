@@ -28,6 +28,8 @@ echo "Host architecture: $HOST_ARCH"
 BUILD_MODE="auto"
 TARGET_ARCH="arm"
 
+SKIP_CHECK="false"
+
 for arg in "$@"; do
     case $arg in
         --arm)
@@ -41,6 +43,9 @@ for arg in "$@"; do
             ;;
         --docker)
             BUILD_MODE="docker"
+            ;;
+        --skip-check)
+            SKIP_CHECK="true"
             ;;
         *)
             echo "Unknown argument: $arg"
@@ -67,17 +72,20 @@ fi
 echo "Target: $TARGET_ARCH | Mode: $BUILD_MODE"
 echo "==========================================="
 
-# =============================================================================
 # Pre-Build Validation (Fail Fast)
 # =============================================================================
-echo ""
-echo "Running pre-build checks..."
-if ! bash "$DEPLOY_DIR/pre-build-check.sh"; then
+if [[ "$SKIP_CHECK" == "false" ]]; then
     echo ""
-    echo "❌ Pre-build validation failed. Fix errors above."
-    exit 1
+    echo "Running pre-build checks..."
+    if ! bash "$DEPLOY_DIR/pre-build-check.sh"; then
+        echo ""
+        echo "❌ Pre-build validation failed. Fix errors above."
+        exit 1
+    fi
+    echo ""
+else
+    echo "Skipping pre-build checks as requested (--skip-check)"
 fi
-echo ""
 
 # =============================================================================
 # Native Build (for running on actual ARM/Intel Linux servers)

@@ -88,41 +88,11 @@ impl PeakNative {
                         iced::window::Event::Resized(size) => {
                             self.window_manager.screen_size =
                                 iced::Size::new(size.width, size.height);
-                            // Trigger browser sync
-                            if let Some(app) = self.registry.running_apps.get_mut(&AppId::Browser) {
-                                let context = crate::systems::registry::DesktopShellContext::new(
-                                    AppId::Browser,
-                                    (self.window_position.x, self.window_position.y),
-                                );
-                                let _ = app.update(
-                                    Message::Browser(
-                                        peak_apps::browser_app::BrowserMessage::LayoutUpdate(
-                                            self.window_position.x,
-                                            self.window_position.y,
-                                        ),
-                                    ),
-                                    &context,
-                                );
-                            }
+                            // Browser sync removed - using Firefox instead
                         }
                         iced::window::Event::Moved(point) => {
                             self.window_position = *point;
-                            // Trigger browser sync
-                            if let Some(app) = self.registry.running_apps.get_mut(&AppId::Browser) {
-                                let context = crate::systems::registry::DesktopShellContext::new(
-                                    AppId::Browser,
-                                    (self.window_position.x, self.window_position.y),
-                                );
-                                let _ = app.update(
-                                    Message::Browser(
-                                        peak_apps::browser_app::BrowserMessage::LayoutUpdate(
-                                            self.window_position.x,
-                                            self.window_position.y,
-                                        ),
-                                    ),
-                                    &context,
-                                );
-                            }
+                            // Browser sync removed - using Firefox instead
                         }
                         _ => {}
                     }
@@ -280,27 +250,7 @@ impl PeakNative {
                                     state.y = 32.0;
                                 }
 
-                                // Sync browser if it's the one being dragged
-                                if app_id == AppId::Browser {
-                                    if let Some(app) =
-                                        self.registry.running_apps.get_mut(&AppId::Browser)
-                                    {
-                                        let context =
-                                            crate::systems::registry::DesktopShellContext::new(
-                                                AppId::Browser,
-                                                (self.window_position.x, self.window_position.y),
-                                            );
-                                        let _ = app.update(
-                                            Message::Browser(
-                                                peak_apps::browser_app::BrowserMessage::LayoutUpdate(
-                                                    self.window_position.x,
-                                                    self.window_position.y,
-                                                ),
-                                            ),
-                                            &context,
-                                        );
-                                    }
-                                }
+                                // Browser sync removed - using Firefox instead
                             }
                         } else {
                             // If we were dragging and it stopped, we can log it here if needed
@@ -485,110 +435,12 @@ impl PeakNative {
             }
             Message::Exit => Task::none(),
             Message::LaunchBrowser(url) => {
-                // If we have a modular browser registered, use it!
-                if self
-                    .registry
-                    .running_apps
-                    .get_mut(&AppId::Browser)
-                    .is_some()
-                {
-                    // We need to send a message to the browser to navigate
-                    // But our registry type-erasure makes it hard to send specific messages
-                    // unless we have a generic 'open(url)' in PeakApp or handle it here.
-                    // For now, let's keep LaunchBrowser as a shell-level command that apps can respond to via context if we want.
-
-                    // Actually, let's just use the toggle/ensure window logic
-                    self.ensure_window_state(AppId::Browser, 1024.0, 768.0);
-
-                    // The browser itself should probably handle the initial URL or we can send a message
-                    // Let's assume for now that if we're here, we just want to show the window.
-                    // If we want to navigate, we should send Message::Browser(BrowserMessage::Navigate(url))
-                    return Task::done(peak_apps::browser_app::BrowserMessage::Navigate(url))
-                        .map(Message::Browser);
-                }
-
-                // Fallback to legacy separate process browser
-                if self.browser_process.is_none() {
-                    let current_exe =
-                        std::env::current_exe().unwrap_or_else(|_| "peak-native".into());
-                    let child = std::process::Command::new(current_exe)
-                        .arg("--browser")
-                        .arg(&url)
-                        .stdin(std::process::Stdio::piped())
-                        .stdout(std::process::Stdio::null())
-                        .stderr(std::process::Stdio::null())
-                        .spawn()
-                        .expect("Failed to spawn browser process");
-
-                    self.browser_process = Some(child);
-                } else {
-                    // Send navigate command if already running
-                    if let Some(child) = &mut self.browser_process {
-                        if let Some(stdin) = &mut child.stdin {
-                            use std::io::Write;
-                            let cmd =
-                                peak_apps::browser::BrowserCommand::Navigate { url: url.clone() };
-                            if let Ok(json) = serde_json::to_string(&cmd) {
-                                let _ = writeln!(stdin, "{}", json);
-                            }
-                        }
-                    }
-                }
-
-                // Ensure window is open in WM
-                if let Some(state) = self
-                    .window_manager
-                    .window_states
-                    .get(&peak_core::registry::AppId::Browser)
-                {
-                    if state.reality != self.mode || state.desktop_idx != self.current_desktop {
-                        // Switch to the app's workspace
-                        self.mode = state.reality;
-                        self.current_desktop = state.desktop_idx;
-                        self.window_manager
-                            .bring_to_front(peak_core::registry::AppId::Browser);
-                    }
-                } else {
-                    self.ensure_window_state(peak_core::registry::AppId::Browser, 1024.0, 768.0);
-                }
+                // Use system browser (Firefox on PeakOS ISO)
+                let _ = opener::open(&url);
                 Task::none()
             }
             Message::CloseBrowser => {
-                self.close_window(peak_core::registry::AppId::Browser);
-
-                // If it's a modular app, we might want to shut it down or just hide it
-                // Registry apps stay alive in the registry but their window state is removed.
-                // But for Browser, we want to kill the process to save resources/prevent zombies.
-                if let Some(app) = self
-                    .registry
-                    .running_apps
-                    .get_mut(&peak_core::registry::AppId::Browser)
-                {
-                    let context = crate::systems::registry::DesktopShellContext::new(
-                        peak_core::registry::AppId::Browser,
-                        (self.window_position.x, self.window_position.y),
-                    );
-                    let _ = app.update(
-                        Message::Browser(peak_apps::browser_app::BrowserMessage::Close),
-                        &context,
-                    );
-                }
-
-                self.close_window(peak_core::registry::AppId::Browser);
-                if let Some(child) = &mut self.browser_process {
-                    if let Some(stdin) = &mut child.stdin {
-                        use std::io::Write;
-                        let cmd = peak_apps::browser::BrowserCommand::Layout {
-                            x: -10000.0,
-                            y: -10000.0,
-                            width: 0.0,
-                            height: 0.0,
-                        };
-                        if let Ok(json) = serde_json::to_string(&cmd) {
-                            let _ = writeln!(stdin, "{}", json);
-                        }
-                    }
-                }
+                // No-op since we now use external Firefox
                 Task::none()
             }
             Message::Maximize(app_id) => {
@@ -918,6 +770,9 @@ impl PeakNative {
                         self.mode = *mode;
                         self.update_tokens();
                     }
+                    peak_apps::settings::SettingsMessage::ShellStyleChanged(style) => {
+                        self.shell_style = *style;
+                    }
                     _ => {}
                 }
 
@@ -930,6 +785,10 @@ impl PeakNative {
                     ShellMode::Desktop => self.current_page = Page::Home,
                     _ => self.current_page = Page::Home,
                 }
+                Task::none()
+            }
+            Message::SwitchShellStyle(style) => {
+                self.shell_style = style;
                 Task::none()
             }
             Message::ToggleMode => {
@@ -1373,7 +1232,7 @@ impl PeakNative {
                 self.show_app_grid = !self.show_app_grid;
                 Task::none()
             }
-            Message::Browser(msg) => self.forward_to_app(AppId::Browser, Message::Browser(msg)),
+            // Message::Browser removed - using external Firefox
             Message::AssistantBooted(result) => {
                 match result {
                     Ok(assistant) => {
@@ -1426,6 +1285,49 @@ impl PeakNative {
             Message::AssistantFinished => {
                 self.pending_chat = None;
                 Task::none()
+            }
+            Message::ConsoleCategory(msg) => {
+                // Handle Console category selection
+                match msg {
+                    peak_shell::console::category_bar::CategoryBarMessage::SelectCategory(_cat) => {
+                        // Update state or trigger filter
+                    }
+                }
+                Task::none()
+            }
+            Message::ConsoleGame(msg) => {
+                // Handle Console game selection/launch
+                match msg {
+                    peak_shell::console::game_rail::GameRailMessage::SelectGame(cmd) => {
+                        opener::open(cmd).ok();
+                    }
+                    _ => {}
+                }
+                Task::none()
+            }
+            Message::TVApp(msg) => {
+                // Handle TV app selection
+                match msg {
+                    peak_shell::tv::app_rail::AppRailMessage::SelectApp(id) => {
+                        self.toggle_app(id, 800.0, 600.0)
+                    }
+                    peak_shell::tv::app_rail::AppRailMessage::LaunchApp(id) => {
+                        self.toggle_app(id, 800.0, 600.0)
+                    }
+                }
+            }
+            Message::RedmondTaskbar(msg) => {
+                // Handle Redmond taskbar interaction
+                match msg {
+                    peak_shell::redmond::taskbar::TaskbarMessage::OpenStart => {
+                        self.show_app_grid = !self.show_app_grid;
+                        Task::none()
+                    }
+                    peak_shell::redmond::taskbar::TaskbarMessage::LaunchApp(id) => {
+                        self.toggle_app(id, 800.0, 600.0)
+                    }
+                    _ => Task::none(),
+                }
             }
         }
     }

@@ -5202,16 +5202,14 @@ dependencies = [
  "portable-pty",
  "rand 0.8.5",
  "regex",
- "reqwest 0.11.27",
+ "reqwest 0.12.28",
  "rfd",
  "rodio",
  "serde",
  "serde_json",
  "sha2",
  "sysinfo",
- "tao",
  "tokio",
- "wry",
 ]
 
 [[package]]
@@ -5267,7 +5265,7 @@ dependencies = [
  "peak-intelligence",
  "portable-pty",
  "regex",
- "reqwest 0.11.27",
+ "reqwest 0.12.28",
  "serde",
  "serde_json",
  "sha2",

@@ -26,11 +26,24 @@ pub fn view<'a>(
 
         for item in chunk {
             // Try to use app icon if it's a builtin app, otherwise fallback or generic
-            let icon_handle = if let Ok(app_id) = item.launch_command.parse::<AppId>() {
-                peak_core::icons::get_app_icon(app_id, &hex_color)
-            } else {
-                peak_core::icons::get_app_icon(AppId::AppGrid, &hex_color)
-            };
+            let icon_element: Element<DockMessage> =
+                if let Ok(app_id) = item.launch_command.parse::<AppId>() {
+                    match peak_core::icons::IconResolver::resolve_app_icon(app_id, &hex_color) {
+                        peak_core::icons::AppIcon::Svg(h) => iced::widget::svg(h)
+                            .width(Length::Fixed(64.0))
+                            .height(Length::Fixed(64.0))
+                            .into(),
+                        peak_core::icons::AppIcon::Image(h) => iced::widget::image(h)
+                            .width(Length::Fixed(64.0))
+                            .height(Length::Fixed(64.0))
+                            .into(),
+                    }
+                } else {
+                    iced::widget::svg(peak_core::icons::get_app_icon(AppId::AppGrid, &hex_color))
+                        .width(Length::Fixed(64.0))
+                        .height(Length::Fixed(64.0))
+                        .into()
+                };
 
             let name = &item.title;
 
@@ -38,16 +51,9 @@ pub fn view<'a>(
                 Column::new()
                     .spacing(8)
                     .align_x(Alignment::Center)
-                    .push(
-                        container(
-                            iced::widget::svg(icon_handle)
-                                .width(Length::Fixed(64.0))
-                                .height(Length::Fixed(64.0)),
-                        )
-                        .style(|_| container::Style {
-                            ..Default::default()
-                        }),
-                    )
+                    .push(container(icon_element).style(|_| container::Style {
+                        ..Default::default()
+                    }))
                     .push(
                         text(name)
                             .size(13)

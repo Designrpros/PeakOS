@@ -80,6 +80,7 @@ impl PeakNative {
                 "tv" => ShellMode::TV,
                 _ => ShellMode::Desktop,
             },
+            shell_style: peak_core::registry::ShellStyle::default(), // Cupertino (macOS) by default
             launch_mode,
             custom_wallpaper: None,
             inspector: Inspector::new(),
@@ -104,7 +105,7 @@ impl PeakNative {
             show_wifi_menu: false,
             show_app_grid: false,
             networks: Vec::new(),
-            browser_process: None,
+            // browser_process removed - using external Firefox
             window_position: iced::Point::ORIGIN,
             is_polling_window: false,
             polling_attempts: 0,
@@ -160,19 +161,7 @@ impl PeakNative {
 
         // --- Register Modular Apps ---
 
-        // Browser
-        let browser = peak_apps::browser_app::BrowserApp::new();
-        shell.registry.register(
-            peak_core::registry::AppId::Browser,
-            Box::new(crate::systems::registry::AppWrapper {
-                app: browser,
-                map_msg: Message::Browser,
-                try_unmap: |msg| match msg {
-                    Message::Browser(b) => Some(b),
-                    _ => None,
-                },
-            }),
-        );
+        // NOTE: Browser removed - using Firefox via `opener::open` instead
 
         // Terminal (with Desktop Wrapper)
         let terminal = peak_apps::terminal::DesktopTerminalApp::new();

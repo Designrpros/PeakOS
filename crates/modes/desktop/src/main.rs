@@ -13,13 +13,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Simple manual parsing to avoid heavy dependencies
     let args: Vec<String> = std::env::args().collect();
 
-    // Check for standalone browser mode (Multi-process support for macOS)
-    if let Some(pos) = args.iter().position(|r| r == "--browser") {
-        if let Some(url) = args.get(pos + 1) {
-            peak_apps::browser::BrowserApp::run(url, None);
-            return Ok(());
-        }
-    }
+    // NOTE: Standalone browser mode removed - using Firefox instead
 
     let mode_arg = args
         .iter()

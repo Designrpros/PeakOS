@@ -28,6 +28,7 @@ pub enum Message {
     GlobalEvent(iced::Event),
     DockInteraction(peak_shell::dock::DockMessage),
     SwitchMode(ShellMode),
+    SwitchShellStyle(peak_core::registry::ShellStyle), // Switch theme (Cupertino/Redmond/AI)
     ToggleMode,
     LogOut,
     MenubarAction(MenubarMessage),
@@ -51,7 +52,7 @@ pub enum Message {
     ToggleSystemMenu,
     ToggleStore,
     Store(peak_apps::store::StoreMessage),
-    Browser(peak_apps::browser_app::BrowserMessage),
+    // Browser removed - using Firefox via opener::open
     LaunchBrowser(String),
     CloseBrowser,
     Desktop(crate::components::desktop::DesktopMessage),
@@ -73,4 +74,8 @@ pub enum Message {
         peak_intelligence::brain::assistant::Token,
     ),
     AssistantFinished,
+    ConsoleCategory(peak_shell::console::category_bar::CategoryBarMessage),
+    ConsoleGame(peak_shell::console::game_rail::GameRailMessage),
+    TVApp(peak_shell::tv::app_rail::AppRailMessage),
+    RedmondTaskbar(peak_shell::redmond::taskbar::TaskbarMessage),
 }

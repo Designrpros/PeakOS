@@ -1,4 +1,4 @@
-use iced::widget::{button, container, row, svg, tooltip, tooltip::Position, Column};
+use iced::widget::{button, container, image, row, svg, tooltip, tooltip::Position, Column};
 use iced::{Border, Element, Length};
 use peak_core::registry::{AppId, AppInfo};
 use peak_theme::ThemeTokens;
@@ -128,7 +128,7 @@ fn render_dock_icon<'a>(
     index: usize,
     _is_pinned: bool,
     is_running: bool,
-    dragging: Option<(AppId, usize)>,
+    _dragging: Option<(AppId, usize)>,
     _is_menu_open: bool,
     tokens: ThemeTokens,
 ) -> Element<'a, DockMessage> {
@@ -139,14 +139,17 @@ fn render_dock_icon<'a>(
         (tokens.text.g * 255.0) as u8,
         (tokens.text.b * 255.0) as u8
     );
-    let icon_handle = peak_core::icons::get_app_icon(id, &hex_color);
-
-    let _is_dragging = dragging.map(|(_, idx)| idx == index).unwrap_or(false);
-
-    let icon: Element<DockMessage> = svg(icon_handle)
-        .width(Length::Fixed(24.0))
-        .height(Length::Fixed(24.0))
-        .into();
+    let icon: Element<DockMessage> =
+        match peak_core::icons::IconResolver::resolve_app_icon(id, &hex_color) {
+            peak_core::icons::AppIcon::Svg(handle) => svg(handle)
+                .width(Length::Fixed(24.0))
+                .height(Length::Fixed(24.0))
+                .into(),
+            peak_core::icons::AppIcon::Image(handle) => image(handle)
+                .width(Length::Fixed(24.0))
+                .height(Length::Fixed(24.0))
+                .into(),
+        };
 
     let indicator = if is_running {
         container(iced::widget::Space::with_width(Length::Fixed(3.0)))

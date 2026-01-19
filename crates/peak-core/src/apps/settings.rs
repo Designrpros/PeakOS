@@ -67,6 +67,7 @@ pub enum SettingsMessage {
     ToggleCaptions(bool),
     ToggleVoice(bool),
     ModeChanged(crate::registry::ShellMode),
+    ShellStyleChanged(crate::registry::ShellStyle),
 }
 
 pub struct SettingsApp {
@@ -85,6 +86,7 @@ pub struct SettingsApp {
     pub captions_enabled: bool,
     pub voice_enabled: bool,
     pub current_mode: crate::registry::ShellMode,
+    pub current_shell_style: crate::registry::ShellStyle,
 }
 
 impl Default for SettingsApp {
@@ -155,6 +157,7 @@ impl SettingsApp {
             captions_enabled: false,
             voice_enabled: false,
             current_mode: crate::registry::ShellMode::Desktop,
+            current_shell_style: crate::registry::ShellStyle::default(),
         }
     }
 }
@@ -300,6 +303,9 @@ impl PeakApp for SettingsApp {
             }
             SettingsMessage::ModeChanged(mode) => {
                 self.current_mode = mode;
+            }
+            SettingsMessage::ShellStyleChanged(style) => {
+                self.current_shell_style = style;
             }
         }
         Task::none()

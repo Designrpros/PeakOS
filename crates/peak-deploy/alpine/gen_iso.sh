@@ -64,6 +64,9 @@ rm -rf "$CARGO_TARGET_DIR"
 # REVERT: Explicit target causes "can't find crate for core" on system rust. 
 # We trust the host (Alpine) to build for itself (musl).
 # peak-intelligence has default-features = false in peak-desktop/Cargo.toml to skip llama-server
+
+# NOTE: GTK linker workarounds removed - no longer needed since wry/webkit2gtk were removed
+
 cargo build --release --manifest-path /project/crates/modes/desktop/Cargo.toml
 
 # Copy binary
@@ -73,12 +76,8 @@ BIN_PATH="/build/target/$ARCH/release/peak-desktop"
 cp "$BIN_PATH" /build/rootfs/peak-desktop
 chmod +x /build/rootfs/peak-desktop
 
-# 1.5 Compile Peak Browser
-echo "--- Compiling Peak Browser ---"
-cargo build --release --manifest-path /project/crates/peak-browser/Cargo.toml
-BROWSER_BIN_PATH="/build/target/$ARCH/release/peak-browser"
-cp "$BROWSER_BIN_PATH" /build/rootfs/peak-browser
-chmod +x /build/rootfs/peak-browser
+# NOTE: peak-browser removed - using Firefox instead (avoids webkit2gtk static linking issues)
+# Firefox is installed via apk in the rootfs setup below
 
 # Copy assets directory for icons, fonts, etc.
 echo "Copying assets..."

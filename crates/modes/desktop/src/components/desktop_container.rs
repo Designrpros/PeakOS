@@ -2,7 +2,7 @@ use iced::widget::{container, image, stack};
 use iced::{ContentFit, Element, Length};
 
 pub fn view<'a, Message>(
-    background_path: &str,
+    background_path: impl AsRef<std::path::Path>,
     foreground_content: Element<'a, Message>,
 ) -> Element<'a, Message>
 where
@@ -10,10 +10,12 @@ where
 {
     // Layer 0: The Wallpaper (Absolute Bottom)
     let wallpaper = container(
-        image(background_path)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .content_fit(ContentFit::Cover),
+        image(iced::widget::image::Handle::from_path(
+            background_path.as_ref(),
+        ))
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .content_fit(ContentFit::Cover),
     )
     .width(Length::Fill)
     .height(Length::Fill)
