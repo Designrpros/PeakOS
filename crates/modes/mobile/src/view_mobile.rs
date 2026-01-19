@@ -5,6 +5,7 @@ use iced::widget::{
 use iced::{Alignment, Background, Color, Element, Length, Shadow, Vector};
 use peak_core::registry::{AppId, AppInfo};
 
+#[allow(clippy::too_many_arguments)]
 pub fn view<'a, Message: 'a + Clone>(
     is_light: bool,
     _running_apps: &[AppId],
@@ -215,7 +216,7 @@ pub fn view<'a, Message: 'a + Clone>(
         .into()
     } else {
         // Home Screen Implementation
-        let apps = vec![
+        let apps = [
             AppId::Terminal,
             AppId::Browser,
             AppId::Library,
@@ -274,7 +275,7 @@ pub fn view<'a, Message: 'a + Clone>(
             grid = grid.push(r);
         }
 
-        let dock_apps = vec![
+        let dock_apps = [
             AppId::Terminal,
             AppId::Browser,
             AppId::Library,

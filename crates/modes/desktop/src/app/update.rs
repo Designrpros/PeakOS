@@ -87,7 +87,7 @@ impl PeakNative {
                     match window_event {
                         iced::window::Event::Resized(size) => {
                             self.window_manager.screen_size =
-                                iced::Size::new(size.width as f32, size.height as f32);
+                                iced::Size::new(size.width, size.height);
                             // Trigger browser sync
                             if let Some(app) = self.registry.running_apps.get_mut(&AppId::Browser) {
                                 let context = crate::systems::registry::DesktopShellContext::new(
@@ -313,133 +313,115 @@ impl PeakNative {
                 }
 
                 // Keyboard Events (using reference to avoid move)
-                if let iced::Event::Keyboard(kb_event) = &event {
-                    match kb_event {
-                        iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
-                            // Omnibar Navigation (when open) - Handle first
-                            if self.show_omnibar {
-                                match key {
-                                    iced::keyboard::Key::Named(
-                                        iced::keyboard::key::Named::ArrowUp,
-                                    ) => {
-                                        return Task::done(Message::Omnibar(
-                                            crate::components::omnibar::OmnibarMessage::NavigateUp,
-                                        ));
-                                    }
-                                    iced::keyboard::Key::Named(
-                                        iced::keyboard::key::Named::ArrowDown,
-                                    ) => {
-                                        return Task::done(Message::Omnibar(
-                                            crate::components::omnibar::OmnibarMessage::NavigateDown,
-                                        ));
-                                    }
-                                    iced::keyboard::Key::Named(
-                                        iced::keyboard::key::Named::Enter,
-                                    ) => {
-                                        return Task::done(Message::Omnibar(
-                                            crate::components::omnibar::OmnibarMessage::Submit,
-                                        ));
-                                    }
-                                    iced::keyboard::Key::Named(
-                                        iced::keyboard::key::Named::Escape,
-                                    ) => {
-                                        self.window_manager.dragging = None; // Reset dragging on Escape
-                                        if self.quick_look_path.is_some() {
-                                            self.quick_look_path = None;
-                                            return Task::none();
-                                        }
-                                        return Task::done(Message::Omnibar(
-                                            crate::components::omnibar::OmnibarMessage::Cancel,
-                                        ));
-                                    }
-                                    _ => {}
-                                }
+                if let iced::Event::Keyboard(iced::keyboard::Event::KeyPressed {
+                    key,
+                    modifiers,
+                    ..
+                }) = &event
+                {
+                    // Omnibar Navigation (when open) - Handle first
+                    if self.show_omnibar {
+                        match key {
+                            iced::keyboard::Key::Named(iced::keyboard::key::Named::ArrowUp) => {
+                                return Task::done(Message::Omnibar(
+                                    crate::components::omnibar::OmnibarMessage::NavigateUp,
+                                ));
                             }
-
-                            // Magnet Snapping (Option + Arrows)
-                            if modifiers.alt() {
-                                let top_app = self.window_manager.z_order.last().cloned();
-                                if let Some(app_id) = top_app {
-                                    self.handle_snapping(app_id, key.clone());
-                                }
+                            iced::keyboard::Key::Named(iced::keyboard::key::Named::ArrowDown) => {
+                                return Task::done(Message::Omnibar(
+                                    crate::components::omnibar::OmnibarMessage::NavigateDown,
+                                ));
                             }
-
-                            // Omnibar (Cmd/Alt/Ctrl + Space)
-                            if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) =
-                                key
-                            {
-                                if modifiers.command() || modifiers.control() || modifiers.alt() {
-                                    return Task::done(Message::ToggleOmnibar);
-                                }
+                            iced::keyboard::Key::Named(iced::keyboard::key::Named::Enter) => {
+                                return Task::done(Message::Omnibar(
+                                    crate::components::omnibar::OmnibarMessage::Submit,
+                                ));
                             }
-
-                            // Quick Look (Space)
-                            if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) =
-                                key
-                            {
-                                if !modifiers.command() && !modifiers.control() && !modifiers.alt()
-                                {
-                                    if let Some(path) = self.desktop.selected.first() {
-                                        self.quick_look_path = Some(path.clone());
-                                    }
+                            iced::keyboard::Key::Named(iced::keyboard::key::Named::Escape) => {
+                                self.window_manager.dragging = None; // Reset dragging on Escape
+                                if self.quick_look_path.is_some() {
+                                    self.quick_look_path = None;
+                                    return Task::none();
                                 }
+                                return Task::done(Message::Omnibar(
+                                    crate::components::omnibar::OmnibarMessage::Cancel,
+                                ));
                             }
+                            _ => {}
+                        }
+                    }
 
-                            // Switcher (Cmd/Alt + Tab)
-                            if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Tab) = key
-                            {
-                                if modifiers.command() || modifiers.alt() {
-                                    if !self.show_switcher {
-                                        // Populate switcher with running apps from z_order (reverse for MRU)
-                                        let running_apps: Vec<peak_core::registry::AppInfo> = self
-                                            .window_manager
-                                            .z_order
-                                            .iter()
-                                            .rev()
-                                            .map(|&id| peak_core::registry::AppInfo::get_info(id))
-                                            .collect();
+                    // Magnet Snapping (Option + Arrows)
+                    if modifiers.alt() {
+                        let top_app = self.window_manager.z_order.last().cloned();
+                        if let Some(app_id) = top_app {
+                            self.handle_snapping(app_id, key.clone());
+                        }
+                    }
 
-                                        if !running_apps.is_empty() {
-                                            self.switcher.apps = running_apps;
-                                            self.switcher.selected_index = 0;
-                                            self.show_switcher = true;
-                                            // macOS Cmd+Tab starts at the SECOND item (last used)
-                                            if self.switcher.apps.len() > 1 {
-                                                self.switcher.next();
-                                            }
-                                        }
-                                    } else if modifiers.shift() {
-                                        self.switcher.prev();
-                                    } else {
+                    // Omnibar (Cmd/Alt/Ctrl + Space)
+                    if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) = key {
+                        if modifiers.command() || modifiers.control() || modifiers.alt() {
+                            return Task::done(Message::ToggleOmnibar);
+                        }
+                    }
+
+                    // Quick Look (Space)
+                    if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) = key {
+                        if !modifiers.command() && !modifiers.control() && !modifiers.alt() {
+                            if let Some(path) = self.desktop.selected.first() {
+                                self.quick_look_path = Some(path.clone());
+                            }
+                        }
+                    }
+
+                    // Switcher (Cmd/Alt + Tab)
+                    if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Tab) = key {
+                        if modifiers.command() || modifiers.alt() {
+                            if !self.show_switcher {
+                                // Populate switcher with running apps from z_order (reverse for MRU)
+                                let running_apps: Vec<peak_core::registry::AppInfo> = self
+                                    .window_manager
+                                    .z_order
+                                    .iter()
+                                    .rev()
+                                    .map(|&id| peak_core::registry::AppInfo::get_info(id))
+                                    .collect();
+
+                                if !running_apps.is_empty() {
+                                    self.switcher.apps = running_apps;
+                                    self.switcher.selected_index = 0;
+                                    self.show_switcher = true;
+                                    // macOS Cmd+Tab starts at the SECOND item (last used)
+                                    if self.switcher.apps.len() > 1 {
                                         self.switcher.next();
                                     }
                                 }
-                            }
-
-                            // Wizard Navigation (Enter/Space on Welcome screen)
-                            if matches!(self.state, AppState::Setup(_)) {
-                                match key {
-                                    iced::keyboard::Key::Named(
-                                        iced::keyboard::key::Named::Enter,
-                                    )
-                                    | iced::keyboard::Key::Named(
-                                        iced::keyboard::key::Named::Space,
-                                    ) => {
-                                        if let AppState::Setup(ref wizard_state) = self.state {
-                                            if wizard_state.current_step
-                                                == peak_apps::wizard::WizardStep::Welcome
-                                            {
-                                                return Task::done(Message::Wizard(
-                                                    peak_apps::wizard::WizardMessage::NextStep,
-                                                ));
-                                            }
-                                        }
-                                    }
-                                    _ => {}
-                                }
+                            } else if modifiers.shift() {
+                                self.switcher.prev();
+                            } else {
+                                self.switcher.next();
                             }
                         }
-                        _ => {}
+                    }
+
+                    // Wizard Navigation (Enter/Space on Welcome screen)
+                    if matches!(self.state, AppState::Setup(_)) {
+                        match key {
+                            iced::keyboard::Key::Named(iced::keyboard::key::Named::Enter)
+                            | iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) => {
+                                if let AppState::Setup(ref wizard_state) = self.state {
+                                    if wizard_state.current_step
+                                        == peak_apps::wizard::WizardStep::Welcome
+                                    {
+                                        return Task::done(Message::Wizard(
+                                            peak_apps::wizard::WizardMessage::NextStep,
+                                        ));
+                                    }
+                                }
+                            }
+                            _ => {}
+                        }
                     }
                 }
 
@@ -1245,7 +1227,7 @@ impl PeakNative {
                     _ => Task::none(),
                 };
 
-                return Task::batch(vec![task.map(Message::Omnibar), side_effect]);
+                Task::batch(vec![task.map(Message::Omnibar), side_effect])
             }
             Message::Switcher(msg) => {
                 match msg {

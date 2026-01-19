@@ -1,0 +1,212 @@
+    Checking peak-desktop v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/desktop)
+error: unneeded `return` statement
+    --> crates/modes/desktop/src/app/update.rs:1248:17
+     |
+1248 |                 return Task::batch(vec![task.map(Message::Omnibar), side_effect]);
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_return
+     = note: `-D clippy::needless-return` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_return)]`
+help: remove `return`
+     |
+1248 -                 return Task::batch(vec![task.map(Message::Omnibar), side_effect]);
+1248 +                 Task::batch(vec![task.map(Message::Omnibar), side_effect])
+     |
+
+error: casting to the same type is unnecessary (`f32` -> `f32`)
+  --> crates/modes/desktop/src/app/update.rs:90:49
+   |
+90 | ...                   iced::Size::new(size.width as f32, size.height as f32);
+   |                                       ^^^^^^^^^^^^^^^^^ help: try: `size.width`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_cast
+   = note: `-D clippy::unnecessary-cast` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::unnecessary_cast)]`
+
+error: casting to the same type is unnecessary (`f32` -> `f32`)
+  --> crates/modes/desktop/src/app/update.rs:90:68
+   |
+90 | ...                   iced::Size::new(size.width as f32, size.height as f32);
+   |                                                          ^^^^^^^^^^^^^^^^^^ help: try: `size.height`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_cast
+
+error: this `match` can be collapsed into the outer `if let`
+   --> crates/modes/desktop/src/app/update.rs:317:21
+    |
+317 | /                     match kb_event {
+318 | |                         iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
+319 | |                             // Omnibar Navigation (when open) - Handle first
+320 | |                             if self.show_omnibar {
+...   |
+442 | |                         _ => {}
+443 | |                     }
+    | |_____________________^
+    |
+help: the outer pattern can be modified to include the inner pattern
+   --> crates/modes/desktop/src/app/update.rs:316:46
+    |
+316 |                 if let iced::Event::Keyboard(kb_event) = &event {
+    |                                              ^^^^^^^^ replace this binding
+317 |                     match kb_event {
+318 |                         iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ with this pattern
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_match
+    = note: `-D clippy::collapsible-match` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_match)]`
+
+error: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`
+   --> crates/modes/desktop/src/app/update.rs:317:21
+    |
+317 | /                     match kb_event {
+318 | |                         iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
+319 | |                             // Omnibar Navigation (when open) - Handle first
+320 | |                             if self.show_omnibar {
+...   |
+442 | |                         _ => {}
+443 | |                     }
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#single_match
+    = note: `-D clippy::single-match` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::single_match)]`
+help: try
+    |
+317 ~                     if let iced::keyboard::Event::KeyPressed { key, modifiers, .. } = kb_event {
+318 +                         // Omnibar Navigation (when open) - Handle first
+319 +                         if self.show_omnibar {
+320 +                             match key {
+321 +                                 iced::keyboard::Key::Named(
+322 +                                     iced::keyboard::key::Named::ArrowUp,
+323 +                                 ) => {
+324 +                                     return Task::done(Message::Omnibar(
+325 +                                         crate::components::omnibar::OmnibarMessage::NavigateUp,
+326 +                                     ));
+327 +                                 }
+328 +                                 iced::keyboard::Key::Named(
+329 +                                     iced::keyboard::key::Named::ArrowDown,
+330 +                                 ) => {
+331 +                                     return Task::done(Message::Omnibar(
+332 +                                         crate::components::omnibar::OmnibarMessage::NavigateDown,
+333 +                                     ));
+334 +                                 }
+335 +                                 iced::keyboard::Key::Named(
+336 +                                     iced::keyboard::key::Named::Enter,
+337 +                                 ) => {
+338 +                                     return Task::done(Message::Omnibar(
+339 +                                         crate::components::omnibar::OmnibarMessage::Submit,
+340 +                                     ));
+341 +                                 }
+342 +                                 iced::keyboard::Key::Named(
+343 +                                     iced::keyboard::key::Named::Escape,
+344 +                                 ) => {
+345 +                                     self.window_manager.dragging = None; // Reset dragging on Escape
+346 +                                     if self.quick_look_path.is_some() {
+347 +                                         self.quick_look_path = None;
+348 +                                         return Task::none();
+349 +                                     }
+350 +                                     return Task::done(Message::Omnibar(
+351 +                                         crate::components::omnibar::OmnibarMessage::Cancel,
+352 +                                     ));
+353 +                                 }
+354 +                                 _ => {}
+355 +                             }
+356 +                         }
+357 + 
+358 +                         // Magnet Snapping (Option + Arrows)
+359 +                         if modifiers.alt() {
+360 +                             let top_app = self.window_manager.z_order.last().cloned();
+361 +                             if let Some(app_id) = top_app {
+362 +                                 self.handle_snapping(app_id, key.clone());
+363 +                             }
+364 +                         }
+365 + 
+366 +                         // Omnibar (Cmd/Alt/Ctrl + Space)
+367 +                         if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) =
+368 +                             key
+369 +                         {
+370 +                             if modifiers.command() || modifiers.control() || modifiers.alt() {
+371 +                                 return Task::done(Message::ToggleOmnibar);
+372 +                             }
+373 +                         }
+374 + 
+375 +                         // Quick Look (Space)
+376 +                         if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) =
+377 +                             key
+378 +                         {
+379 +                             if !modifiers.command() && !modifiers.control() && !modifiers.alt()
+380 +                             {
+381 +                                 if let Some(path) = self.desktop.selected.first() {
+382 +                                     self.quick_look_path = Some(path.clone());
+383 +                                 }
+384 +                             }
+385 +                         }
+386 + 
+387 +                         // Switcher (Cmd/Alt + Tab)
+388 +                         if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Tab) = key
+389 +                         {
+390 +                             if modifiers.command() || modifiers.alt() {
+391 +                                 if !self.show_switcher {
+392 +                                     // Populate switcher with running apps from z_order (reverse for MRU)
+393 +                                     let running_apps: Vec<peak_core::registry::AppInfo> = self
+394 +                                         .window_manager
+395 +                                         .z_order
+396 +                                         .iter()
+397 +                                         .rev()
+398 +                                         .map(|&id| peak_core::registry::AppInfo::get_info(id))
+399 +                                         .collect();
+400 + 
+401 +                                     if !running_apps.is_empty() {
+402 +                                         self.switcher.apps = running_apps;
+403 +                                         self.switcher.selected_index = 0;
+404 +                                         self.show_switcher = true;
+405 +                                         // macOS Cmd+Tab starts at the SECOND item (last used)
+406 +                                         if self.switcher.apps.len() > 1 {
+407 +                                             self.switcher.next();
+408 +                                         }
+409 +                                     }
+410 +                                 } else if modifiers.shift() {
+411 +                                     self.switcher.prev();
+412 +                                 } else {
+413 +                                     self.switcher.next();
+414 +                                 }
+415 +                             }
+416 +                         }
+417 + 
+418 +                         // Wizard Navigation (Enter/Space on Welcome screen)
+419 +                         if matches!(self.state, AppState::Setup(_)) {
+420 +                             match key {
+421 +                                 iced::keyboard::Key::Named(
+422 +                                     iced::keyboard::key::Named::Enter,
+423 +                                 )
+424 +                                 | iced::keyboard::Key::Named(
+425 +                                     iced::keyboard::key::Named::Space,
+426 +                                 ) => {
+427 +                                     if let AppState::Setup(ref wizard_state) = self.state {
+428 +                                         if wizard_state.current_step
+429 +                                             == peak_apps::wizard::WizardStep::Welcome
+430 +                                         {
+431 +                                             return Task::done(Message::Wizard(
+432 +                                                 peak_apps::wizard::WizardMessage::NextStep,
+433 +                                             ));
+434 +                                         }
+435 +                                     }
+436 +                                 }
+437 +                                 _ => {}
+438 +                             }
+439 +                         }
+440 +                     }
+    |
+
+error: struct update has no effect, all the fields in the struct have already been specified
+   --> crates/modes/desktop/src/components/inspector.rs:153:23
+    |
+153 |                     ..Default::default()
+    |                       ^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_update
+    = note: `-D clippy::needless-update` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_update)]`
+
+error: could not compile `peak-desktop` (bin "peak-desktop") due to 6 previous errors

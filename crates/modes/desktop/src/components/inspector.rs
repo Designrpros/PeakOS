@@ -150,7 +150,6 @@ impl Inspector {
                         a: 0.5,
                         ..tokens.text
                     }),
-                    ..Default::default()
                 }))
                 .padding([0, 8])
                 .into()
