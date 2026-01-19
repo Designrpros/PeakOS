@@ -103,7 +103,6 @@ impl Inspector {
                         let is_user = role == "user";
                         let bubble = container(text(msg.clone()).style(move |_| text::Style {
                             color: Some(tokens.text),
-                            ..Default::default()
                         }))
                         .padding(12)
                         .style(move |_| container::Style {
@@ -116,7 +115,8 @@ impl Inspector {
                                 radius: 12.0.into(),
                                 ..Default::default()
                             },
-                            ..Default::default()
+                            text_color: None,
+                            shadow: iced::Shadow::default(),
                         })
                         .width(Length::Shrink);
 
@@ -227,7 +227,7 @@ impl Inspector {
                                 ..Default::default()
                             },
                             text_color: iced::Color::WHITE,
-                            ..Default::default()
+                            shadow: iced::Shadow::default(),
                         }
                     })
                 ]

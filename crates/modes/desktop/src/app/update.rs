@@ -408,12 +408,10 @@ impl PeakNative {
                                                 self.switcher.next();
                                             }
                                         }
+                                    } else if modifiers.shift() {
+                                        self.switcher.prev();
                                     } else {
-                                        if modifiers.shift() {
-                                            self.switcher.prev();
-                                        } else {
-                                            self.switcher.next();
-                                        }
+                                        self.switcher.next();
                                     }
                                 }
                             }
@@ -506,7 +504,12 @@ impl PeakNative {
             Message::Exit => Task::none(),
             Message::LaunchBrowser(url) => {
                 // If we have a modular browser registered, use it!
-                if let Some(_) = self.registry.running_apps.get_mut(&AppId::Browser) {
+                if self
+                    .registry
+                    .running_apps
+                    .get_mut(&AppId::Browser)
+                    .is_some()
+                {
                     // We need to send a message to the browser to navigate
                     // But our registry type-erasure makes it hard to send specific messages
                     // unless we have a generic 'open(url)' in PeakApp or handle it here.
@@ -952,9 +955,7 @@ impl PeakNative {
                     ShellMode::Desktop => ShellMode::Mobile,
                     _ => ShellMode::Desktop,
                 };
-                match self.mode {
-                    _ => self.current_page = Page::Home,
-                }
+                self.current_page = Page::Home;
                 Task::none()
             }
 
@@ -1112,7 +1113,7 @@ impl PeakNative {
             }
             Message::SwitchSpace(msg) => match msg {
                 crate::components::spaces_strip::SpacesMessage::SwitchDesktop(idx) => {
-                    return Task::done(Message::SwitchDesktop(idx));
+                    Task::done(Message::SwitchDesktop(idx))
                 }
             },
             Message::Desktop(msg) => {

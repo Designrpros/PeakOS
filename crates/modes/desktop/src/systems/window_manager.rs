@@ -74,11 +74,9 @@ impl WindowManager {
     pub fn bring_to_front(&mut self, app_id: AppId) {
         if !self.z_order.contains(&app_id) {
             self.z_order.push(app_id);
-        } else {
-            if let Some(pos) = self.z_order.iter().position(|&id| id == app_id) {
-                self.z_order.remove(pos);
-                self.z_order.push(app_id);
-            }
+        } else if let Some(pos) = self.z_order.iter().position(|&id| id == app_id) {
+            self.z_order.remove(pos);
+            self.z_order.push(app_id);
         }
     }
 

@@ -51,10 +51,8 @@ impl PeakNative {
                     if !repo_pinned.contains(&id) {
                         repo_running.push(id);
                     }
-                } else {
-                    if !standard_pinned.contains(&id) {
-                        standard_running.push(id);
-                    }
+                } else if !standard_pinned.contains(&id) {
+                    standard_running.push(id);
                 }
             }
             let mut repos = repo_pinned;
@@ -293,10 +291,8 @@ impl PeakNative {
                         if !repo_pinned.contains(&id) {
                             repo_running.push(id);
                         }
-                    } else {
-                        if !standard_pinned.contains(&id) {
-                            standard_running.push(id);
-                        }
+                    } else if !standard_pinned.contains(&id) {
+                        standard_running.push(id);
                     }
                 }
                 let mut repos = repo_pinned;

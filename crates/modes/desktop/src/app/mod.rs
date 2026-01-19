@@ -214,7 +214,7 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
             };
 
             // Pick best available quantization (Q4_K_M is a good default for Apple Silicon)
-            let file = files.values().flat_map(|v| v).find(|f| {
+            let file = files.values().flatten().find(|f| {
                 f.name.contains("Q4_K_M")
                     || f.name.contains("Q4_0")
                     || f.name.contains("block_medium")
@@ -224,7 +224,7 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
                 Some(f) => f.clone(),
                 None => {
                     // Fallback to first file
-                    if let Some(first) = files.values().flat_map(|v| v).next() {
+                    if let Some(first) = files.values().flatten().next() {
                         first.clone()
                     } else {
                         output
@@ -252,7 +252,7 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
                 let total_shards_str_val = suffix.split('.').next().unwrap().to_string();
                 if let Ok(total_count) = total_shards_str_val.parse::<u32>() {
                     // Try to find all shards in the original list
-                    let all_files: Vec<_> = files.values().flat_map(|v| v).collect();
+                    let all_files: Vec<_> = files.values().flatten().collect();
                     for i in 1..=total_count {
                         let shard_pattern = format!("{:05}-of-{}", i, suffix);
                         if let Some(shard_file) = all_files.iter().find(|f| {
@@ -358,7 +358,7 @@ fn reply_subscription(
             }
 
             // Check final result
-            if let Err(_) = stream.await {
+            if (stream.await).is_err() {
                 // Error handling if needed, though we stop anyway
             }
 
@@ -404,7 +404,7 @@ fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
             };
 
             // Pick best file (same logic as download)
-            let file = files.values().flat_map(|v| v).find(|f| {
+            let file = files.values().flatten().find(|f| {
                 f.name.contains("Q4_K_M")
                     || f.name.contains("Q4_0")
                     || f.name.contains("block_medium")
@@ -412,7 +412,7 @@ fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
             let file = match file {
                 Some(f) => f.clone(),
                 None => {
-                    if let Some(first) = files.values().flat_map(|v| v).next() {
+                    if let Some(first) = files.values().flatten().next() {
                         first.clone()
                     } else {
                         output
