@@ -1288,20 +1288,15 @@ impl PeakNative {
             }
             Message::ConsoleCategory(msg) => {
                 // Handle Console category selection
-                match msg {
-                    peak_shell::console::category_bar::CategoryBarMessage::SelectCategory(_cat) => {
-                        // Update state or trigger filter
-                    }
-                }
+                let peak_shell::console::category_bar::CategoryBarMessage::SelectCategory(_cat) =
+                    msg;
+                // Update state or trigger filter
                 Task::none()
             }
             Message::ConsoleGame(msg) => {
                 // Handle Console game selection/launch
-                match msg {
-                    peak_shell::console::game_rail::GameRailMessage::SelectGame(cmd) => {
-                        opener::open(cmd).ok();
-                    }
-                    _ => {}
+                if let peak_shell::console::game_rail::GameRailMessage::SelectGame(cmd) = msg {
+                    opener::open(cmd).ok();
                 }
                 Task::none()
             }

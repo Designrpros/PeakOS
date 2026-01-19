@@ -21,9 +21,8 @@ else
     EARLYCON=""
 fi
 
-# Export variables (System Rust on Alpine handles paths automatically now)
-# export RUSTFLAGS="..." # REMOVED
-# export PKG_CONFIG_PATH="..." # REMOVED
+# Enable dynamic linking to allow using system shared libraries (alsa, glib, etc.)
+export RUSTFLAGS="-C target-feature=-crt-static"
 
 if [ "$ARCH" = "aarch64" ]; then
     # PL011 is common for QEMU/Virt ARM64
@@ -57,8 +56,9 @@ cargo update -p iced_graphics --precise 0.13.0 || true
 # Use architecture-specific build directory
 # Use architecture-specific build directory
 export CARGO_TARGET_DIR=/build/target/$ARCH
-# Clean target dir to ensure llama-server is not cached
-rm -rf "$CARGO_TARGET_DIR"
+export CARGO_TARGET_DIR=/build/target/$ARCH
+# Use cargo clean which is safer for mounted volumes
+cargo clean --manifest-path /project/crates/modes/desktop/Cargo.toml
 
 # Build with explicit target to avoid host confusion
 # REVERT: Explicit target causes "can't find crate for core" on system rust. 
@@ -122,9 +122,13 @@ apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untr
     dbus networkmanager networkmanager-cli networkmanager-wifi wpa_supplicant \
     firefox ca-certificates fbida-fbi \
     bluez bluez-tools bluez-deprecated \
-    alsa-utils
+    alsa-utils \
+    glib openssl fontconfig libxcb vulkan-loader \
+    mesa-gl
 
 # Configure doas and sudo compatibility
+# Configure doas and sudo compatibility
+mkdir -p /build/rootfs/etc/doas.d
 echo "permit nopass keepenv root" > /build/rootfs/etc/doas.d/doas.conf
 ln -sf /usr/bin/doas /build/rootfs/usr/bin/sudo
 
@@ -161,12 +165,24 @@ cat > /build/rootfs/etc/xdg/labwc/rc.xml <<EOF
       <action name="NextWindow"/>
     </keybind>
   </keyboard>
+  <windowRules>
+    <windowRule identifier="peak-desktop">
+        <action name="Maximize" />
+        <action name="Undecorate" />
+        <action name="Stick" />
+    </windowRule>
+  </windowRules>
 </labwc_config>
 EOF
 
 # labwc autostart (launches peak-desktop automatically)
 cat > /build/rootfs/etc/xdg/labwc/autostart <<EOF
-/peak-desktop &
+# Start the PeakOS Shell with logging
+# peak-desktop is the binary name.
+peak-desktop > /tmp/peak-desktop.log 2>&1 &
+
+# Start the Intelligence Agent (Background) in daemon mode
+# peak-intelligence --daemon &
 EOF
 chmod +x /build/rootfs/etc/xdg/labwc/autostart
 
@@ -229,6 +245,7 @@ EOF
 chmod +x /build/rootfs/init_peak.sh
 
 # 3. Create OpenRC service for automatic graphical startup
+mkdir -p /build/rootfs/etc/init.d
 cat > /build/rootfs/etc/init.d/peakos <<'SERVICE_EOF'
 #!/sbin/openrc-run
 
@@ -292,6 +309,7 @@ fi
 # 2. Configure Modules Loading (OpenRC style)
 # Ensure virtio modules are loaded by OpenRC modules service
 # Clear any existing entries first to avoid duplicates
+mkdir -p /build/rootfs/etc
 cat > /build/rootfs/etc/modules <<MODULES_EOF
 af_packet
 ipv6
