@@ -73,8 +73,8 @@ cargo build --release --manifest-path /project/crates/modes/desktop/Cargo.toml
 echo "Searching for binary..."
 # Without --target, it puts release in target/release, not target/$TARGET/release
 BIN_PATH="/build/target/$ARCH/release/peak-desktop"
-cp "$BIN_PATH" /build/rootfs/peak-desktop
-chmod +x /build/rootfs/peak-desktop
+cp "$BIN_PATH" /build/rootfs/usr/bin/peak-desktop
+chmod +x /build/rootfs/usr/bin/peak-desktop
 
 # NOTE: peak-browser removed - using Firefox instead (avoids webkit2gtk static linking issues)
 # Firefox is installed via apk in the rootfs setup below
@@ -179,7 +179,7 @@ EOF
 cat > /build/rootfs/etc/xdg/labwc/autostart <<EOF
 # Start the PeakOS Shell with logging
 # peak-desktop is the binary name.
-peak-desktop > /tmp/peak-desktop.log 2>&1 &
+/usr/bin/peak-desktop > /tmp/peak-desktop.log 2>&1 &
 
 # Start the Intelligence Agent (Background) in daemon mode
 # peak-intelligence --daemon &
