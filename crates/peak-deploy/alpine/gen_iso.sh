@@ -73,6 +73,13 @@ BIN_PATH="/build/target/$ARCH/release/peak-desktop"
 cp "$BIN_PATH" /build/rootfs/peak-desktop
 chmod +x /build/rootfs/peak-desktop
 
+# 1.5 Compile Peak Browser
+echo "--- Compiling Peak Browser ---"
+cargo build --release --manifest-path /project/crates/peak-browser/Cargo.toml
+BROWSER_BIN_PATH="/build/target/$ARCH/release/peak-browser"
+cp "$BROWSER_BIN_PATH" /build/rootfs/peak-browser
+chmod +x /build/rootfs/peak-browser
+
 # Copy assets directory for icons, fonts, etc.
 echo "Copying assets..."
 mkdir -p /build/rootfs/usr/share/peakos/assets
@@ -109,7 +116,7 @@ apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untr
     alpine-base linux-lts linux-firmware-none \
     udev eudev libinput libinput-dev \
     alsa-lib wayland mesa-dri-gallium \
-    weston weston-backend-drm weston-shell-desktop seatd \
+    labwc seatd \
     webkit2gtk-4.1 \
     adwaita-icon-theme \
     ttf-dejavu font-noto font-noto-cjk \
@@ -117,6 +124,10 @@ apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untr
     firefox ca-certificates fbida-fbi \
     bluez bluez-tools bluez-deprecated \
     alsa-utils
+
+# Configure doas and sudo compatibility
+echo "permit nopass keepenv root" > /build/rootfs/etc/doas.d/doas.conf
+ln -sf /usr/bin/doas /build/rootfs/usr/bin/sudo
 
 
 
@@ -131,43 +142,34 @@ echo 'features="base keymap kms mmc network virtio"' > /build/rootfs/etc/mkinitf
 # On Alpine Docker, we can use the host tool:
 mkinitfs -n -b /build/rootfs -c /build/rootfs/etc/mkinitfs/mkinitfs.conf -o /build/rootfs/boot/initramfs-lts $(ls /build/rootfs/lib/modules/)
 
-# 1. Weston Configuration (Auto-launch Peak)
-mkdir -p /build/rootfs/etc/xdg/weston
-cat > /build/rootfs/etc/xdg/weston/weston.ini <<EOF
-[core]
-backend=drm-backend.so
-shell=desktop-shell.so
-idle-time=0
-
-[shell]
-locking=false
-panel-position=none
-background-color=0xff000000
-cursor-theme=Adwaita
-cursor-size=24
-
-cursor-size=24
-
-# Force 1920x1080 on all outputs
-[output]
-name=Virtual-1
-mode=1920x1080
-
-[output]
-name=card0-Virtual-1
-mode=1920x1080
-
-[output]
-name=WHL-1
-mode=1920x1080
-
-# Fallback for any other output (Weston doesn't support wildcard names perfectly, but we list common ones)
-[output]
-name=HDMI-A-1
-mode=1920x1080
-
-# [autolaunch] is not supported by desktop-shell, we launch manually in init_peak.sh
+# 1. labwc Configuration
+mkdir -p /build/rootfs/etc/xdg/labwc
+cat > /build/rootfs/etc/xdg/labwc/rc.xml <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<labwc_config>
+  <core>
+    <decoration>server</decoration>
+  </core>
+  <theme>
+    <name>Adwaita</name>
+    <cornerRadius>8</cornerRadius>
+  </theme>
+  <focus>
+    <followMouse>no</followMouse>
+  </focus>
+  <keyboard>
+    <keybind key="A-Tab">
+      <action name="NextWindow"/>
+    </keybind>
+  </keyboard>
+</labwc_config>
 EOF
+
+# labwc autostart (launches peak-desktop automatically)
+cat > /build/rootfs/etc/xdg/labwc/autostart <<EOF
+/peak-desktop &
+EOF
+chmod +x /build/rootfs/etc/xdg/labwc/autostart
 
 # 2. Startup Script
 cat > /build/rootfs/init_peak.sh <<EOF
@@ -183,7 +185,7 @@ fi
 export XDG_RUNTIME_DIR=/tmp/xdg
 mkdir -p \$XDG_RUNTIME_DIR
 chmod 700 \$XDG_RUNTIME_DIR
-export WESTON_BACKEND=drm-backend.so
+# labwc uses wlroots backend automatically
 
 # Cursor Configuration
 export XCURSOR_THEME=Adwaita
@@ -194,10 +196,9 @@ seatd &
 # Wait for seatd and GPU drivers to stabilize
 sleep 3
 
-# Launch Weston (Wayland Compositor)
-# We run as root for now (simplicity)
-# Run in background, log to console for debugging
-weston --continue-without-input --debug >> /dev/tty1 2>&1 &
+# Launch labwc (Wayland Compositor)
+# labwc auto-launches peak-desktop via /etc/xdg/labwc/autostart
+labwc >> /dev/tty1 2>&1 &
 
 # Wait for Wayland socket to appear (Increased timeout for slow emulation)
 echo "Waiting for Wayland socket..."
@@ -218,11 +219,9 @@ if [ -z "\$SOCKET_NAME" ]; then
     SOCKET_NAME="wayland-0"
 fi
 
-# Launch PeakOS Native App
-echo "Launching PeakOS on \$SOCKET_NAME..."
-# Export display explicitly
+# PeakOS is launched by labwc autostart
+echo "PeakOS launched via labwc autostart on \$SOCKET_NAME"
 export WAYLAND_DISPLAY=\$SOCKET_NAME
-/peak-desktop &
 
 # Prevent script from exiting so init doesn't respawn it immediately (if using respawn)
 # Or just let it exit if OpenRC expects it to. OpenRC 'start' should exit.
@@ -396,7 +395,7 @@ mcopy -i /build/iso/efiboot.img /build/iso/EFI/BOOT/$EFI_NAME ::/EFI/BOOT/$EFI_N
 mcopy -i /build/iso/efiboot.img /build/iso/boot/grub/grub.cfg ::/EFI/BOOT/grub.cfg
 
 # 2. Run Xorriso
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+ISO_NAME="peakos-latest.iso"
 
 # Clean previous ISOs to free space
 rm -f /out/*.iso

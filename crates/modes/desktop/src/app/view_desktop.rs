@@ -98,26 +98,46 @@ impl PeakNative {
         let wallpaper_path = if let Some(custom) = &self.custom_wallpaper {
             peak_core::utils::assets::get_asset_path(&format!("wallpapers/{}", custom))
         } else {
-            match (self.mode, is_light) {
-                (ShellMode::Peak, true) => peak_core::utils::assets::get_asset_path(
-                    "wallpapers/mountain_classic_light.jpg",
-                ),
-                (ShellMode::Peak, false) => {
-                    peak_core::utils::assets::get_asset_path("wallpapers/mountain_classic.jpg")
+            // Default wallpaper based on shell mode only (not theme)
+            match self.mode {
+                ShellMode::Desktop => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/mountain_sunset_warm.jpg")
                 }
-                (ShellMode::Poolside, true) => {
-                    peak_core::utils::assets::get_asset_path("wallpapers/poolsuite_luxury.jpg")
+                ShellMode::Mobile => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/Florida.jpeg")
                 }
-                (ShellMode::Poolside, false) => peak_core::utils::assets::get_asset_path(
+                ShellMode::TV => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/treeInDesert.jpeg")
+                }
+                ShellMode::Console => peak_core::utils::assets::get_asset_path(
                     "wallpapers/poolsuite_luxury_night.jpg",
                 ),
+                ShellMode::Kiosk => peak_core::utils::assets::get_asset_path(
+                    "wallpapers/mountain_classic_light.jpg",
+                ),
+                ShellMode::Fireplace => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/poolsuite_luxury-kopi.jpg")
+                }
+                ShellMode::Auto => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/mountain_classic.jpg")
+                }
+                ShellMode::Robot => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/Desert.jpeg")
+                }
+                ShellMode::Server => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/treeInDesert.jpeg")
+                }
+                ShellMode::SmartHome => {
+                    peak_core::utils::assets::get_asset_path("wallpapers/Florida.jpeg")
+                }
             }
         };
 
         use peak_ui::window_chrome;
 
         // Dynamic z-order Workspace Rendering
-        let mut workspace_stack = Stack::new().push(self.desktop.view().map(Message::Desktop));
+        let mut workspace_stack =
+            Stack::new().push(self.desktop.view(self.tokens).map(Message::Desktop));
 
         for &app_id in &self.window_manager.z_order {
             if let Some(state) = self.window_manager.window_states.get(&app_id) {
@@ -198,6 +218,7 @@ impl PeakNative {
                             content,
                             on_close,
                             Some(Message::Maximize(app_id)),
+                            is_light,
                         ))
                         .width(state.width)
                         .height(state.height),
@@ -220,18 +241,25 @@ impl PeakNative {
         let workspace =
             crate::components::desktop_container::view(&wallpaper_path, workspace_stack.into());
 
-        let workspace_and_inspector = iced::widget::row![
-            container(workspace)
-                .width(Length::Fill)
-                .height(Length::Fill),
-            if self.inspector.is_visible {
-                self.inspector.view(self.tokens).map(Message::Inspector)
-            } else {
-                container(iced::widget::Space::with_width(0)).into()
-            }
-        ];
+        let mut workspace_stack = Stack::new().push(workspace);
 
-        let mut final_view = Stack::new().push(workspace_and_inspector);
+        if self.inspector.is_visible {
+            workspace_stack = workspace_stack.push(
+                container(self.inspector.view(self.tokens).map(Message::Inspector))
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .padding(iced::Padding {
+                        top: 45.0,
+                        right: 12.0,
+                        bottom: 12.0,
+                        left: 0.0,
+                    })
+                    .align_x(iced::alignment::Horizontal::Right)
+                    .align_y(iced::alignment::Vertical::Top),
+            );
+        }
+
+        let final_view = workspace_stack;
 
         // Menubar overlay (top)
         // RESTORED for macOS/Windows (Integrated Mode)
@@ -479,17 +507,57 @@ impl PeakNative {
                 let menu = container(
                     iced::widget::column![
                         menu_button(
-                            "Peak".into(),
-                            Message::SwitchMode(ShellMode::Peak),
-                            self.mode == ShellMode::Peak
+                            "Desktop".into(),
+                            Message::SwitchMode(ShellMode::Desktop),
+                            self.mode == ShellMode::Desktop
                         ),
                         menu_button(
-                            "Riviera".into(),
-                            Message::SwitchMode(ShellMode::Poolside),
-                            self.mode == ShellMode::Poolside
+                            "Mobile".into(),
+                            Message::SwitchMode(ShellMode::Mobile),
+                            self.mode == ShellMode::Mobile
+                        ),
+                        menu_button(
+                            "TV".into(),
+                            Message::SwitchMode(ShellMode::TV),
+                            self.mode == ShellMode::TV
+                        ),
+                        menu_button(
+                            "Console".into(),
+                            Message::SwitchMode(ShellMode::Console),
+                            self.mode == ShellMode::Console
+                        ),
+                        menu_button(
+                            "Kiosk".into(),
+                            Message::SwitchMode(ShellMode::Kiosk),
+                            self.mode == ShellMode::Kiosk
+                        ),
+                        menu_button(
+                            "Fireplace".into(),
+                            Message::SwitchMode(ShellMode::Fireplace),
+                            self.mode == ShellMode::Fireplace
+                        ),
+                        menu_button(
+                            "Auto".into(),
+                            Message::SwitchMode(ShellMode::Auto),
+                            self.mode == ShellMode::Auto
+                        ),
+                        menu_button(
+                            "Robot".into(),
+                            Message::SwitchMode(ShellMode::Robot),
+                            self.mode == ShellMode::Robot
+                        ),
+                        menu_button(
+                            "Server".into(),
+                            Message::SwitchMode(ShellMode::Server),
+                            self.mode == ShellMode::Server
+                        ),
+                        menu_button(
+                            "Home".into(),
+                            Message::SwitchMode(ShellMode::SmartHome),
+                            self.mode == ShellMode::SmartHome
                         ),
                     ]
-                    .width(Length::Fixed(140.0))
+                    .width(Length::Fixed(160.0))
                     .padding(5),
                 )
                 .style(move |_| container::Style {

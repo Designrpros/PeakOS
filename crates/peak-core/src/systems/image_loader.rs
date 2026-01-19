@@ -49,6 +49,11 @@ impl ImageLoader {
         }
 
         // C. Download from Network (Slow)
+        if !url.starts_with("http") {
+            // Not a remote URL, skip download
+            return None;
+        }
+
         println!("⬇️ Downloading cover: {}", url);
         if let Ok(response) = reqwest::get(&url).await {
             if let Ok(bytes) = response.bytes().await {

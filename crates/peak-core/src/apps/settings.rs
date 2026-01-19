@@ -29,6 +29,7 @@ pub enum SettingsTab {
     Focus,
     Privacy,
     Intelligence,
+    Modes,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -65,6 +66,7 @@ pub enum SettingsMessage {
     AddModelPressed,
     ToggleCaptions(bool),
     ToggleVoice(bool),
+    ModeChanged(crate::registry::ShellMode),
 }
 
 pub struct SettingsApp {
@@ -82,6 +84,7 @@ pub struct SettingsApp {
     pub add_model_input: String,
     pub captions_enabled: bool,
     pub voice_enabled: bool,
+    pub current_mode: crate::registry::ShellMode,
 }
 
 impl SettingsApp {
@@ -94,7 +97,7 @@ impl SettingsApp {
             wifi_enabled: true,
             bluetooth_enabled: true,
             wallpapers: Vec::new(),
-            current_wallpaper: String::from("Peak.png"),
+            current_wallpaper: String::from("mountain_sunset_warm.jpg"),
             recommended_models: vec![
                 ModelInfo {
                     name: "Llama 3.2 3B".into(),
@@ -145,6 +148,7 @@ impl SettingsApp {
             add_model_input: String::new(),
             captions_enabled: false,
             voice_enabled: false,
+            current_mode: crate::registry::ShellMode::Desktop,
         }
     }
 }
@@ -287,6 +291,9 @@ impl PeakApp for SettingsApp {
             }
             SettingsMessage::ToggleVoice(enabled) => {
                 self.voice_enabled = enabled;
+            }
+            SettingsMessage::ModeChanged(mode) => {
+                self.current_mode = mode;
             }
         }
         Task::none()

@@ -1,578 +1,268 @@
-#[cfg(feature = "voice")]
-use crate::recorder::Recorder;
-use iced::widget::{button, column, container, scrollable, text, text_editor, vertical_space};
-use iced::{Alignment, Color, Element, Length, Task};
-use peak_intelligence::brain::assistant::{Assistant, Backend, Message as BrainMessage, Token};
-use peak_intelligence::brain::{self};
-use peak_intelligence::sipper::Sipper;
-use std::sync::Arc;
+use iced::widget::{button, column, container, pick_list, row, scrollable, text, text_input};
+use iced::{Element, Length};
+use peak_theme::ThemeTokens;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InspectorViewState {
+    Overview,
+}
+
+use iced::Task;
+
+#[derive(Debug, Clone, PartialEq)]
 #[allow(dead_code)]
 pub enum InspectorMessage {
-    InputChanged(text_editor::Action),
-    SendPressed,
-    ResponseReceived(Result<String, String>),
-    OpenSettings,
-    MouseReleased, // Forward mouse releases to parent
-    BootProgress(String, u32),
-    BootFinished(Result<Arc<Assistant>, String>),
-    StreamToken(String),
-    StreamFinished,
-    #[cfg(feature = "voice")]
-    VoicePressed,
-    #[cfg(feature = "voice")]
-    RecordingFinished(Vec<f32>),
-    #[cfg(feature = "voice")]
-    TranscriptionFinished(String),
-    #[cfg(feature = "voice")]
-    SetVoiceEnabled(bool),
+    ToggleVoice,
+    SwitchView(InspectorViewState),
+    MouseReleased,
     SetActiveModel(String),
-}
-
-#[derive(Debug, Clone)]
-struct ChatMessage {
-    role: String,
-    content: String,
-}
-
-#[derive(Debug, Clone)]
-#[allow(dead_code)]
-pub enum InspectorState {
-    Idle,
-    Booting {
-        progress: u32,
-        stage: String,
-    },
-    Ready,
-    Streaming,
-    #[cfg(feature = "voice")]
-    Recording,
-    Error(String),
+    SelectModel(String),
+    SyncAvailableModels(Vec<String>),
+    InputChanged(String),
+    SubmitMessage,
+    SetVoiceEnabled(bool),
 }
 
 pub struct Inspector {
     pub is_visible: bool,
-    input_content: text_editor::Content,
-    messages: Vec<ChatMessage>,
-    pub state: InspectorState,
-    assistant: Option<Arc<Assistant>>,
-    pending_chat: Option<(String, Vec<BrainMessage>)>,
-    active_model_id: Option<String>,
-    #[cfg(feature = "voice")]
-    recorder: Option<Recorder>,
-    #[cfg(feature = "voice")]
-    pub voice_enabled: bool,
+    pub view_state: InspectorViewState,
+    pub input_content: String,
+    pub chat_history: Vec<(String, String)>, // (Role, Content)
+    pub active_model: Option<String>,
+    pub available_models: Vec<String>,
 }
 
 impl Inspector {
     pub fn new() -> Self {
-        let inspector = Self {
+        Self {
             is_visible: false,
-            input_content: text_editor::Content::new(),
-            messages: vec![ChatMessage {
-                role: "system".to_string(),
-                content: "Initializing Peak Intelligence...".to_string(),
-            }],
-            state: InspectorState::Idle,
-            assistant: None,
-            pending_chat: None,
-            active_model_id: None,
-            #[cfg(feature = "voice")]
-            recorder: None,
-            #[cfg(feature = "voice")]
-            voice_enabled: false,
-        };
-
-        // We defer boot to first update or explicit call to avoid blocking init
-        inspector
-    }
-
-    pub fn boot(&mut self) -> Task<InspectorMessage> {
-        self.state = InspectorState::Booting {
-            progress: 0,
-            stage: "Starting...".into(),
-        };
-
-        let target_id = self.active_model_id.clone();
-
-        Task::perform(
-            async move {
-                let directory = brain::model::Directory::default();
-                let lib = brain::model::Library::scan(&directory)
-                    .await
-                    .map_err(|e| format!("Failed to scan models: {}", e))?;
-                // TODO: Load configured model from settings
-                // For now, we attempt to find *any* model or fail
-                let files = lib.files();
-                if files.is_empty() {
-                    return Err("No models found. Please download one in settings.".into());
-                }
-
-                // Find target model or fallback to first
-                let file = if let Some(id) = target_id {
-                    files
-                        .iter()
-                        .find(|f| f.model.0 == id)
-                        .cloned()
-                        .unwrap_or_else(|| files[0].clone())
-                } else {
-                    files[0].clone()
-                };
-
-                let directory = lib.directory().clone();
-
-                let mut boot_process = Assistant::boot(directory, file, Backend::Cpu).pin();
-
-                while let Some(_event) = boot_process.sip().await {
-                    // Just wait for completion
-                }
-
-                match boot_process.await {
-                    Ok(a) => Ok(Arc::new(a)),
-                    Err(e) => Err(e.to_string()),
-                }
-            },
-            InspectorMessage::BootFinished,
-        )
+            view_state: InspectorViewState::Overview,
+            input_content: String::new(),
+            chat_history: vec![(
+                "system".to_string(),
+                "Inspector initialized. Ready for query.".to_string(),
+            )],
+            active_model: None,
+            available_models: vec![],
+        }
     }
 
     pub fn update(&mut self, message: InspectorMessage) -> Task<InspectorMessage> {
         match message {
+            InspectorMessage::ToggleVoice => {}
+            InspectorMessage::SwitchView(state) => {
+                self.view_state = state;
+            }
+            InspectorMessage::MouseReleased => {}
             InspectorMessage::SetActiveModel(id) => {
-                let was_different = self.active_model_id.as_ref() != Some(&id);
-                self.active_model_id = Some(id);
-
-                // If model changed and we are already running, we should reboot
-                if was_different {
-                    // Only reboot if we have valid state to reboot from (not streaming/booting)
-                    match self.state {
-                        InspectorState::Ready | InspectorState::Error(_) => {
-                            self.messages.push(ChatMessage {
-                                role: "system".into(),
-                                content: "Switching model...".into(),
-                            });
-                            return self.boot();
-                        }
-                        _ => {}
+                self.active_model = Some(id);
+            }
+            InspectorMessage::SelectModel(id) => {
+                self.active_model = Some(id);
+            }
+            InspectorMessage::SyncAvailableModels(mut models) => {
+                // Ensure active model is in the list
+                if let Some(ref active) = self.active_model {
+                    if !models.contains(active) {
+                        models.insert(0, active.clone());
                     }
                 }
-                Task::none()
+                self.available_models = models;
             }
-            InspectorMessage::InputChanged(action) => {
-                self.input_content.perform(action);
-                Task::none()
+            InspectorMessage::SetVoiceEnabled(_) => {}
+            InspectorMessage::InputChanged(content) => {
+                self.input_content = content;
             }
-            InspectorMessage::OpenSettings => Task::none(),
-            InspectorMessage::MouseReleased => Task::none(),
-            InspectorMessage::BootProgress(stage, pct) => {
-                if let InspectorState::Booting { .. } = &mut self.state {
-                    self.state = InspectorState::Booting {
-                        progress: pct,
-                        stage,
-                    };
+            InspectorMessage::SubmitMessage => {
+                if !self.input_content.trim().is_empty() {
+                    self.chat_history
+                        .push(("user".to_string(), self.input_content.clone()));
+                    self.input_content.clear();
+                    // Auto-scroll to bottom
+                    return iced::widget::scrollable::snap_to(
+                        iced::widget::scrollable::Id::new("chat_scroll"),
+                        iced::widget::scrollable::RelativeOffset::END,
+                    );
                 }
-                Task::none()
-            }
-            InspectorMessage::BootFinished(result) => {
-                match result {
-                    Ok(assistant) => {
-                        self.assistant = Some(assistant);
-                        self.state = InspectorState::Ready;
-                        self.messages.push(ChatMessage {
-                            role: "system".to_string(),
-                            content: "System Ready.".to_string(),
-                        });
-                    }
-                    Err(e) => {
-                        self.state = InspectorState::Error(e.clone());
-                        self.messages.push(ChatMessage {
-                            role: "system".to_string(),
-                            content: format!("Initialization Failed: {}", e),
-                        });
-                    }
-                }
-                Task::none()
-            }
-            InspectorMessage::SendPressed => {
-                let text = self.input_content.text();
-                if text.trim().is_empty() {
-                    return Task::none();
-                }
-
-                // If not ready, try boot?
-                if self.assistant.is_none() {
-                    return self.boot();
-                }
-
-                let user_msg = ChatMessage {
-                    role: "user".to_string(),
-                    content: text.clone(),
-                };
-                self.messages.push(user_msg.clone());
-                self.input_content = text_editor::Content::new();
-                self.state = InspectorState::Streaming;
-
-                // Prepare history
-                let history: Vec<BrainMessage> = self
-                    .messages
-                    .iter()
-                    .map(|m| match m.role.as_str() {
-                        "user" => BrainMessage::User(m.content.clone()),
-                        "assistant" => BrainMessage::Assistant(m.content.clone()),
-                        "system" => BrainMessage::System(m.content.clone()),
-                        _ => BrainMessage::User(m.content.clone()),
-                    })
-                    .collect();
-
-                // Set pending chat for subscription
-                self.pending_chat = Some((text.clone(), history));
-
-                // Add placeholder for assistant response
-                self.messages.push(ChatMessage {
-                    role: "assistant".into(),
-                    content: String::new(),
-                });
-
-                Task::none()
-            }
-            InspectorMessage::StreamToken(t) => {
-                if let Some(msg) = self.messages.last_mut() {
-                    if msg.role == "assistant" {
-                        msg.content.push_str(&t);
-                    }
-                }
-                Task::none()
-            }
-            InspectorMessage::StreamFinished => {
-                self.state = InspectorState::Ready;
-                self.pending_chat = None;
-
-                #[cfg(feature = "voice")]
-                if self.voice_enabled {
-                    if let Some(msg) = self.messages.last() {
-                        if msg.role == "assistant" {
-                            let content = msg.content.clone();
-                            return Task::perform(
-                                async move {
-                                    let mut manager = peak_intelligence::voice::VOICE.lock().await;
-                                    manager.synthesize(&content, "default").await.ok();
-                                },
-                                |_| InspectorMessage::ResponseReceived(Ok(String::new())), // Dummy
-                            );
-                        }
-                    }
-                }
-                Task::none()
-            }
-            InspectorMessage::ResponseReceived(_) => Task::none(), // Legacy
-            #[cfg(feature = "voice")]
-            InspectorMessage::VoicePressed => match self.state {
-                InspectorState::Ready | InspectorState::Error(_) => {
-                    match Recorder::start() {
-                        Ok(r) => {
-                            self.state = InspectorState::Recording;
-                            self.recorder = Some(r);
-                        }
-                        Err(e) => {
-                            self.state = InspectorState::Error(e.to_string());
-                        }
-                    }
-                    Task::none()
-                }
-                InspectorState::Recording => {
-                    let samples = if let Some(recorder) = self.recorder.take() {
-                        recorder.stop()
-                    } else {
-                        Vec::new()
-                    };
-                    self.state = InspectorState::Ready;
-                    Task::done(InspectorMessage::RecordingFinished(samples))
-                }
-                _ => Task::none(),
-            },
-            #[cfg(feature = "voice")]
-            InspectorMessage::RecordingFinished(audio) => {
-                if audio.is_empty() {
-                    self.state = InspectorState::Ready;
-                    return Task::none();
-                }
-
-                Task::perform(
-                    async move {
-                        let mut manager = peak_intelligence::voice::VOICE.lock().await;
-                        // For convenience in dev, we assume model is there or fails gracefully
-                        manager.init_whisper("tiny.en").await?;
-                        manager.transcribe(&audio).await
-                    },
-                    |res| match res {
-                        Ok(text) => InspectorMessage::TranscriptionFinished(text),
-                        Err(e) => InspectorMessage::ResponseReceived(Err(e.to_string())),
-                    },
-                )
-            }
-            #[cfg(feature = "voice")]
-            InspectorMessage::TranscriptionFinished(text) => {
-                self.state = InspectorState::Ready;
-                if !text.trim().is_empty() {
-                    self.input_content = text_editor::Content::with_text(&text);
-                    return Task::done(InspectorMessage::SendPressed);
-                }
-                Task::none()
-            }
-            #[cfg(feature = "voice")]
-            InspectorMessage::SetVoiceEnabled(enabled) => {
-                self.voice_enabled = enabled;
-                Task::none()
             }
         }
+        Task::none()
     }
 
     pub fn subscription(&self) -> iced::Subscription<InspectorMessage> {
-        let mut subs = Vec::new();
-
-        if let InspectorState::Streaming = self.state {
-            if let Some((prompt, history)) = &self.pending_chat {
-                if let Some(assistant) = &self.assistant {
-                    let assistant = assistant.as_ref().clone();
-                    let prompt = prompt.clone();
-                    let history = history.clone();
-
-                    use peak_intelligence::sipper::StreamExt;
-
-                    subs.push(iced::Subscription::run_with_id(
-                        (prompt.clone(), history.len()),
-                        StreamExt::map(
-                            assistant.reply(prompt, history, vec![]),
-                            |item| match item {
-                                (_, Token::Talking(s)) => InspectorMessage::StreamToken(s),
-                                _ => InspectorMessage::ResponseReceived(Ok(String::new())),
-                            },
-                        ),
-                    ));
-                }
-            }
-        }
-
-        #[cfg(feature = "voice")]
-        if let InspectorState::Recording = self.state {
-            // Recording is now handled by the Recorder struct internally
-        }
-
-        iced::Subscription::batch(subs)
+        iced::Subscription::none()
     }
 
-    pub fn view<'a>(&'a self, tokens: peak_theme::ThemeTokens) -> Element<'a, InspectorMessage> {
-        if !self.is_visible {
-            return container(vertical_space().height(0))
-                .width(0)
-                .height(0)
-                .into();
-        }
-
-        let bg_color = tokens.glass_bg;
-        let text_color = tokens.text;
-
-        let header = container(text("Peak Intelligence").size(14).font(iced::Font {
-            weight: iced::font::Weight::Bold,
-            ..Default::default()
-        }))
-        .padding(15)
-        .align_y(iced::alignment::Vertical::Center);
-
-        // Chat List
-        let chat_list = scrollable(
+    pub fn view(&self, tokens: ThemeTokens) -> Element<'_, InspectorMessage> {
+        // Directly show chat view (removed segmented control for now)
+        let chat_scroll: Element<'_, InspectorMessage> = scrollable(
             column(
-                self.messages
+                self.chat_history
                     .iter()
-                    .map(|msg| {
-                        let is_user = msg.role == "user";
-                        if is_user {
-                            // User Bubble: Card-like or Subtle bg
-                            let bubble_bg = tokens.card_bg;
-
-                            container(text(&msg.content).size(14).color(text_color))
-                                .padding(12)
-                                .style(move |_| container::Style {
-                                    background: Some(bubble_bg.into()),
-                                    border: iced::Border {
-                                        radius: 16.0.into(),
-                                        ..Default::default()
-                                    },
-                                    ..Default::default()
-                                })
-                                .max_width(280)
-                                .align_x(Alignment::End)
-                                .into()
-                        } else {
-                            // AI Answer: Full width, no border/background (minimal)
-                            container(
-                                text(&msg.content)
-                                    .size(14)
-                                    .color(text_color)
-                                    .line_height(1.6),
-                            )
-                            .padding(12)
-                            .width(Length::Fill)
-                            .style(|_| container::Style::default())
-                            .align_x(Alignment::Start)
-                            .into()
-                        }
-                    })
-                    .collect::<Vec<Element<'_, InspectorMessage>>>(),
-            )
-            .spacing(20)
-            .padding(15),
-        )
-        .height(Length::Fill);
-
-        // Icons for toolbar
-        #[cfg(feature = "voice")]
-        let hex_color = format!(
-            "#{:02x}{:02x}{:02x}",
-            (tokens.text.r * 255.0) as u8,
-            (tokens.text.g * 255.0) as u8,
-            (tokens.text.b * 255.0) as u8
-        );
-        #[cfg(feature = "voice")]
-        let mic_icon = peak_core::icons::get_ui_icon("microphone", &hex_color);
-        let arrow_icon = peak_core::icons::get_ui_icon("arrow_up", "#FFFFFF"); // Action icon stays white
-
-        let refined_input_area = container(column![
-            // Text Editor acts as the main input area
-            container(
-                text_editor(&self.input_content)
-                    .placeholder("Ask anything (⌘L), @ to mention, / for workflows")
-                    .on_action(InspectorMessage::InputChanged)
-                    .padding(0)
-                    .style(move |_, _| text_editor::Style {
-                        background: Color::TRANSPARENT.into(),
-                        border: iced::Border::default(),
-                        value: text_color,
-                        selection: tokens.accent,
-                        placeholder: Color::from_rgb(0.5, 0.5, 0.5),
-                        icon: Color::from_rgb(0.5, 0.5, 0.5),
-                    })
-            )
-            .padding(iced::Padding {
-                top: 0.0,
-                right: 0.0,
-                bottom: 0.0,
-                left: 0.0
-            }),
-            vertical_space().height(8),
-            {
-                let mut bar = iced::widget::Row::new()
-                    .push(
-                        // Plus Icon
-                        text("+").size(20).color(Color::from_rgb(0.6, 0.6, 0.6)),
-                    )
-                    .push(
-                        // Breadcrumbs / Status
-                        text("Planning")
-                            .size(12)
-                            .color(Color::from_rgb(0.6, 0.6, 0.6)),
-                    )
-                    .push(
-                        text("Gemini 3 Pro (High)")
-                            .size(12)
-                            .color(Color::from_rgb(0.6, 0.6, 0.6)),
-                    )
-                    .push(iced::widget::horizontal_space());
-
-                #[cfg(feature = "voice")]
-                {
-                    bar = bar.push(
-                        button(container(
-                            iced::widget::svg(mic_icon)
-                                .width(Length::Fixed(16.0))
-                                .height(Length::Fixed(16.0)),
-                        ))
-                        .on_press(InspectorMessage::VoicePressed)
-                        .padding(4)
-                        .style(move |_, status| {
-                            let mut bg = Color::TRANSPARENT;
-                            if status == iced::widget::button::Status::Hovered {
-                                bg = Color::from_rgba(1.0, 1.0, 1.0, 0.1);
-                            }
-                            button::Style {
-                                background: Some(bg.into()),
-                                border: iced::Border {
-                                    radius: 8.0.into(),
-                                    ..Default::default()
-                                },
-                                ..Default::default()
-                            }
-                        }),
-                    );
-                }
-
-                bar = bar.push(
-                    button(container(
-                        iced::widget::svg(arrow_icon)
-                            .width(Length::Fixed(14.0))
-                            .height(Length::Fixed(14.0)),
-                    ))
-                    .on_press(InspectorMessage::SendPressed)
-                    .padding(8)
-                    .style(move |_: &iced::Theme, status| {
-                        let mut bg = tokens.accent;
-                        if status != iced::widget::button::Status::Hovered {
-                            bg.a = 0.8;
-                        }
-                        button::Style {
-                            background: Some(bg.into()),
-                            text_color: Color::WHITE,
+                    .map(|(role, msg)| {
+                        let is_user = role == "user";
+                        let bubble = container(text(msg.clone()).style(move |_| text::Style {
+                            color: Some(tokens.text),
+                            ..Default::default()
+                        }))
+                        .padding(12)
+                        .style(move |_| container::Style {
+                            background: Some(if is_user {
+                                iced::Color::from_rgba(0.5, 0.5, 0.5, 0.2).into()
+                            } else {
+                                iced::Color::from_rgba(0.5, 0.5, 0.5, 0.05).into()
+                            }),
                             border: iced::Border {
-                                radius: 20.0.into(),
+                                radius: 12.0.into(),
                                 ..Default::default()
                             },
                             ..Default::default()
+                        })
+                        .width(Length::Shrink);
+
+                        // Align user messages to the right, assistant to the left
+                        if is_user {
+                            row![iced::widget::horizontal_space(), bubble].into()
+                        } else {
+                            row![bubble, iced::widget::horizontal_space()].into()
                         }
-                    }),
-                );
-
-                bar.spacing(12).align_y(Alignment::Center)
-            }
-        ])
-        .padding(12)
-        .style(move |_| container::Style {
-            background: Some(tokens.card_bg.into()),
-            border: iced::Border {
-                radius: tokens.radius.into(),
-                width: 1.0,
-                color: tokens.glass_border,
-            },
-            ..Default::default()
-        });
-
-        container(
-            column![header, chat_list, refined_input_area]
-                .spacing(10)
-                .padding(iced::Padding {
-                    top: 40.0,
-                    left: 0.0,
-                    right: 0.0,
-                    bottom: 0.0,
-                }),
+                    })
+                    .collect::<Vec<_>>(),
+            )
+            .spacing(8)
+            .width(Length::Fill),
         )
-        .width(360)
         .height(Length::Fill)
-        .padding(10)
+        .direction(iced::widget::scrollable::Direction::Vertical(
+            iced::widget::scrollable::Scrollbar::new()
+                .width(0)
+                .scroller_width(0),
+        ))
+        .id(iced::widget::scrollable::Id::new("chat_scroll"))
+        .into();
+
+        // Input area with border encompassing everything
+        let model_selector: Element<'_, InspectorMessage> = {
+            if self.available_models.is_empty() && self.active_model.is_none() {
+                // Show placeholder text when no models available
+                container(text("No model").size(11).style(move |_theme| text::Style {
+                    color: Some(iced::Color {
+                        a: 0.5,
+                        ..tokens.text
+                    }),
+                    ..Default::default()
+                }))
+                .padding([0, 8])
+                .into()
+            } else {
+                container(
+                    pick_list(
+                        &self.available_models[..],
+                        self.active_model.as_ref(),
+                        InspectorMessage::SelectModel,
+                    )
+                    .text_size(11)
+                    .padding(6)
+                    .placeholder("Select model")
+                    .style(
+                        move |_theme: &iced::Theme, _status| iced::widget::pick_list::Style {
+                            text_color: tokens.text,
+                            placeholder_color: iced::Color {
+                                a: 0.5,
+                                ..tokens.text
+                            },
+                            handle_color: tokens.text,
+                            background: iced::Color::from_rgba(0.0, 0.0, 0.0, 0.15).into(),
+                            border: iced::Border {
+                                radius: 8.0.into(),
+                                ..Default::default()
+                            },
+                        },
+                    ),
+                )
+                .into()
+            }
+        };
+
+        let input_area: Element<'_, InspectorMessage> = container(
+            column![
+                text_input("Ask Peak...", &self.input_content)
+                    .on_input(InspectorMessage::InputChanged)
+                    .on_submit(InspectorMessage::SubmitMessage)
+                    .padding(10)
+                    .style(move |_theme, _status| iced::widget::text_input::Style {
+                        background: iced::Color::TRANSPARENT.into(),
+                        border: iced::Border::default(),
+                        icon: tokens.text,
+                        placeholder: iced::Color {
+                            a: 0.5,
+                            ..tokens.text
+                        },
+                        value: tokens.text,
+                        selection: iced::Color::from_rgba(0.5, 0.5, 0.5, 0.3),
+                    }),
+                row![
+                    model_selector,
+                    iced::widget::horizontal_space(),
+                    button(
+                        iced::widget::svg(peak_core::icons::get_ui_icon(
+                            "arrow_up",
+                            &format!(
+                                "#{:02X}{:02X}{:02X}",
+                                (tokens.text.r * 255.0) as u8,
+                                (tokens.text.g * 255.0) as u8,
+                                (tokens.text.b * 255.0) as u8
+                            )
+                        ))
+                        .width(16)
+                        .height(16)
+                    )
+                    .on_press(InspectorMessage::SubmitMessage)
+                    .padding(8)
+                    .style(move |_theme, _status| {
+                        iced::widget::button::Style {
+                            background: Some(iced::Color::from_rgb(0.2, 0.2, 0.2).into()),
+                            border: iced::Border {
+                                radius: 100.0.into(),
+                                ..Default::default()
+                            },
+                            text_color: iced::Color::WHITE,
+                            ..Default::default()
+                        }
+                    })
+                ]
+                .spacing(8)
+            ]
+            .spacing(8),
+        )
+        .padding(4)
         .style(move |_| container::Style {
-            background: Some(bg_color.into()),
             border: iced::Border {
                 width: 1.0,
-                color: tokens.glass_border,
-                ..Default::default()
-            },
-            shadow: iced::Shadow {
-                color: tokens.shadow_color,
-                offset: iced::Vector::new(0.0, 4.0),
-                blur_radius: 12.0,
+                color: iced::Color {
+                    a: 0.1,
+                    ..tokens.text
+                },
+                radius: 12.0.into(),
             },
             ..Default::default()
         })
-        .into()
+        .into();
+
+        let content = column![chat_scroll, input_area].spacing(16);
+
+        container(content)
+            .padding(20)
+            .width(Length::Fixed(340.0))
+            .height(Length::Fill)
+            .style(move |_: &iced::Theme| container::Style {
+                background: Some(tokens.glass_bg.into()),
+                border: iced::Border {
+                    radius: 16.0.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .into()
     }
 }

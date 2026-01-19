@@ -1,13 +1,19 @@
 use crate::brain::model;
 use crate::brain::Error;
 
-use serde::Deserialize;
-use serde_json::json;
-use sipper::{sipper, FutureExt, Sipper, Straw, StreamExt};
+use sipper::{sipper, Sipper, Straw};
 
+#[cfg(feature = "llm")]
+use sipper::{FutureExt, StreamExt};
+
+#[cfg(feature = "llm")]
 use std::process::Stdio;
+#[cfg(feature = "llm")]
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+
+use serde::Deserialize;
+use serde_json::json;
 
 #[derive(Debug, Clone)]
 pub struct Assistant {

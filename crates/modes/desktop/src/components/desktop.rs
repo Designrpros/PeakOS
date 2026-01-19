@@ -76,7 +76,7 @@ impl Desktop {
         }
     }
 
-    pub fn view<'a>(&'a self) -> Element<'a, DesktopMessage> {
+    pub fn view<'a>(&'a self, tokens: peak_theme::ThemeTokens) -> Element<'a, DesktopMessage> {
         let mut stack = iced::widget::Stack::new();
 
         // 0. The background is handled in app.rs.
@@ -88,7 +88,7 @@ impl Desktop {
             let name = item.name.clone();
             let pos = item.position;
 
-            let icon = view_icon(&path);
+            let icon = view_icon(&path, tokens);
             let label = text(name)
                 .size(10)
                 .color(iced::Color::WHITE)
@@ -249,7 +249,10 @@ impl Desktop {
 }
 
 // Reuse the icon logic from explorer.rs or move to a common place
-fn view_icon<'a>(path: &std::path::Path) -> Element<'a, DesktopMessage> {
+fn view_icon<'a>(
+    path: &std::path::Path,
+    tokens: peak_theme::ThemeTokens,
+) -> Element<'a, DesktopMessage> {
     let is_dir = path.is_dir();
     let ext = path
         .extension()
@@ -268,7 +271,14 @@ fn view_icon<'a>(path: &std::path::Path) -> Element<'a, DesktopMessage> {
         }
     };
 
-    svg(peak_core::icons::get_ui_icon(icon_name, "#FFFFFF"))
+    let hex_color = format!(
+        "#{:02X}{:02X}{:02X}",
+        (tokens.text.r * 255.0) as u8,
+        (tokens.text.g * 255.0) as u8,
+        (tokens.text.b * 255.0) as u8
+    );
+
+    svg(peak_core::icons::get_ui_icon(icon_name, &hex_color))
         .width(Length::Fixed(32.0))
         .height(Length::Fixed(32.0))
         .into()

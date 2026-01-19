@@ -8,7 +8,12 @@ pub fn load_system_svg(category: &str, name: &str, color: &str) -> Handle {
 
     match std::fs::read_to_string(&path) {
         Ok(content) => {
-            let colored_svg = content.replace("currentColor", color);
+            let colored_svg = content
+                .replace("currentColor", color)
+                .replace("stroke=\"white\"", &format!("stroke=\"{}\"", color))
+                .replace("stroke=\"black\"", &format!("stroke=\"{}\"", color))
+                .replace("fill=\"white\"", &format!("fill=\"{}\"", color))
+                .replace("fill=\"black\"", &format!("fill=\"{}\"", color));
             Handle::from_memory(colored_svg.into_bytes())
         }
         Err(_) => {
@@ -48,6 +53,22 @@ pub fn get_status_icon(name: &str, color: &str) -> Handle {
 
 pub fn get_ui_icon(name: &str, color: &str) -> Handle {
     load_system_svg("ui", name, color)
+}
+
+pub fn get_mode_icon(mode: crate::registry::ShellMode, color: &str) -> Handle {
+    use crate::registry::ShellMode;
+    match mode {
+        ShellMode::Desktop => load_system_svg("apps", "terminal", color), // monitor doesn't exist, using terminal
+        ShellMode::Mobile => load_system_svg("status", "sun", color),     // mobile doesn't exist
+        ShellMode::TV => load_system_svg("apps", "console", color),
+        ShellMode::Console => load_system_svg("apps", "console", color),
+        ShellMode::Kiosk => load_system_svg("ui", "logo", color),
+        ShellMode::Fireplace => load_system_svg("ui", "sparkles", color),
+        ShellMode::Auto => load_system_svg("ui", "trigger", color),
+        ShellMode::Robot => load_system_svg("avatars", "robot", color),
+        ShellMode::Server => load_system_svg("apps", "cpu", color),
+        ShellMode::SmartHome => load_system_svg("ui", "apps", color),
+    }
 }
 
 pub fn get_avatar_handle(name: &str, color: &str) -> Handle {

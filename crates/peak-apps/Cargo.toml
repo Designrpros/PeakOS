@@ -11,6 +11,7 @@ portable-pty = "0.8"
 peak-intelligence = { path = "../peak-intelligence", default-features = false }
 peak-core = { path = "../peak-core" }
 peak-ui = { path = "../peak-ui" }
+peak-theme = { path = "../peak-theme" }
 tokio = { version = "1", features = ["full"] }
 chrono = "0.4"
 sysinfo = "0.30"

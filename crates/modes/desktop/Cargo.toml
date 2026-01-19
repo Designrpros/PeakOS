@@ -42,4 +42,5 @@ wayland-client = "0.31"
 
 [features]
 default = []
+llm = ["peak-intelligence/llm"]
 voice = ["cpal", "peak-intelligence/voice"]

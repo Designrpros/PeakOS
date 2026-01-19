@@ -14,6 +14,7 @@ pub struct Sidebar<'a, Message> {
     pub items: Vec<SidebarItem<Message>>,
     pub search_query: Option<String>,
     pub on_search: Option<Box<dyn Fn(String) -> Message + 'a>>,
+    pub tokens: peak_theme::ThemeTokens,
     pub _phantom: std::marker::PhantomData<&'a ()>,
 }
 
@@ -21,12 +22,13 @@ impl<'a, Message> Sidebar<'a, Message>
 where
     Message: 'a + Clone,
 {
-    pub fn new(title: impl Into<String>) -> Self {
+    pub fn new(title: impl Into<String>, tokens: peak_theme::ThemeTokens) -> Self {
         Self {
             title: title.into(),
             items: Vec::new(),
             search_query: None,
             on_search: None,
+            tokens,
             _phantom: std::marker::PhantomData,
         }
     }
@@ -58,25 +60,35 @@ where
     }
 
     pub fn view(self) -> Element<'a, Message> {
+        let tokens = self.tokens;
+        let hex_text = format!(
+            "#{:02X}{:02X}{:02X}",
+            (tokens.text.r * 255.0) as u8,
+            (tokens.text.g * 255.0) as u8,
+            (tokens.text.b * 255.0) as u8
+        );
         let mut content = column![].spacing(4);
 
         if let (Some(query), Some(on_search)) = (self.search_query, self.on_search) {
             content = content.push(
                 container(
                     row![
-                        iced::widget::svg(icons::get_ui_icon("search", "#999999"))
+                        iced::widget::svg(icons::get_ui_icon("search", &hex_text))
                             .width(16)
                             .height(16),
                         iced::widget::text_input("Search", &query)
                             .on_input(on_search)
                             .size(13)
                             .padding(0)
-                            .style(|_theme, _status| iced::widget::text_input::Style {
+                            .style(move |_theme, _status| iced::widget::text_input::Style {
                                 background: Color::TRANSPARENT.into(),
                                 border: iced::Border::default(),
                                 icon: Color::TRANSPARENT,
-                                placeholder: Color::from_rgb(0.6, 0.6, 0.6),
-                                value: Color::from_rgb(0.2, 0.2, 0.2),
+                                placeholder: iced::Color {
+                                    a: 0.5,
+                                    ..tokens.text
+                                },
+                                value: tokens.text,
                                 selection: Color::from_rgba(0.0, 0.5, 1.0, 0.3),
                             }),
                     ]
@@ -84,8 +96,12 @@ where
                     .align_y(Alignment::Center)
                     .padding(8),
                 )
-                .style(|_| container::Style {
-                    background: Some(Color::from_rgba(0.0, 0.0, 0.0, 0.05).into()),
+                .style(move |_| container::Style {
+                    background: Some({
+                        let mut c = tokens.text;
+                        c.a = 0.05;
+                        c.into()
+                    }),
                     border: iced::Border {
                         radius: 8.0.into(),
                         ..Default::default()
@@ -106,13 +122,13 @@ where
             let text_color = if item.is_selected {
                 Color::WHITE
             } else {
-                Color::from_rgb8(60, 60, 60)
+                tokens.text
             };
 
             let icon_color_hex = if item.is_selected {
                 "#FFFFFF"
             } else {
-                "#3C3C3C"
+                &hex_text
             };
 
             let icon_handle = icons::get_ui_icon(&item.icon_name, icon_color_hex);
@@ -133,7 +149,9 @@ where
                     let final_bg = if item.is_selected {
                         bg
                     } else if status == iced::widget::button::Status::Hovered {
-                        Color::from_rgba(0.0, 0.0, 0.0, 0.05)
+                        let mut c = tokens.text;
+                        c.a = 0.05;
+                        c
                     } else {
                         Color::TRANSPARENT
                     };
@@ -155,8 +173,8 @@ where
             .width(Length::Fixed(220.0))
             .height(Length::Fill)
             .padding(12)
-            .style(|_| container::Style {
-                background: Some(Color::from_rgba(0.95, 0.95, 0.95, 0.5).into()),
+            .style(move |_| container::Style {
+                background: Some(tokens.card_bg.into()),
                 ..Default::default()
             })
             .into()
@@ -166,6 +184,7 @@ where
 pub struct NavigationSplitView<'a, Message> {
     pub sidebar: Element<'a, Message>,
     pub content: Element<'a, Message>,
+    pub is_light: bool,
 }
 
 impl<'a, Message> NavigationSplitView<'a, Message>
@@ -176,23 +195,44 @@ where
         Self {
             sidebar: sidebar.view(),
             content,
+            is_light: true,
         }
     }
 
+    pub fn theme(mut self, is_light: bool) -> Self {
+        self.is_light = is_light;
+        self
+    }
+
     pub fn view(self) -> Element<'a, Message> {
-        row![
+        let is_light = self.is_light;
+        let content_bg = if is_light {
+            Color::WHITE
+        } else {
+            Color::from_rgb8(28, 28, 30) // Dark mode background
+        };
+
+        let row_content = row![
             self.sidebar,
             container(self.content)
                 .width(Length::Fill)
                 .height(Length::Fill)
                 .padding(24)
-                .style(|_| container::Style {
-                    background: Some(Color::WHITE.into()),
+                .style(move |_| container::Style {
+                    background: Some(content_bg.into()),
                     ..Default::default()
                 })
         ]
         .width(Length::Fill)
-        .height(Length::Fill)
-        .into()
+        .height(Length::Fill);
+
+        container(row_content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(move |_| container::Style {
+                background: Some(content_bg.into()),
+                ..Default::default()
+            })
+            .into()
     }
 }

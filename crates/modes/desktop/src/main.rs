@@ -79,15 +79,21 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
-    let is_game_mode = mode_arg == "game";
+    let _is_game_mode = args.contains(&"--game".to_string());
 
     iced::application(PeakNative::title, PeakNative::update, PeakNative::view)
         .theme(PeakNative::theme)
         .subscription(PeakNative::subscription)
         .window(iced::window::Settings {
-            decorations: !is_game_mode,
-            transparent: is_game_mode,
-            resizable: !is_game_mode,
+            decorations: false,
+            transparent: true,
+            size: iced::Size::new(1280.0, 720.0), // Smaller default, will maximize on Linux
+            resizable: true,
+            #[cfg(target_os = "linux")]
+            platform_specific: iced::window::settings::PlatformSpecific {
+                application_id: "peak-desktop".to_string(),
+                ..Default::default()
+            },
             ..Default::default()
         })
         .run_with(move || PeakNative::new(flags))

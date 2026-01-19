@@ -622,14 +622,38 @@ impl PeakNative {
                 Task::none()
             }
             Message::LaunchGame(cmd) => {
-                if cmd.starts_with("steam://") {
-                    std::process::Command::new("open").arg(&cmd).spawn().ok();
-                } else {
-                    std::process::Command::new("sh")
-                        .arg("-c")
-                        .arg(&cmd)
-                        .spawn()
-                        .ok();
+                #[cfg(target_os = "macos")]
+                {
+                    if cmd.starts_with("steam://") {
+                        std::process::Command::new("open").arg(&cmd).spawn().ok();
+                    } else {
+                        std::process::Command::new("sh")
+                            .arg("-c")
+                            .arg(&cmd)
+                            .spawn()
+                            .ok();
+                    }
+                }
+                #[cfg(not(target_os = "macos"))]
+                {
+                    let mut process_cmd = if cmd.starts_with("steam://") {
+                        let mut c = std::process::Command::new("xdg-open");
+                        c.arg(&cmd);
+                        c
+                    } else {
+                        let mut c = std::process::Command::new("sh");
+                        c.arg("-c").arg(&cmd);
+                        c
+                    };
+                    // Propagate Wayland environment
+                    if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
+                        process_cmd.env("WAYLAND_DISPLAY", display);
+                    }
+                    if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+                        process_cmd.env("XDG_RUNTIME_DIR", runtime_dir);
+                    }
+                    process_cmd.env("GDK_BACKEND", "wayland");
+                    process_cmd.spawn().ok();
                 }
                 Task::none()
             }
@@ -667,7 +691,16 @@ impl PeakNative {
                         }
                         #[cfg(not(target_os = "macos"))]
                         {
-                            std::process::Command::new(command).spawn().ok();
+                            let mut cmd = std::process::Command::new(&command);
+                            // Propagate Wayland environment
+                            if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
+                                cmd.env("WAYLAND_DISPLAY", display);
+                            }
+                            if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+                                cmd.env("XDG_RUNTIME_DIR", runtime_dir);
+                            }
+                            cmd.env("GDK_BACKEND", "wayland");
+                            cmd.spawn().ok();
                         }
                     }
                     dock::DockMessage::Launch(app_id) => {
@@ -791,10 +824,48 @@ impl PeakNative {
                     return Task::none();
                 }
 
+                // Intercept SubmitMessage to start chat
+                if let crate::components::inspector::InspectorMessage::SubmitMessage = msg {
+                    if !self.inspector.input_content.trim().is_empty() {
+                        let prompt = self.inspector.input_content.clone();
+                        self.pending_chat = Some(prompt);
+                        // Note: Inspector::update clears input_content, so we grabbed it first.
+                        // Inspector also adds the user message local history.
+                        // But we want to add a *placeholder* for the assistant immediately?
+                        // Or just let the first token create it.
+                        // Inspector::update currently adds a fake reply. We should remove that.
+                    }
+                }
+
                 self.inspector.update(msg).map(Message::Inspector)
             }
             Message::ToggleInspector => {
                 self.inspector.is_visible = !self.inspector.is_visible;
+
+                // Sync available models when opening Inspector
+                if self.inspector.is_visible {
+                    let models_dir = peak_intelligence::brain::model::Directory::default();
+                    let mut available_models = Vec::new();
+
+                    if let Ok(entries) = std::fs::read_dir(models_dir.path()) {
+                        for entry in entries.flatten() {
+                            if let Ok(file_name) = entry.file_name().into_string() {
+                                if file_name.ends_with(".gguf") {
+                                    // Extract model ID from filename (remove .gguf extension)
+                                    let model_id = file_name.trim_end_matches(".gguf").to_string();
+                                    available_models.push(model_id);
+                                }
+                            }
+                        }
+                    }
+
+                    return Task::done(Message::Inspector(
+                        crate::components::inspector::InspectorMessage::SyncAvailableModels(
+                            available_models,
+                        ),
+                    ));
+                }
+
                 Task::none()
             }
             Message::Settings(settings_msg) => {
@@ -826,6 +897,8 @@ impl PeakNative {
                         self.active_downloads.remove(id);
                     }
                     peak_apps::settings::SettingsMessage::ModelActivate(id) => {
+                        // Set active model in main state
+                        self.active_model_id = Some(id.clone());
                         // Notify Inspector of active model change
                         return Task::batch(vec![
                             self.forward_to_app(
@@ -853,6 +926,13 @@ impl PeakNative {
                             )),
                         ]);
                     }
+                    peak_apps::settings::SettingsMessage::WallpaperChanged(path) => {
+                        self.custom_wallpaper = Some(path.clone());
+                    }
+                    peak_apps::settings::SettingsMessage::ModeChanged(mode) => {
+                        self.mode = *mode;
+                        self.update_tokens();
+                    }
                     _ => {}
                 }
 
@@ -862,19 +942,18 @@ impl PeakNative {
                 self.mode = mode;
                 self.show_spaces_selector = false;
                 match self.mode {
-                    ShellMode::Peak => self.current_page = Page::Home,
-                    ShellMode::Poolside => self.current_page = Page::Library,
+                    ShellMode::Desktop => self.current_page = Page::Home,
+                    _ => self.current_page = Page::Home,
                 }
                 Task::none()
             }
             Message::ToggleMode => {
                 self.mode = match self.mode {
-                    ShellMode::Peak => ShellMode::Poolside,
-                    ShellMode::Poolside => ShellMode::Peak,
+                    ShellMode::Desktop => ShellMode::Mobile,
+                    _ => ShellMode::Desktop,
                 };
                 match self.mode {
-                    ShellMode::Peak => self.current_page = Page::Home,
-                    ShellMode::Poolside => self.current_page = Page::Library,
+                    _ => self.current_page = Page::Home,
                 }
                 Task::none()
             }
@@ -970,7 +1049,7 @@ impl PeakNative {
                             self.user = Some(profile);
                             self.state = AppState::Desktop;
                             if theme_pref == "Riviera" {
-                                self.mode = ShellMode::Poolside;
+                                self.mode = ShellMode::Desktop;
                             }
                         }
                     }
@@ -1231,7 +1310,19 @@ impl PeakNative {
                 self.window_manager.dragging = None;
                 self.dragging_app = None;
                 self.show_settings = !self.show_settings;
-                self.toggle_app(peak_core::registry::AppId::Settings, 1000.0, 800.0)
+                let task = self.toggle_app(peak_core::registry::AppId::Settings, 1000.0, 800.0);
+                if self.show_settings {
+                    return Task::batch(vec![
+                        task,
+                        self.forward_to_app(
+                            AppId::Settings,
+                            Message::Settings(peak_apps::settings::SettingsMessage::ModeChanged(
+                                self.mode,
+                            )),
+                        ),
+                    ]);
+                }
+                task
             }
 
             Message::ToggleSystemMenu => {
@@ -1300,6 +1391,59 @@ impl PeakNative {
                 Task::none()
             }
             Message::Browser(msg) => self.forward_to_app(AppId::Browser, Message::Browser(msg)),
+            Message::AssistantBooted(result) => {
+                match result {
+                    Ok(assistant) => {
+                        self.assistant = Some(assistant);
+                        self.alert = Some((
+                            "Assistant Ready".into(),
+                            "Peak Intelligence is now active.".into(),
+                        ));
+                    }
+                    Err(e) => {
+                        self.alert = Some((
+                            "AI Boot Failed".into(),
+                            format!("Could not start AI: {}", e),
+                        ));
+                        self.pending_chat = None;
+                    }
+                }
+                Task::none()
+            }
+            Message::AssistantReply(_reply, token) => {
+                // Check if last message is assistant, if so append, else push
+                // Inspector stores history as Vec<(Role, Content)>
+
+                let content_chunk = match token {
+                    peak_intelligence::brain::assistant::Token::Talking(s) => s,
+                    peak_intelligence::brain::assistant::Token::Reasoning(s) => s, // Treat reasoning as text for now
+                };
+
+                if let Some((role, content)) = self.inspector.chat_history.last_mut() {
+                    if role == "assistant" {
+                        content.push_str(&content_chunk);
+                    } else {
+                        // New assistant message
+                        self.inspector
+                            .chat_history
+                            .push(("assistant".to_string(), content_chunk));
+                    }
+                } else {
+                    self.inspector
+                        .chat_history
+                        .push(("assistant".to_string(), content_chunk));
+                }
+
+                // Auto-scroll to bottom
+                iced::widget::scrollable::snap_to(
+                    iced::widget::scrollable::Id::new("chat_scroll"),
+                    iced::widget::scrollable::RelativeOffset::END,
+                )
+            }
+            Message::AssistantFinished => {
+                self.pending_chat = None;
+                Task::none()
+            }
         }
     }
 }

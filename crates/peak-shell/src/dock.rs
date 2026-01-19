@@ -1,5 +1,5 @@
 use iced::widget::{button, container, row, svg, tooltip, tooltip::Position, Column};
-use iced::{Border, Element, Length, Shadow, Vector};
+use iced::{Border, Element, Length};
 use peak_core::registry::{AppId, AppInfo};
 use peak_theme::ThemeTokens;
 
@@ -115,14 +115,8 @@ pub fn view<'a>(
         .style(move |_theme| container::Style {
             background: Some(tokens.glass_bg.into()),
             border: Border {
-                color: tokens.glass_border,
-                width: 1.0,
                 radius: tokens.radius.into(),
-            },
-            shadow: Shadow {
-                color: tokens.shadow_color,
-                offset: Vector::new(0.0, 4.0),
-                blur_radius: 12.0,
+                ..Default::default()
             },
             ..Default::default()
         })

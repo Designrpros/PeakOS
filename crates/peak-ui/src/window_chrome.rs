@@ -6,6 +6,7 @@ pub fn view<'a, Message>(
     content: Element<'a, Message>,
     on_close: Message,
     on_maximize: Option<Message>,
+    is_light: bool,
 ) -> Element<'a, Message>
 where
     Message: 'a + Clone,
@@ -51,7 +52,11 @@ where
             text(title.to_uppercase())
                 .size(11)
                 .font(iced::Font::DEFAULT)
-                .color(Color::from_rgb(0.4, 0.4, 0.4)),
+                .color(if is_light {
+                    Color::from_rgb(0.4, 0.4, 0.4)
+                } else {
+                    Color::from_rgb(0.6, 0.6, 0.6)
+                }),
             iced::widget::horizontal_space(),
         ]
         .width(Length::Fill)
@@ -63,25 +68,33 @@ where
         right: 16.0,
         ..Padding::ZERO
     })
-    .style(|_| container::Style::default());
+    .style(move |_| container::Style {
+        background: Some(
+            if is_light {
+                Color::WHITE
+            } else {
+                Color::from_rgb8(40, 40, 40)
+            }
+            .into(),
+        ),
+        ..Default::default()
+    });
     let window_body = container(content)
         .width(Length::Fill)
         .height(Length::Fill)
         .padding(0);
 
     container(iced::widget::column![title_bar, window_body])
-        .style(|theme: &iced::Theme| {
-            // Using a simple check for dark mode since we don't have the full custom theme mapping yet
-            let is_dark = theme == &iced::Theme::Dark;
-            let bg = if is_dark {
-                Color::from_rgb8(22, 21, 21)
-            } else {
+        .style(move |_| {
+            let bg = if is_light {
                 Color::WHITE
-            };
-            let border_color = if is_dark {
-                Color::from_rgba(1.0, 1.0, 1.0, 0.1)
             } else {
-                Color::from_rgba(0.0, 0.0, 0.0, 0.08)
+                Color::from_rgb8(28, 28, 30)
+            };
+            let border_color = if is_light {
+                Color::from_rgba(0.0, 0.0, 0.0, 0.1)
+            } else {
+                Color::from_rgba(1.0, 1.0, 1.0, 0.1)
             };
 
             container::Style {

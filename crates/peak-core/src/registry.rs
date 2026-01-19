@@ -2,15 +2,31 @@
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ShellMode {
-    Peak,
-    Poolside, // Riviera
+    Desktop,
+    Auto,
+    Console,
+    Fireplace,
+    Kiosk,
+    Mobile,
+    Robot,
+    Server,
+    SmartHome,
+    TV,
 }
 
 impl std::fmt::Display for ShellMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ShellMode::Peak => write!(f, "Peak"),
-            ShellMode::Poolside => write!(f, "Riviera"),
+            ShellMode::Desktop => write!(f, "Desktop"),
+            ShellMode::Auto => write!(f, "Auto"),
+            ShellMode::Console => write!(f, "Console"),
+            ShellMode::Fireplace => write!(f, "Fireplace"),
+            ShellMode::Kiosk => write!(f, "Kiosk"),
+            ShellMode::Mobile => write!(f, "Mobile"),
+            ShellMode::Robot => write!(f, "Robot"),
+            ShellMode::Server => write!(f, "Server"),
+            ShellMode::SmartHome => write!(f, "Home"),
+            ShellMode::TV => write!(f, "TV"),
         }
     }
 }

@@ -68,10 +68,17 @@ impl PeakNative {
             current_page,
             games: final_games.clone(), // Clone for self.games
             cortex_state: crate::pages::cortex::State::new(),
-            mode: if mode_str == "poolside" {
-                ShellMode::Poolside
-            } else {
-                ShellMode::Peak
+            mode: match mode_str.as_str() {
+                "mobile" => ShellMode::Mobile,
+                "auto" => ShellMode::Auto,
+                "console" => ShellMode::Console,
+                "fireplace" => ShellMode::Fireplace,
+                "kiosk" => ShellMode::Kiosk,
+                "robot" => ShellMode::Robot,
+                "server" => ShellMode::Server,
+                "smarthome" => ShellMode::SmartHome,
+                "tv" => ShellMode::TV,
+                _ => ShellMode::Desktop,
             },
             launch_mode,
             custom_wallpaper: None,
@@ -131,14 +138,24 @@ impl PeakNative {
             desktop: crate::components::desktop::Desktop::new(),
             show_editor: false,
             tokens: peak_theme::ThemeTokens::get(
-                if mode_str == "poolside" {
-                    ShellMode::Poolside
-                } else {
-                    ShellMode::Peak
+                match mode_str.as_str() {
+                    "mobile" => ShellMode::Mobile,
+                    "auto" => ShellMode::Auto,
+                    "console" => ShellMode::Console,
+                    "fireplace" => ShellMode::Fireplace,
+                    "kiosk" => ShellMode::Kiosk,
+                    "robot" => ShellMode::Robot,
+                    "server" => ShellMode::Server,
+                    "smarthome" => ShellMode::SmartHome,
+                    "tv" => ShellMode::TV,
+                    _ => ShellMode::Desktop,
                 },
                 peak_theme::ThemeTone::Light,
             ),
             active_downloads: std::collections::HashSet::new(),
+            assistant: None,
+            active_model_id: None,
+            pending_chat: None,
         };
 
         // --- Register Modular Apps ---

@@ -67,4 +67,10 @@ pub enum Message {
     SubmitLogin,
     FactoryReset,
     ToggleAppGrid,
+    AssistantBooted(Result<peak_intelligence::brain::Assistant, peak_intelligence::brain::Error>),
+    AssistantReply(
+        peak_intelligence::brain::assistant::Reply,
+        peak_intelligence::brain::assistant::Token,
+    ),
+    AssistantFinished,
 }

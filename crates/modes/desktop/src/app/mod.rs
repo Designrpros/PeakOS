@@ -98,6 +98,9 @@ pub struct PeakNative {
     pub scanned_apps: Vec<MediaItem>,
     pub tokens: peak_theme::ThemeTokens,
     pub active_downloads: std::collections::HashSet<String>,
+    pub assistant: Option<peak_intelligence::brain::Assistant>,
+    pub active_model_id: Option<String>,
+    pub pending_chat: Option<String>,
 }
 
 impl PeakNative {
@@ -140,6 +143,22 @@ impl PeakNative {
         // Check for active downloads
         for id in &self.active_downloads {
             subs.push(download_model_subscription(id.clone()));
+        }
+
+        // 1. Boot Assistant if needed (Active Model set, but no assistant)
+        // Note: This relies on something triggering the boot state.
+        // For simplicity, we can't just "boot if none" because user might not want it running.
+        // So we need a "booting" state. But for now, let's assume if we have an active model and pending chat, we ensure boot?
+        // Or if we just activated a model.
+        // Let's rely on explicit boot via Task in update for now, or use subscription if we want auto-recovery.
+
+        // 2. Chat Reply Subscription
+        if let Some(prompt) = &self.pending_chat {
+            if let Some(assistant) = &self.assistant {
+                subs.push(reply_subscription(assistant.clone(), prompt.clone()));
+            } else if let Some(model_id) = &self.active_model_id {
+                subs.push(boot_subscription(model_id.clone()));
+            }
         }
 
         iced::Subscription::batch(subs)
@@ -315,6 +334,131 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
                 ))
                 .await
                 .ok();
+        }),
+    )
+}
+
+fn reply_subscription(
+    assistant: peak_intelligence::brain::Assistant,
+    prompt: String,
+) -> iced::Subscription<Message> {
+    use iced::futures::StreamExt;
+
+    iced::Subscription::run_with_id(
+        format!("chat-{}", prompt),
+        iced::stream::channel(100, move |mut output| async move {
+            let messages = vec![];
+            let mut stream = Box::pin(assistant.reply(prompt, messages, vec![]));
+
+            while let Some((reply, token)) = stream.next().await {
+                output
+                    .send(Message::AssistantReply(reply, token))
+                    .await
+                    .ok();
+            }
+
+            // Check final result
+            if let Err(_) = stream.await {
+                // Error handling if needed, though we stop anyway
+            }
+
+            output.send(Message::AssistantFinished).await.ok();
+        }),
+    )
+}
+
+fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
+    use iced::futures::StreamExt;
+    use peak_intelligence::brain::model::{File, Model};
+
+    iced::Subscription::run_with_id(
+        format!("boot-{}", model_id),
+        iced::stream::channel(100, move |mut output| async move {
+            // 1. Resolve Model/File (Simplified version of download resolution)
+            let Ok(models) = Model::search(model_id.clone()).await else {
+                output
+                    .send(Message::AssistantBooted(Err(
+                        peak_intelligence::brain::Error::DockerFailed("Model Search Failed"),
+                    )))
+                    .await
+                    .ok();
+                return;
+            };
+            let Some(model) = models.first() else {
+                output
+                    .send(Message::AssistantBooted(Err(
+                        peak_intelligence::brain::Error::DockerFailed("Model Not Found"),
+                    )))
+                    .await
+                    .ok();
+                return;
+            };
+            let Ok(files) = File::list(model.id.clone()).await else {
+                output
+                    .send(Message::AssistantBooted(Err(
+                        peak_intelligence::brain::Error::DockerFailed("File List Failed"),
+                    )))
+                    .await
+                    .ok();
+                return;
+            };
+
+            // Pick best file (same logic as download)
+            let file = files.values().flat_map(|v| v).find(|f| {
+                f.name.contains("Q4_K_M")
+                    || f.name.contains("Q4_0")
+                    || f.name.contains("block_medium")
+            });
+            let file = match file {
+                Some(f) => f.clone(),
+                None => {
+                    if let Some(first) = files.values().flat_map(|v| v).next() {
+                        first.clone()
+                    } else {
+                        output
+                            .send(Message::AssistantBooted(Err(
+                                peak_intelligence::brain::Error::DockerFailed("No File Found"),
+                            )))
+                            .await
+                            .ok();
+                        return;
+                    }
+                }
+            };
+
+            let directory = peak_intelligence::brain::model::Directory::default();
+
+            // Blindly use CPU for safety on all platforms for now unless we know better
+            let backend = peak_intelligence::brain::assistant::Backend::Cpu;
+
+            let mut straw = Box::pin(peak_intelligence::brain::Assistant::boot(
+                directory, file, backend,
+            ));
+
+            while let Some(event) = straw.next().await {
+                match event {
+                    peak_intelligence::brain::assistant::BootEvent::Progressed {
+                        stage: _,
+                        percent: _,
+                    } => {
+                        // Ignore progress for now
+                    }
+                    peak_intelligence::brain::assistant::BootEvent::Logged(_) => {}
+                }
+            }
+
+            // Result should be the Assistant
+            match straw.await {
+                Ok(assistant) => {
+                    output
+                        .send(Message::AssistantBooted(Ok(assistant)))
+                        .await
+                        .ok();
+                }
+                Err(e) => {
+                    output.send(Message::AssistantBooted(Err(e))).await.ok();
+                }
+            }
         }),
     )
 }

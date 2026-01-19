@@ -16,18 +16,18 @@ You need the following system packages installed (Development Headers):
 1.  **Clone the Repository**:
     ```bash
     git clone https://github.com/Designrpros/PeakOS.git
-    cd PeakOS/peak-native
+    cd PeakOS
     ```
 
 2.  **Build**:
     ```bash
-    cargo build --release
+    cargo build -p peak-desktop --release
     ```
 
 3.  **Run**:
     You can run it directly from your terminal within an existing desktop session:
     ```bash
-    ./target/release/peak-native
+    ./target/release/peak-desktop
     ```
 
 ## Running as a Desktop Session (Advanced)
@@ -46,14 +46,12 @@ To log in to PeakOS directly from your display manager (GDM/SDDM):
 2.  **Create the Session Script** at `/usr/local/bin/peak-session`:
     ```bash
     #!/bin/sh
-    # Launch a compositor (Weston or Labwc) with Peak Native as the shell
+    # Launch labwc with Peak Native as the shell
     export MOZ_ENABLE_WAYLAND=1
-    exec weston --shell=kiosk-shell.so --socket=wayland-1 -- modules=systemd-notify.so &
-    sleep 1
-    export WAYLAND_DISPLAY=wayland-1
-    exec /path/to/peak-native
+    # labwc will launch peak-desktop via its autostart config
+    exec labwc
     ```
-    *(Note: This requires `weston` installed).*
+    *(Note: This requires `labwc` installed).*
 
 ## Architecture
 Peak Native is **NOT** a "rice".

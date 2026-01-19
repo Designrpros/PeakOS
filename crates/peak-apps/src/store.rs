@@ -175,11 +175,24 @@ impl StoreApp {
                         return Task::done(StoreMessage::LaunchUrl("https://google.com".into()));
                     }
 
-                    // Spawn detached process
+                    // Spawn detached process with Wayland environment
                     std::thread::spawn(move || {
-                        let _ = std::process::Command::new(bin_name)
+                        let mut cmd = std::process::Command::new(&bin_name);
+
+                        // Propagate Wayland environment variables
+                        if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
+                            cmd.env("WAYLAND_DISPLAY", display);
+                        }
+                        if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+                            cmd.env("XDG_RUNTIME_DIR", runtime_dir);
+                        }
+
+                        // Ensure the app can find its libraries
+                        cmd.env("GDK_BACKEND", "wayland");
+
+                        let _ = cmd
                             .spawn()
-                            .map_err(|e| eprintln!("Failed to launch app: {}", e));
+                            .map_err(|e| eprintln!("Failed to launch {}: {}", bin_name, e));
                     });
                     Task::none()
                 }
