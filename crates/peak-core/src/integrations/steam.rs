@@ -58,7 +58,7 @@ impl SteamScanner {
                                     if id != "228980" {
                                         games.push(SteamGame {
                                             app_id: id,
-                                            name: name,
+                                            name,
                                             install_dir: path.clone(),
                                         });
                                     }

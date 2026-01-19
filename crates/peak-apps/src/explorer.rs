@@ -14,6 +14,12 @@ pub struct ExplorerApp {
     pub history: Vec<PathBuf>,
 }
 
+impl Default for ExplorerApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ExplorerApp {
     pub fn new() -> Self {
         Self {

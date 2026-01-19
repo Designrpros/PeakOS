@@ -19,6 +19,12 @@ pub struct EditorApp {
     pub is_dirty: bool,
 }
 
+impl Default for EditorApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EditorApp {
     pub fn new() -> Self {
         Self {

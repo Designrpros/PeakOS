@@ -19,6 +19,12 @@ pub struct AppImageManager {
     install_dir: PathBuf,
 }
 
+impl Default for AppImageManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AppImageManager {
     pub fn new() -> Self {
         let install_dir = dirs::home_dir()

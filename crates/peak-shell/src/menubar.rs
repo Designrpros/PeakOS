@@ -34,8 +34,10 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
         .on_press(MenubarMessage::ToggleRealityMenu)
         .padding([5, 0])
         .style(move |_, _| button::Style {
+            background: None,
+            border: iced::Border::default(),
+            shadow: iced::Shadow::default(),
             text_color,
-            ..Default::default()
         });
 
     let logo_file = if tokens.background.r < 0.2 {
@@ -113,14 +115,12 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
         // Battery (Text Only)
         text("100%").size(13).style(move |_| text::Style {
             color: Some(text_color),
-            ..Default::default()
         }),
         // Clock
         text(format!("{}  {}", date, time))
             .size(13)
             .style(move |_| text::Style {
                 color: Some(text_color),
-                ..Default::default()
             }),
     ]
     .spacing(15)
@@ -141,7 +141,9 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
     .center_y(32) // Explicitly center within the height
     .style(move |_| container::Style {
         background: Some(bg_color.into()),
-        ..Default::default()
+        border: iced::Border::default(),
+        shadow: iced::Shadow::default(),
+        text_color: Some(iced::Color::TRANSPARENT),
     })
     .into()
 }

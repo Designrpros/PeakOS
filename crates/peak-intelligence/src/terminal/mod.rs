@@ -1,4 +1,4 @@
-use portable_pty::{CommandBuilder, PtySize, native_pty_system};
+use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde_json::json;
 use std::io::{Read, Write};
 use std::sync::{Arc, Mutex};
@@ -7,6 +7,12 @@ use std::thread;
 pub struct TerminalManager {
     pty_pair: Arc<Mutex<Option<portable_pty::PtyPair>>>,
     writer: Arc<Mutex<Option<Box<dyn Write + Send>>>>,
+}
+
+impl Default for TerminalManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl TerminalManager {

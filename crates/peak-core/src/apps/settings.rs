@@ -87,6 +87,12 @@ pub struct SettingsApp {
     pub current_mode: crate::registry::ShellMode,
 }
 
+impl Default for SettingsApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SettingsApp {
     pub fn new() -> Self {
         Self {

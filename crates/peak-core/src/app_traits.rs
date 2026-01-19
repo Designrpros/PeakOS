@@ -5,7 +5,6 @@ use crate::theme::Theme;
 use iced::{Element, Subscription, Task};
 
 /// Theme information passed to apps for consistent styling
-
 /// Information about an app's window state
 #[derive(Debug, Clone, Copy)]
 pub struct WindowInfo {

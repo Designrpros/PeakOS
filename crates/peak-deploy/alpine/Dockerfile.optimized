@@ -1,0 +1,36 @@
+# Multi-stage build for faster rebuilds
+FROM alpine:3.19 AS builder
+
+# Combine RUN commands to reduce layers (saves ~2-3 minutes)
+RUN apk add --no-cache \
+    bash git make gcc g++ musl-dev pkgconf \
+    clang clang-dev llvm-dev lld cmake perl linux-headers curl \
+    xorriso grub-efi mtools doas \
+    alsa-lib-dev wayland-dev wayland-protocols libxkbcommon-dev \
+    fontconfig-dev freetype-dev gtk+3.0-dev webkit2gtk-4.1-dev \
+    openssl-dev openssl-libs-static glib-dev glib-static mesa-dev \
+    zlib-dev libpng-dev jpeg-dev gobject-introspection-dev \
+    dosfstools libblkid file \
+    && rm -rf /var/cache/apk/*
+
+# Cache Rust installation in a separate layer
+# This layer gets cached and reused unless Rust version changes
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+    sh -s -- -y --default-toolchain stable --profile minimal && \
+    /root/.cargo/bin/rustup component add clippy rustfmt
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+ENV LIBCLANG_PATH="/usr/lib"
+ENV OPENSSL_STATIC=1
+ENV OPENSSL_LIB_DIR=/usr/lib
+ENV OPENSSL_INCLUDE_DIR=/usr/include
+ENV CARGO_HOME=/root/.cargo
+ENV RUSTFLAGS="-C target-cpu=native"
+
+WORKDIR /build
+
+# Copy build script (changes rarely, good for caching)
+COPY gen_iso.sh /build/gen_iso.sh
+RUN chmod +x /build/gen_iso.sh
+
+CMD ["/build/gen_iso.sh"]

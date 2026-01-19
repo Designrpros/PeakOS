@@ -75,6 +75,11 @@ pub fn strip_ansi(input: &str) -> String {
 }
 // Wrapper for Registry
 pub struct DesktopTerminalApp(pub TerminalApp);
+impl Default for DesktopTerminalApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl DesktopTerminalApp {
     pub fn new() -> Self {

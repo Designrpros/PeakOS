@@ -20,7 +20,7 @@ use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 
-static TERMINAL: Lazy<TerminalManager> = Lazy::new(|| TerminalManager::new());
+static TERMINAL: Lazy<TerminalManager> = Lazy::new(TerminalManager::new);
 // No longer here
 
 #[tokio::main]

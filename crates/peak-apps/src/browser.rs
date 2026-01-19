@@ -44,11 +44,9 @@ impl BrowserApp {
             let stdin = std::io::stdin();
             // Use buffered reader for better performance
             let reader = std::io::BufReader::new(stdin);
-            for line in reader.lines() {
-                if let Ok(line) = line {
-                    if let Ok(cmd) = serde_json::from_str::<BrowserCommand>(&line) {
-                        let _ = proxy.send_event(UserEvent::BrowserCommand(cmd));
-                    }
+            for line in reader.lines().map_while(Result::ok) {
+                if let Ok(cmd) = serde_json::from_str::<BrowserCommand>(&line) {
+                    let _ = proxy.send_event(UserEvent::BrowserCommand(cmd));
                 }
             }
         });

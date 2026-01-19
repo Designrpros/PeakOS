@@ -19,6 +19,12 @@ pub enum BrowserMessage {
     LayoutUpdate(f32, f32), // (root_x, root_y)
 }
 
+impl Default for BrowserApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BrowserApp {
     pub fn new() -> Self {
         Self {

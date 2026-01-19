@@ -57,6 +57,8 @@ pub trait SettingsDesktopView {
     ) -> Element<'a, SettingsMessage>;
 }
 
+
+
 impl SettingsDesktopView for SettingsApp {
     fn view<'a>(
         &self,
@@ -210,7 +212,7 @@ impl SettingsDesktopView for SettingsApp {
                     } else {
                         None
                     },
-                    text_color: text_color,
+                    text_color,
                     border: iced::Border {
                         radius: 5.0.into(),
                         ..Default::default()
@@ -1008,6 +1010,12 @@ pub struct DesktopSettingsApp {
     pub handles: std::collections::HashMap<String, iced::widget::image::Handle>,
 }
 
+impl Default for DesktopSettingsApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DesktopSettingsApp {
     pub fn new() -> Self {
         // Dynamically scan wallpapers directory
@@ -1053,6 +1061,8 @@ impl DesktopSettingsApp {
 }
 
 use peak_core::app_traits::{PeakApp, ShellContext};
+
+
 
 impl PeakApp for DesktopSettingsApp {
     type Message = SettingsMessage;

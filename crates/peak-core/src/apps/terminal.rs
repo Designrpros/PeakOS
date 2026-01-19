@@ -22,6 +22,12 @@ pub struct TerminalApp {
     pub is_open: bool,
 }
 
+impl Default for TerminalApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TerminalApp {
     pub fn new() -> Self {
         let pty_system = NativePtySystem::default();
@@ -110,7 +116,7 @@ impl PeakApp for TerminalApp {
             TerminalMessage::RunCommand(cmd) => {
                 // Execute external command by writing to PTY
                 if let Ok(mut writer) = self.writer.lock() {
-                    let _ = write!(writer, "{}\n", cmd);
+                    let _ = writeln!(writer, "{}", cmd);
                 }
             }
         }
@@ -128,11 +134,9 @@ impl PeakApp for TerminalApp {
             "terminal_listener",
             iced::futures::stream::unfold(self.receiver.clone(), |receiver| async move {
                 let mut rx = receiver.lock().await;
-                if let Some(text) = rx.recv().await {
-                    Some((TerminalMessage::OutputReceived(text), receiver.clone()))
-                } else {
-                    None
-                }
+                rx.recv()
+                    .await
+                    .map(|text| (TerminalMessage::OutputReceived(text), receiver.clone()))
             }),
         )
     }
@@ -150,12 +154,8 @@ pub fn strip_ansi(input: &str) -> String {
         if in_escape {
             if b == b'[' {
                 in_csi = true;
-                in_escape = false;
-            } else if (0x40..=0x5F).contains(&b) {
-                in_escape = false;
-            } else {
-                in_escape = false;
             }
+            in_escape = false;
         } else if in_csi {
             if (0x40..=0x7E).contains(&b) {
                 in_csi = false;

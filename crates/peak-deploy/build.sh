@@ -68,6 +68,18 @@ echo "Target: $TARGET_ARCH | Mode: $BUILD_MODE"
 echo "==========================================="
 
 # =============================================================================
+# Pre-Build Validation (Fail Fast)
+# =============================================================================
+echo ""
+echo "Running pre-build checks..."
+if ! bash "$DEPLOY_DIR/pre-build-check.sh"; then
+    echo ""
+    echo "❌ Pre-build validation failed. Fix errors above."
+    exit 1
+fi
+echo ""
+
+# =============================================================================
 # Native Build (for running on actual ARM/Intel Linux servers)
 # =============================================================================
 native_build() {

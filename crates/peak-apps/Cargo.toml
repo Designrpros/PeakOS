@@ -25,9 +25,7 @@ lazy_static = "1.4"
 directories = "5.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-wry = "0.47"
-tao = "0.30"
-objc = "0.2"
-tiny-skia = "0.11"
-rfd = "0.14"
+wry = "0.47"  # Used by browser.rs
+tao = "0.30"  # Used by browser.rs
+rfd = "0.14"  # Used by store.rs for file dialogs
 open = "5.3.3"

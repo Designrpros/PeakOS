@@ -12,7 +12,7 @@ pub fn list_processes() -> Result<Value> {
     let mut processes: Vec<_> = sys.processes().values().collect();
 
     // Sort by memory usage descending
-    processes.sort_by(|a, b| b.memory().cmp(&a.memory()));
+    processes.sort_by_key(|b| std::cmp::Reverse(b.memory()));
 
     // Take top 50 to prevent payload explosion
     let top_processes: Vec<Value> = processes

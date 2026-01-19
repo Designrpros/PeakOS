@@ -28,6 +28,12 @@ pub enum AppCategory {
     System,
 }
 
+impl Default for StoreApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AppCategory {
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -165,7 +171,7 @@ impl StoreApp {
                         name
                     };
 
-                    return Task::done(StoreMessage::LaunchUrl(url));
+                    Task::done(StoreMessage::LaunchUrl(url))
                 } else {
                     let bin_name = name.to_lowercase();
                     if bin_name.contains("chrome")

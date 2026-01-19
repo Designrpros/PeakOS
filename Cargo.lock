@@ -5193,7 +5193,6 @@ dependencies = [
  "hex",
  "iced",
  "lazy_static",
- "objc",
  "open",
  "opener",
  "peak-core",
@@ -5211,7 +5210,6 @@ dependencies = [
  "sha2",
  "sysinfo",
  "tao",
- "tiny-skia",
  "tokio",
  "wry",
 ]
@@ -5290,7 +5288,6 @@ dependencies = [
  "iced",
  "iced_layershell",
  "lazy_static",
- "objc",
  "open",
  "opener",
  "peak-apps",
@@ -5303,17 +5300,13 @@ dependencies = [
  "rand 0.8.5",
  "regex",
  "reqwest 0.11.27",
- "rfd",
  "rodio",
  "serde",
  "serde_json",
  "sha2",
  "sysinfo",
- "tao",
- "tiny-skia",
  "tokio",
  "wayland-client",
- "wry",
 ]
 
 [[package]]

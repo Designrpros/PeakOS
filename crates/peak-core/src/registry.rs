@@ -52,10 +52,7 @@ pub enum AppId {
 
 impl AppId {
     pub fn is_repo(&self) -> bool {
-        match self {
-            AppId::Desktop | AppId::FileManager => true,
-            _ => false,
-        }
+        matches!(self, AppId::Desktop | AppId::FileManager)
     }
 }
 

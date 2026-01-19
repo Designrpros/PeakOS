@@ -15,6 +15,12 @@ pub struct AppSwitcher {
     pub apps: Vec<AppInfo>,
 }
 
+impl Default for AppSwitcher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AppSwitcher {
     pub fn new() -> Self {
         // For now, we use a subset of registry apps as a demonstration

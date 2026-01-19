@@ -1,0 +1,605 @@
+Host architecture: arm64
+Cross-architecture → Using Docker build
+Target: arm | Mode: docker
+===========================================
+
+Running pre-build checks...
+==========================================
+🔍 PeakOS Pre-Build Validation
+==========================================
+
+📋 Test 1/4: Checking for syntax and type errors...
+    Checking peak-system v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-system)
+    Checking peak-mobile v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/mobile)
+    Checking peak-tv v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/tv)
+    Checking peak-smarthome v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/smarthome)
+    Checking peak-robot v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/robot)
+    Checking peak-kiosk v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/kiosk)
+    Checking peak-fireplace v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/fireplace)
+    Checking peak-auto v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/auto)
+    Checking peak-shell v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-shell)
+    Checking peak-desktop v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/desktop)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.27s
+[0;32m✅ No syntax or type errors[0m
+
+📋 Test 2/4: Running clippy linter...
+    Checking peak-apps v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-apps)
+    Checking peak-shell v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-shell)
+    Checking peak-mobile v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/mobile)
+    Checking peak-desktop v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/desktop)
+    Checking peak-browser v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-browser)
+error: this function has too many arguments (10/7)
+  --> crates/modes/mobile/src/view_mobile.rs:8:1
+   |
+ 8 | / pub fn view<'a, Message: 'a + Clone>(
+ 9 | |     is_light: bool,
+10 | |     _running_apps: &[AppId],
+11 | |     current_app: Option<AppId>,
+...  |
+18 | |     _on_settings: impl Fn(peak_core::apps::settings::SettingsMessage) -> Message + 'a + Clone,
+19 | | ) -> Element<'a, Message, iced::Theme, iced::Renderer> {
+   | |______________________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+   = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: useless use of `vec!`
+   --> crates/modes/mobile/src/view_mobile.rs:218:20
+    |
+218 |           let apps = vec![
+    |  ____________________^
+219 | |             AppId::Terminal,
+220 | |             AppId::Browser,
+221 | |             AppId::Library,
+...   |
+226 | |             AppId::Cortex,
+227 | |         ];
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#useless_vec
+    = note: `-D clippy::useless-vec` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::useless_vec)]`
+help: you can use an array directly
+    |
+218 ~         let apps = [AppId::Terminal,
+219 +             AppId::Browser,
+220 +             AppId::Library,
+221 +             AppId::Settings,
+222 +             AppId::FileManager,
+223 +             AppId::Store,
+224 +             AppId::Turntable,
+225 ~             AppId::Cortex];
+    |
+
+error: could not compile `peak-mobile` (lib test) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `peak-mobile` (lib) due to 2 previous errors
+error: unneeded `return` statement
+    --> crates/modes/desktop/src/app/update.rs:1115:21
+     |
+1115 |                     return Task::done(Message::SwitchDesktop(idx));
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_return
+     = note: `-D clippy::needless-return` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_return)]`
+help: remove `return`
+     |
+1115 -                     return Task::done(Message::SwitchDesktop(idx));
+1115 +                     Task::done(Message::SwitchDesktop(idx))
+     |
+
+error: unneeded `return` statement
+    --> crates/modes/desktop/src/app/update.rs:1247:17
+     |
+1247 |                 return Task::batch(vec![task.map(Message::Omnibar), side_effect]);
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_return
+help: remove `return`
+     |
+1247 -                 return Task::batch(vec![task.map(Message::Omnibar), side_effect]);
+1247 +                 Task::batch(vec![task.map(Message::Omnibar), side_effect])
+     |
+
+error: casting to the same type is unnecessary (`f32` -> `f32`)
+  --> crates/modes/desktop/src/app/update.rs:90:49
+   |
+90 | ...                   iced::Size::new(size.width as f32, size.height as f32);
+   |                                       ^^^^^^^^^^^^^^^^^ help: try: `size.width`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_cast
+   = note: `-D clippy::unnecessary-cast` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::unnecessary_cast)]`
+
+error: casting to the same type is unnecessary (`f32` -> `f32`)
+  --> crates/modes/desktop/src/app/update.rs:90:68
+   |
+90 | ...                   iced::Size::new(size.width as f32, size.height as f32);
+   |                                                          ^^^^^^^^^^^^^^^^^^ help: try: `size.height`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_cast
+
+error: this `match` can be collapsed into the outer `if let`
+   --> crates/modes/desktop/src/app/update.rs:317:21
+    |
+317 | /                     match kb_event {
+318 | |                         iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
+319 | |                             // Omnibar Navigation (when open) - Handle first
+320 | |                             if self.show_omnibar {
+...   |
+444 | |                         _ => {}
+445 | |                     }
+    | |_____________________^
+    |
+help: the outer pattern can be modified to include the inner pattern
+   --> crates/modes/desktop/src/app/update.rs:316:46
+    |
+316 |                 if let iced::Event::Keyboard(kb_event) = &event {
+    |                                              ^^^^^^^^ replace this binding
+317 |                     match kb_event {
+318 |                         iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ with this pattern
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_match
+    = note: `-D clippy::collapsible-match` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_match)]`
+
+error: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`
+   --> crates/modes/desktop/src/app/update.rs:317:21
+    |
+317 | /                     match kb_event {
+318 | |                         iced::keyboard::Event::KeyPressed { key, modifiers, .. } => {
+319 | |                             // Omnibar Navigation (when open) - Handle first
+320 | |                             if self.show_omnibar {
+...   |
+444 | |                         _ => {}
+445 | |                     }
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#single_match
+    = note: `-D clippy::single-match` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::single_match)]`
+help: try
+    |
+317 ~                     if let iced::keyboard::Event::KeyPressed { key, modifiers, .. } = kb_event {
+318 +                         // Omnibar Navigation (when open) - Handle first
+319 +                         if self.show_omnibar {
+320 +                             match key {
+321 +                                 iced::keyboard::Key::Named(
+322 +                                     iced::keyboard::key::Named::ArrowUp,
+323 +                                 ) => {
+324 +                                     return Task::done(Message::Omnibar(
+325 +                                         crate::components::omnibar::OmnibarMessage::NavigateUp,
+326 +                                     ));
+327 +                                 }
+328 +                                 iced::keyboard::Key::Named(
+329 +                                     iced::keyboard::key::Named::ArrowDown,
+330 +                                 ) => {
+331 +                                     return Task::done(Message::Omnibar(
+332 +                                         crate::components::omnibar::OmnibarMessage::NavigateDown,
+333 +                                     ));
+334 +                                 }
+335 +                                 iced::keyboard::Key::Named(
+336 +                                     iced::keyboard::key::Named::Enter,
+337 +                                 ) => {
+338 +                                     return Task::done(Message::Omnibar(
+339 +                                         crate::components::omnibar::OmnibarMessage::Submit,
+340 +                                     ));
+341 +                                 }
+342 +                                 iced::keyboard::Key::Named(
+343 +                                     iced::keyboard::key::Named::Escape,
+344 +                                 ) => {
+345 +                                     self.window_manager.dragging = None; // Reset dragging on Escape
+346 +                                     if self.quick_look_path.is_some() {
+347 +                                         self.quick_look_path = None;
+348 +                                         return Task::none();
+349 +                                     }
+350 +                                     return Task::done(Message::Omnibar(
+351 +                                         crate::components::omnibar::OmnibarMessage::Cancel,
+352 +                                     ));
+353 +                                 }
+354 +                                 _ => {}
+355 +                             }
+356 +                         }
+357 + 
+358 +                         // Magnet Snapping (Option + Arrows)
+359 +                         if modifiers.alt() {
+360 +                             let top_app = self.window_manager.z_order.last().cloned();
+361 +                             if let Some(app_id) = top_app {
+362 +                                 self.handle_snapping(app_id, key.clone());
+363 +                             }
+364 +                         }
+365 + 
+366 +                         // Omnibar (Cmd/Alt/Ctrl + Space)
+367 +                         if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) =
+368 +                             key
+369 +                         {
+370 +                             if modifiers.command() || modifiers.control() || modifiers.alt() {
+371 +                                 return Task::done(Message::ToggleOmnibar);
+372 +                             }
+373 +                         }
+374 + 
+375 +                         // Quick Look (Space)
+376 +                         if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Space) =
+377 +                             key
+378 +                         {
+379 +                             if !modifiers.command() && !modifiers.control() && !modifiers.alt()
+380 +                             {
+381 +                                 if let Some(path) = self.desktop.selected.first() {
+382 +                                     self.quick_look_path = Some(path.clone());
+383 +                                 }
+384 +                             }
+385 +                         }
+386 + 
+387 +                         // Switcher (Cmd/Alt + Tab)
+388 +                         if let iced::keyboard::Key::Named(iced::keyboard::key::Named::Tab) = key
+389 +                         {
+390 +                             if modifiers.command() || modifiers.alt() {
+391 +                                 if !self.show_switcher {
+392 +                                     // Populate switcher with running apps from z_order (reverse for MRU)
+393 +                                     let running_apps: Vec<peak_core::registry::AppInfo> = self
+394 +                                         .window_manager
+395 +                                         .z_order
+396 +                                         .iter()
+397 +                                         .rev()
+398 +                                         .map(|&id| peak_core::registry::AppInfo::get_info(id))
+399 +                                         .collect();
+400 + 
+401 +                                     if !running_apps.is_empty() {
+402 +                                         self.switcher.apps = running_apps;
+403 +                                         self.switcher.selected_index = 0;
+404 +                                         self.show_switcher = true;
+405 +                                         // macOS Cmd+Tab starts at the SECOND item (last used)
+406 +                                         if self.switcher.apps.len() > 1 {
+407 +                                             self.switcher.next();
+408 +                                         }
+409 +                                     }
+410 +                                 } else {
+411 +                                     if modifiers.shift() {
+412 +                                         self.switcher.prev();
+413 +                                     } else {
+414 +                                         self.switcher.next();
+415 +                                     }
+416 +                                 }
+417 +                             }
+418 +                         }
+419 + 
+420 +                         // Wizard Navigation (Enter/Space on Welcome screen)
+421 +                         if matches!(self.state, AppState::Setup(_)) {
+422 +                             match key {
+423 +                                 iced::keyboard::Key::Named(
+424 +                                     iced::keyboard::key::Named::Enter,
+425 +                                 )
+426 +                                 | iced::keyboard::Key::Named(
+427 +                                     iced::keyboard::key::Named::Space,
+428 +                                 ) => {
+429 +                                     if let AppState::Setup(ref wizard_state) = self.state {
+430 +                                         if wizard_state.current_step
+431 +                                             == peak_apps::wizard::WizardStep::Welcome
+432 +                                         {
+433 +                                             return Task::done(Message::Wizard(
+434 +                                                 peak_apps::wizard::WizardMessage::NextStep,
+435 +                                             ));
+436 +                                         }
+437 +                                     }
+438 +                                 }
+439 +                                 _ => {}
+440 +                             }
+441 +                         }
+442 +                     }
+    |
+
+error: this `else { if .. }` block can be collapsed
+   --> crates/modes/desktop/src/app/update.rs:411:44
+    |
+411 |   ...                   } else {
+    |  ______________________________^
+412 | | ...                       if modifiers.shift() {
+413 | | ...                           self.switcher.prev();
+414 | | ...                       } else {
+...   |
+417 | | ...                   }
+    | |_______________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_else_if
+    = note: `-D clippy::collapsible-else-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_else_if)]`
+help: collapse nested if block
+    |
+411 ~                                     } else if modifiers.shift() {
+412 +                                         self.switcher.prev();
+413 +                                     } else {
+414 +                                         self.switcher.next();
+415 +                                     }
+    |
+
+error: redundant pattern matching, consider using `is_some()`
+   --> crates/modes/desktop/src/app/update.rs:509:24
+    |
+509 |                 if let Some(_) = self.registry.running_apps.get_mut(&AppId::Browser) {
+    |                 -------^^^^^^^------------------------------------------------------ help: try: `if self.registry.running_apps.get_mut(&AppId::Browser).is_some()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_pattern_matching
+    = note: `-D clippy::redundant-pattern-matching` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::redundant_pattern_matching)]`
+
+error: this match could be replaced by its body itself
+   --> crates/modes/desktop/src/app/update.rs:955:17
+    |
+955 | /                 match self.mode {
+956 | |                     _ => self.current_page = Page::Home,
+957 | |                 }
+    | |_________________^ help: consider using the match body instead: `self.current_page = Page::Home;`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#match_single_binding
+    = note: `-D clippy::match-single-binding` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::match_single_binding)]`
+
+error: this `else { if .. }` block can be collapsed
+  --> crates/modes/desktop/src/app/view_desktop.rs:54:24
+   |
+54 |                   } else {
+   |  ________________________^
+55 | |                     if !standard_pinned.contains(&id) {
+56 | |                         standard_running.push(id);
+57 | |                     }
+58 | |                 }
+   | |_________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_else_if
+help: collapse nested if block
+   |
+54 ~                 } else if !standard_pinned.contains(&id) {
+55 +                     standard_running.push(id);
+56 +                 }
+   |
+
+error: this `else { if .. }` block can be collapsed
+   --> crates/modes/desktop/src/app/view_desktop.rs:296:28
+    |
+296 |                       } else {
+    |  ____________________________^
+297 | |                         if !standard_pinned.contains(&id) {
+298 | |                             standard_running.push(id);
+299 | |                         }
+300 | |                     }
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_else_if
+help: collapse nested if block
+    |
+296 ~                     } else if !standard_pinned.contains(&id) {
+297 +                         standard_running.push(id);
+298 +                     }
+    |
+
+error: use of `flat_map` with an identity function
+   --> crates/modes/desktop/src/app/mod.rs:217:39
+    |
+217 |             let file = files.values().flat_map(|v| v).find(|f| {
+    |                                       ^^^^^^^^^^^^^^^ help: try: `flatten()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#flat_map_identity
+    = note: `-D clippy::flat-map-identity` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::flat_map_identity)]`
+
+error: use of `flat_map` with an identity function
+   --> crates/modes/desktop/src/app/mod.rs:227:57
+    |
+227 |                     if let Some(first) = files.values().flat_map(|v| v).next() {
+    |                                                         ^^^^^^^^^^^^^^^ help: try: `flatten()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#flat_map_identity
+
+error: use of `flat_map` with an identity function
+   --> crates/modes/desktop/src/app/mod.rs:255:60
+    |
+255 |                     let all_files: Vec<_> = files.values().flat_map(|v| v).collect();
+    |                                                            ^^^^^^^^^^^^^^^ help: try: `flatten()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#flat_map_identity
+
+error: redundant pattern matching, consider using `is_err()`
+   --> crates/modes/desktop/src/app/mod.rs:361:20
+    |
+361 |             if let Err(_) = stream.await {
+    |             -------^^^^^^--------------- help: try: `if (stream.await).is_err()`
+    |
+    = note: this will change drop order of the result, as well as all temporaries
+    = note: add `#[allow(clippy::redundant_pattern_matching)]` if this is important
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_pattern_matching
+
+error: use of `flat_map` with an identity function
+   --> crates/modes/desktop/src/app/mod.rs:407:39
+    |
+407 |             let file = files.values().flat_map(|v| v).find(|f| {
+    |                                       ^^^^^^^^^^^^^^^ help: try: `flatten()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#flat_map_identity
+
+error: use of `flat_map` with an identity function
+   --> crates/modes/desktop/src/app/mod.rs:415:57
+    |
+415 |                     if let Some(first) = files.values().flat_map(|v| v).next() {
+    |                                                         ^^^^^^^^^^^^^^^ help: try: `flatten()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#flat_map_identity
+
+error: struct update has no effect, all the fields in the struct have already been specified
+   --> crates/modes/desktop/src/components/inspector.rs:106:31
+    |
+106 | ...                   ..Default::default()
+    |                         ^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_update
+    = note: `-D clippy::needless-update` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_update)]`
+
+error: struct update has no effect, all the fields in the struct have already been specified
+   --> crates/modes/desktop/src/components/inspector.rs:153:23
+    |
+153 |                     ..Default::default()
+    |                       ^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_update
+
+error: this `else { if .. }` block can be collapsed
+  --> crates/modes/desktop/src/systems/window_manager.rs:77:16
+   |
+77 |           } else {
+   |  ________________^
+78 | |             if let Some(pos) = self.z_order.iter().position(|&id| id == app_id) {
+79 | |                 self.z_order.remove(pos);
+80 | |                 self.z_order.push(app_id);
+81 | |             }
+82 | |         }
+   | |_________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_else_if
+help: collapse nested if block
+   |
+77 ~         } else if let Some(pos) = self.z_order.iter().position(|&id| id == app_id) {
+78 +             self.z_order.remove(pos);
+79 +             self.z_order.push(app_id);
+80 +         }
+   |
+
+error: could not compile `peak-desktop` (bin "peak-desktop" test) due to 20 previous errors
+error: could not compile `peak-desktop` (bin "peak-desktop") due to 20 previous errors
+[0;32m✅ No linting issues[0m
+
+📋 Test 3/4: Verifying tests compile...
+   Compiling peak-apps v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-apps)
+   Compiling peak-shell v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-shell)
+   Compiling peak-mobile v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/mobile)
+   Compiling peak-browser v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-browser)
+   Compiling peak-desktop v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/desktop)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.83s
+  Executable unittests src/lib.rs (target/debug/deps/peak_apps-da434e8040477e4d)
+  Executable unittests src/lib.rs (target/debug/deps/peak_auto-350a86da4c5cb82d)
+  Executable unittests src/main.rs (target/debug/deps/peak_browser-e599ba87185aed39)
+  Executable unittests src/main.rs (target/debug/deps/peak_compositor-1a0326517ee9052e)
+  Executable unittests src/lib.rs (target/debug/deps/peak_core-a6fe8e3c63671b84)
+  Executable unittests src/main.rs (target/debug/deps/peak_desktop-7609dd6a51e33953)
+  Executable unittests src/lib.rs (target/debug/deps/peak_drop-2aa747ad749a4b70)
+  Executable unittests src/lib.rs (target/debug/deps/peak_fireplace-6e21237710d44728)
+  Executable unittests src/main.rs (target/debug/deps/peak_installer-f298ea53c830ff32)
+  Executable unittests src/lib.rs (target/debug/deps/peak_intelligence-961f0debfaabd29a)
+  Executable unittests src/main.rs (target/debug/deps/peak_intelligence-689ab56c3ff79ae1)
+  Executable unittests src/lib.rs (target/debug/deps/peak_kiosk-9fcc3284ebabd720)
+  Executable unittests src/lib.rs (target/debug/deps/peak_mobile-1e9942d6aa887750)
+  Executable unittests src/main.rs (target/debug/deps/peak_mobile-626aec0f5578f2ed)
+  Executable unittests src/lib.rs (target/debug/deps/peak_robot-e62492d609a28ac6)
+  Executable unittests src/lib.rs (target/debug/deps/peak_shell-787cf620ab38edb2)
+  Executable unittests src/lib.rs (target/debug/deps/peak_shell_protocol-aa25ff05c5637f13)
+  Executable unittests src/lib.rs (target/debug/deps/peak_smarthome-fc5722df0a2e4643)
+  Executable unittests src/lib.rs (target/debug/deps/peak_system-52b466468c9f08b4)
+  Executable unittests src/lib.rs (target/debug/deps/peak_theme-546e0085bd846215)
+  Executable unittests src/lib.rs (target/debug/deps/peak_tv-6ec59ade1a2c60c7)
+  Executable unittests src/lib.rs (target/debug/deps/peak_ui-7cc0ac5301dfcbb0)
+[0;32m✅ Tests compile successfully[0m
+
+📋 Test 4/4: Checking for unused dependencies...
+[1;33m⚠️  cargo-udeps not installed (skipping)[0m
+   Install with: cargo install cargo-udeps
+
+==========================================
+[0;32m✅ All pre-build checks passed![0m
+==========================================
+
+Proceeding with ISO build...
+
+Building for ARM (aarch64) via Docker...
+Building Docker image...
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.17kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/alpine:latest
+#2 DONE 0.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/12] FROM docker.io/library/alpine:latest@sha256:865b95f46d98cf867a156fe4a135ad3fe50d2056aa3f25ed31662dff6da4eb62
+#4 resolve docker.io/library/alpine:latest@sha256:865b95f46d98cf867a156fe4a135ad3fe50d2056aa3f25ed31662dff6da4eb62 0.0s done
+#4 DONE 0.0s
+
+#5 [ 3/12] RUN apk add --no-cache clang clang-dev llvm-dev lld cmake perl linux-headers curl
+#5 CACHED
+
+#6 [ 6/12] RUN apk add --no-cache fontconfig-dev freetype-dev gtk+3.0-dev webkit2gtk-4.1-dev
+#6 CACHED
+
+#7 [ 7/12] RUN apk add --no-cache openssl-dev openssl-libs-static glib-dev glib-static mesa-dev zlib-dev libpng-dev jpeg-dev
+#7 CACHED
+
+#8 [ 2/12] RUN apk add --no-cache bash git make gcc g++ musl-dev pkgconf
+#8 CACHED
+
+#9 [ 4/12] RUN apk add --no-cache xorriso grub-efi mtools doas
+#9 CACHED
+
+#10 [ 5/12] RUN apk add --no-cache alsa-lib-dev wayland-dev wayland-protocols libxkbcommon-dev
+#10 CACHED
+
+#11 [ 8/12] RUN apk add --no-cache gobject-introspection-dev dosfstools libblkid file
+#11 CACHED
+
+#12 [internal] load build context
+#12 transferring context: 32B done
+#12 DONE 0.0s
+
+#13 [ 9/12] RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+#13 0.361 info: downloading installer
+#13 3.285 info: profile set to 'default'
+#13 3.285 info: default host triple is aarch64-unknown-linux-musl
+#13 3.285 info: syncing channel updates for 'stable-aarch64-unknown-linux-musl'
+#13 3.577 info: latest update on 2025-12-11, rust version 1.92.0 (ded5c06cf 2025-12-08)
+#13 3.577 info: downloading component 'cargo'
+#13 5.279 info: downloading component 'clippy'
+#13 5.807 info: downloading component 'rust-docs'
+#13 9.253 info: downloading component 'rust-std'
+#13 13.60 info: downloading component 'rustc'
+#13 29.92 info: downloading component 'rustfmt'
+#13 30.25 info: installing component 'cargo'
+#13 31.24 info: installing component 'clippy'
+#13 31.62 info: installing component 'rust-docs'
+#13 34.50 info: installing component 'rust-std'
+#13 36.98 info: installing component 'rustc'
+#13 48.03 info: installing component 'rustfmt'
+#13 49.12 info: default toolchain set to 'stable-aarch64-unknown-linux-musl'
+#13 49.12 
+#13 49.28   stable-aarch64-unknown-linux-musl installed - rustc 1.92.0 (ded5c06cf 2025-12-08)
+#13 49.28 
+#13 49.28 
+#13 49.28 Rust is installed now. Great!
+#13 49.28 
+#13 49.28 To get started you may need to restart your current shell.
+#13 49.28 This would reload your PATH environment variable to include
+#13 49.28 Cargo's bin directory ($HOME/.cargo/bin).
+#13 49.28 
+#13 49.28 To configure your current shell, you need to source
+#13 49.28 the corresponding env file under $HOME/.cargo.
+#13 49.28 
+#13 49.28 This is usually done by running one of the following (note the leading DOT):
+#13 49.28 . "$HOME/.cargo/env"            # For sh/bash/zsh/ash/dash/pdksh
+#13 49.28 source "$HOME/.cargo/env.fish"  # For fish
+#13 49.28 source $"($nu.home-path)/.cargo/env.nu"  # For nushell
+#13 DONE 50.7s
+
+#14 [10/12] WORKDIR /build
+#14 DONE 0.7s
+
+#15 [11/12] COPY gen_iso.sh /build/gen_iso.sh
+#15 DONE 0.1s
+
+#16 [12/12] RUN chmod +x /build/gen_iso.sh
+#16 DONE 0.3s
+
+#17 exporting to image
+#17 exporting layers
