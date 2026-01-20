@@ -55,8 +55,6 @@ impl PeakNative {
             .map(|u| u.full_name.clone())
             .unwrap_or("User".to_string());
 
-        let avatar_icon_key = self.user.as_ref().and_then(|u| u.avatar_icon.clone());
-
         let is_light = matches!(self.theme, peak_core::theme::Theme::Light);
         let text_color = if is_light { Color::BLACK } else { Color::WHITE };
 
@@ -106,54 +104,8 @@ impl PeakNative {
             .align_y(iced::alignment::Vertical::Top)
             .padding(20);
 
-        // 1. Avatar Circle
-        let avatar_content: Element<'_, Message> = if let Some(key) = avatar_icon_key {
-            let color = if is_light { "#000000" } else { "#FFFFFF" };
-            let handle = peak_core::icons::get_avatar_handle(&key, color);
-
-            container(
-                iced::widget::svg(handle)
-                    .width(Length::Fixed(70.0))
-                    .height(Length::Fixed(70.0)),
-            )
-            .into()
-        } else {
-            container(
-                text(user_name.chars().next().unwrap_or('?').to_string())
-                    .size(60)
-                    .style(move |_| t::Style {
-                        color: Some(Color::BLACK),
-                    }),
-            )
-            .into()
-        };
-
-        let avatar = container(avatar_content)
-            .width(Length::Fixed(120.0))
-            .height(Length::Fixed(120.0))
-            .align_x(iced::alignment::Horizontal::Center)
-            .align_y(iced::alignment::Vertical::Center)
-            .style(move |_| container::Style {
-                // Subtle Glass effect for avatar
-                background: Some(if is_light {
-                    Color::from_rgba(0.0, 0.0, 0.0, 0.05).into()
-                } else {
-                    // "Monochrome Pop": White background for avatar in Dark Mode
-                    Color::WHITE.into()
-                }),
-                border: iced::Border {
-                    radius: 60.0.into(),
-                    width: 1.0,
-                    color: if is_light {
-                        Color::from_rgba(0.0, 0.0, 0.0, 0.1)
-                    } else {
-                        Color::BLACK // Contrast border against white circle
-                    },
-                },
-                ..Default::default()
-            });
-
-        let content = iced::widget::column![
+        // 1. Logo (Top Left)
+        let top_left = container(
             iced::widget::image(iced::widget::image::Handle::from_path(
                 peak_core::utils::assets::get_asset_path(&format!(
                     "icons/menubar/{}",
@@ -162,16 +114,22 @@ impl PeakNative {
                     } else {
                         "peak_logo_dark.png"
                     }
-                ))
+                )),
             ))
             .width(Length::Fixed(100.0))
             .height(Length::Fixed(50.0)),
-            iced::widget::Space::with_height(20.0),
-            avatar,
-            iced::widget::Space::with_height(20.0),
-            // 2. Name
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .align_x(iced::alignment::Horizontal::Left)
+        .align_y(iced::alignment::Vertical::Top)
+        .padding(20);
+
+        // 2. Main Login Content (No Avatar)
+        let content = iced::widget::column![
+            // Name
             text(user_name)
-                .size(24)
+                .size(32)
                 .font(iced::Font {
                     weight: iced::font::Weight::Bold,
                     ..Default::default()
@@ -179,8 +137,8 @@ impl PeakNative {
                 .style(move |_| t::Style {
                     color: Some(text_color)
                 }),
-            iced::widget::Space::with_height(20.0),
-            // 3. Password Input
+            iced::widget::Space::with_height(30.0),
+            // Password Input
             iced::widget::text_input(
                 "Enter Password",
                 if let AppState::Login(ref p) = self.state {
@@ -196,7 +154,7 @@ impl PeakNative {
             .padding(15)
             .style(move |_, status| peak_core::styles::style_soft_input(status, is_light)),
             iced::widget::Space::with_height(30.0),
-            // 4. Login Button
+            // Login Button
             button(
                 container(text("Login").size(16))
                     .width(Length::Fill)
@@ -212,7 +170,7 @@ impl PeakNative {
 
         // WRAP IN GLASS CARD
         let card = container(content)
-            .padding(40)
+            .padding(60) // Increased padding for cleaner look without avatar
             .style(move |_| peak_core::styles::style_glass_card(is_light));
 
         let centered_content = container(card)
@@ -221,15 +179,44 @@ impl PeakNative {
             .center_x(Length::Fill)
             .center_y(Length::Fill);
 
-        // Vector Background Layer
+        // Wallpaper + Blur Overlay
+        let wallpaper_path =
+            peak_core::utils::assets::get_asset_path("wallpapers/mountain_sunset_warm.jpg");
+
         Stack::new()
-            .push(self.vector_bg.view(self.theme))
+            .push(
+                container(
+                    iced::widget::image(iced::widget::image::Handle::from_path(wallpaper_path))
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .content_fit(iced::ContentFit::Cover),
+                )
+                .width(Length::Fill)
+                .height(Length::Fill),
+            )
+            .push(
+                container(iced::widget::Space::new(Length::Fill, Length::Fill))
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .style(move |_theme: &iced::Theme| container::Style {
+                        background: Some(
+                            if is_light {
+                                Color::from_rgba(0.9, 0.9, 0.95, 0.3)
+                            } else {
+                                Color::from_rgba(0.0, 0.0, 0.0, 0.5)
+                            }
+                            .into(),
+                        ),
+                        ..Default::default()
+                    }),
+            )
             .push(centered_content)
             .push(top_right)
+            .push(top_left)
             .into()
     }
 
-    fn view_setup(&self, state: &peak_apps::wizard::WizardState) -> Element<'_, Message> {
+    fn view_setup<'a>(&'a self, state: &'a peak_apps::wizard::WizardState) -> Element<'a, Message> {
         let is_light = matches!(self.theme, peak_core::theme::Theme::Light);
 
         // --- Steps ---
@@ -573,6 +560,65 @@ impl PeakNative {
                         },
                         ..Default::default()
                     }),
+                    iced::widget::Space::with_height(20.0),
+                    // Wifi Password & Actions
+                    if state.selected_network.is_some() {
+                        Element::new(
+                            iced::widget::column![
+                            Element::new(
+                                text::<iced::Theme, iced::Renderer>("Password")
+                                    .size(12)
+                                    .style(move |_theme: &iced::Theme| t::Style {
+                                        color: Some(Color::from_rgb8(120, 120, 120))
+                                    })
+                            ),
+                            Element::new(
+                                iced::widget::text_input::<Message, iced::Theme, iced::Renderer>(
+                                    "Wifi Password",
+                                    &state.wifi_password_input
+                                )
+                                .on_input(|s| Message::Wizard(
+                                    peak_apps::wizard::WizardMessage::UpdateWifiPassword(s)
+                                ))
+                                .padding(12)
+                                .secure(true)
+                                .style(
+                                    move |_theme: &iced::Theme, status| {
+                                        peak_core::styles::style_soft_input(status, is_light)
+                                    }
+                                )
+                            ),
+                            Element::new(
+                                iced::widget::button::<Message, iced::Theme, iced::Renderer>(
+                                    container(text("Join Network").size(14))
+                                        .width(Length::Fill)
+                                        .align_x(iced::alignment::Horizontal::Center)
+                                )
+                                .on_press(Message::Wizard(
+                                    peak_apps::wizard::WizardMessage::NextStep
+                                )) // Proceed to theme after connecting
+                                .padding(12)
+                                .width(Length::Fill)
+                                .style(
+                                    move |_theme: &iced::Theme, status| {
+                                        peak_core::styles::style_pill_button(status, is_light)
+                                    }
+                                )
+                            ),
+                        ]
+                            .spacing(10),
+                        )
+                    } else {
+                        Element::new(
+                            iced::widget::text::<iced::Theme, iced::Renderer>(
+                                "Select a network to connect.",
+                            )
+                            .size(12)
+                            .style(move |_theme: &iced::Theme| t::Style {
+                                color: Some(Color::from_rgba(0.5, 0.5, 0.5, 0.7)),
+                            }),
+                        )
+                    },
                     iced::widget::Space::with_height(30.0),
                     iced::widget::row![
                         iced::widget::button(text("Back").size(14))
@@ -609,67 +655,148 @@ impl PeakNative {
                                 Color::WHITE
                             })
                         }),
-                    text("Choose your look.").size(14).style(move |_| t::Style {
-                        color: Some(Color::from_rgb8(102, 102, 102))
-                    }),
+                    text("Choose your experience.")
+                        .size(14)
+                        .style(move |_| t::Style {
+                            color: Some(Color::from_rgb8(102, 102, 102))
+                        }),
                     iced::widget::Space::with_height(20.0),
-                    // Avatar Section
-                    text("Avatar").size(12).style(move |_| t::Style {
+                    // Mode Section
+                    text("Mode").size(12).style(move |_| t::Style {
                         color: Some(Color::from_rgb8(120, 120, 120))
                     }),
-                    iced::widget::row(
-                        peak_core::icons::AVATAR_OPTIONS
-                            .iter()
-                            .map(|&key| {
-                                let is_selected = state.selected_avatar.as_deref() == Some(key);
-                                let color = match key {
-                                    "robot" => Color::from_rgb8(0, 122, 255), // Blue
-                                    "smile" => Color::from_rgb8(255, 204, 0), // Yellow
-                                    "house" => Color::from_rgb8(52, 199, 89), // Green
-                                    _ => Color::from_rgb8(142, 142, 147),     // Grey
-                                };
-
-                                iced::widget::button(
-                                    container(iced::widget::Space::new(
-                                        Length::Fixed(40.0),
-                                        Length::Fixed(40.0),
-                                    ))
-                                    .style(move |_| {
-                                        container::Style {
-                                            background: Some(color.into()),
-                                            border: iced::Border {
-                                                radius: 20.0.into(),
-                                                width: if is_selected { 2.0 } else { 0.0 },
-                                                color: if is_light {
-                                                    Color::BLACK
-                                                } else {
-                                                    Color::WHITE
-                                                },
-                                            },
-                                            ..Default::default()
-                                        }
-                                    }),
-                                )
-                                .on_press(Message::Wizard(
-                                    peak_apps::wizard::WizardMessage::SelectAvatar(key.to_string()),
-                                ))
-                                .padding(2)
-                                .style(move |_, _status| {
-                                    iced::widget::button::Style {
-                                        background: None,
-                                        border: iced::Border {
-                                            radius: 24.0.into(), // Larger radius for hover ring if needed
-                                            width: 0.0,
-                                            color: Color::TRANSPARENT,
-                                        },
-                                        ..Default::default()
+                    iced::widget::row![
+                        // Desktop
+                        iced::widget::button(
+                            iced::widget::column![
+                                iced::widget::svg(peak_core::icons::get_status_icon(
+                                    "image",
+                                    if state.selected_mode.as_deref() == Some("desktop") {
+                                        "#007AFF"
+                                    } else {
+                                        "#888888"
                                     }
-                                })
-                                .into()
-                            })
-                            .collect::<Vec<_>>()
-                    )
-                    .spacing(15),
+                                ))
+                                .width(Length::Fixed(24.0))
+                                .height(Length::Fixed(24.0)),
+                                text("Desktop").size(12)
+                            ]
+                            .align_x(iced::Alignment::Center)
+                            .spacing(5)
+                        )
+                        .on_press(Message::Wizard(
+                            peak_apps::wizard::WizardMessage::SelectMode("desktop".to_string())
+                        ))
+                        .width(Length::Fixed(80.0))
+                        .padding(10)
+                        .style(move |_, _| {
+                            let is_sel = state.selected_mode.as_deref() == Some("desktop");
+                            iced::widget::button::Style {
+                                background: if is_sel {
+                                    Some(Color::from_rgba(0.0, 0.48, 1.0, 0.1).into())
+                                } else {
+                                    None
+                                },
+                                border: iced::Border {
+                                    radius: 12.0.into(),
+                                    width: if is_sel { 2.0 } else { 1.0 },
+                                    color: if is_sel {
+                                        Color::from_rgba(0.0, 0.48, 1.0, 1.0)
+                                    } else {
+                                        Color::from_rgba(0.5, 0.5, 0.5, 0.2)
+                                    },
+                                },
+                                ..Default::default()
+                            }
+                        }),
+                        // Mobile
+                        iced::widget::button(
+                            iced::widget::column![
+                                iced::widget::svg(peak_core::icons::get_status_icon(
+                                    "smartphone",
+                                    if state.selected_mode.as_deref() == Some("mobile") {
+                                        "#007AFF"
+                                    } else {
+                                        "#888888"
+                                    }
+                                ))
+                                .width(Length::Fixed(24.0))
+                                .height(Length::Fixed(24.0)),
+                                text("Mobile").size(12)
+                            ]
+                            .align_x(iced::Alignment::Center)
+                            .spacing(5)
+                        )
+                        .on_press(Message::Wizard(
+                            peak_apps::wizard::WizardMessage::SelectMode("mobile".to_string())
+                        ))
+                        .width(Length::Fixed(80.0))
+                        .padding(10)
+                        .style(move |_, _| {
+                            let is_sel = state.selected_mode.as_deref() == Some("mobile");
+                            iced::widget::button::Style {
+                                background: if is_sel {
+                                    Some(Color::from_rgba(0.0, 0.48, 1.0, 0.1).into())
+                                } else {
+                                    None
+                                },
+                                border: iced::Border {
+                                    radius: 12.0.into(),
+                                    width: if is_sel { 2.0 } else { 1.0 },
+                                    color: if is_sel {
+                                        Color::from_rgba(0.0, 0.48, 1.0, 1.0)
+                                    } else {
+                                        Color::from_rgba(0.5, 0.5, 0.5, 0.2)
+                                    },
+                                },
+                                ..Default::default()
+                            }
+                        }),
+                        // Console
+                        iced::widget::button(
+                            iced::widget::column![
+                                iced::widget::svg(peak_core::icons::get_status_icon(
+                                    "monitor",
+                                    if state.selected_mode.as_deref() == Some("console") {
+                                        "#007AFF"
+                                    } else {
+                                        "#888888"
+                                    }
+                                ))
+                                .width(Length::Fixed(24.0))
+                                .height(Length::Fixed(24.0)),
+                                text("Console").size(12)
+                            ]
+                            .align_x(iced::Alignment::Center)
+                            .spacing(5)
+                        )
+                        .on_press(Message::Wizard(
+                            peak_apps::wizard::WizardMessage::SelectMode("console".to_string())
+                        ))
+                        .width(Length::Fixed(80.0))
+                        .padding(10)
+                        .style(move |_, _| {
+                            let is_sel = state.selected_mode.as_deref() == Some("console");
+                            iced::widget::button::Style {
+                                background: if is_sel {
+                                    Some(Color::from_rgba(0.0, 0.48, 1.0, 0.1).into())
+                                } else {
+                                    None
+                                },
+                                border: iced::Border {
+                                    radius: 12.0.into(),
+                                    width: if is_sel { 2.0 } else { 1.0 },
+                                    color: if is_sel {
+                                        Color::from_rgba(0.0, 0.48, 1.0, 1.0)
+                                    } else {
+                                        Color::from_rgba(0.5, 0.5, 0.5, 0.2)
+                                    },
+                                },
+                                ..Default::default()
+                            }
+                        }),
+                    ]
+                    .spacing(10),
                     iced::widget::Space::with_height(20.0),
                     // Theme Section
                     text("Theme").size(12).style(move |_| t::Style {
@@ -779,12 +906,86 @@ impl PeakNative {
             .align_x(iced::Alignment::Center),
         };
 
+        // 1. Theme Toggle (Top Right)
+        let theme_btn = iced::widget::button(
+            iced::widget::svg(peak_core::icons::get_status_icon(
+                if is_light { "moon" } else { "sun" },
+                if is_light { "#000000" } else { "#FFFFFF" },
+            ))
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0)),
+        )
+        .on_press(Message::ToggleTheme)
+        .padding(10)
+        .style(move |_, _| iced::widget::button::Style {
+            background: None,
+            text_color: if is_light { Color::BLACK } else { Color::WHITE },
+            ..Default::default()
+        });
+
+        let top_right = container(theme_btn)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .align_x(iced::alignment::Horizontal::Right)
+            .align_y(iced::alignment::Vertical::Top)
+            .padding(20);
+
+        // 2. Logo (Top Left)
+        let top_left = container(
+            iced::widget::image(iced::widget::image::Handle::from_path(
+                peak_core::utils::assets::get_asset_path(&format!(
+                    "icons/menubar/{}",
+                    if is_light {
+                        "peak_logo.png"
+                    } else {
+                        "peak_logo_dark.png"
+                    }
+                )),
+            ))
+            .width(Length::Fixed(100.0))
+            .height(Length::Fixed(50.0)),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .align_x(iced::alignment::Horizontal::Left)
+        .align_y(iced::alignment::Vertical::Top)
+        .padding(20);
+
         let card = container(content)
             .padding(40)
             .style(move |_| peak_core::styles::style_glass_card(is_light));
 
+        // Wallpaper + Blur Overlay
+        let wallpaper_path =
+            peak_core::utils::assets::get_asset_path("wallpapers/mountain_sunset_warm.jpg");
+
         Stack::new()
-            .push(self.vector_bg.view(self.theme))
+            .push(
+                container(
+                    iced::widget::image(iced::widget::image::Handle::from_path(wallpaper_path))
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .content_fit(iced::ContentFit::Cover),
+                )
+                .width(Length::Fill)
+                .height(Length::Fill),
+            )
+            .push(
+                container(iced::widget::Space::new(Length::Fill, Length::Fill))
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .style(move |_theme: &iced::Theme| container::Style {
+                        background: Some(
+                            if is_light {
+                                Color::from_rgba(0.9, 0.9, 0.95, 0.3)
+                            } else {
+                                Color::from_rgba(0.0, 0.0, 0.0, 0.5)
+                            }
+                            .into(),
+                        ),
+                        ..Default::default()
+                    }),
+            )
             .push(
                 container(card)
                     .width(Length::Fill)
@@ -792,6 +993,8 @@ impl PeakNative {
                     .center_x(Length::Fill)
                     .center_y(Length::Fill),
             )
+            .push(top_right)
+            .push(top_left)
             .into()
     }
 }

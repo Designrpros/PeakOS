@@ -8,7 +8,7 @@ use peak_core::registry::ShellMode;
 use peak_shell::{
     console, dock,
     menubar::{self, MenubarMessage},
-    redmond, tv,
+    tv,
 };
 
 impl PeakNative {
@@ -138,6 +138,71 @@ impl PeakNative {
         let mut workspace_stack =
             Stack::new().push(self.desktop.view(self.tokens).map(Message::Desktop));
 
+        // Integrated Desktop UI for non-Linux (macOS/Windows)
+        #[cfg(not(target_os = "linux"))]
+        {
+            // Add Menubar (Top)
+            workspace_stack = workspace_stack.push(
+                container(menubar::view(self.tokens).map(Message::MenubarAction))
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .align_y(iced::alignment::Vertical::Top),
+            );
+
+            // Add Dock (Bottom)
+            // Use same logic as Dock Mode but integrated
+            let mut standard_pinned = Vec::new();
+            let mut repo_pinned = Vec::new();
+            for &id in &self.pinned_apps {
+                if id.is_repo() {
+                    repo_pinned.push(id);
+                } else {
+                    standard_pinned.push(id);
+                }
+            }
+            let mut standard_running = Vec::new();
+            let mut repo_running = Vec::new();
+            let all_running: Vec<_> = self.window_manager.window_states.keys().cloned().collect();
+            for &id in &all_running {
+                if id.is_repo() {
+                    if !repo_pinned.contains(&id) {
+                        repo_running.push(id);
+                    }
+                } else if !standard_pinned.contains(&id) {
+                    standard_running.push(id);
+                }
+            }
+            let mut repos = repo_pinned;
+            for r in repo_running {
+                if !repos.contains(&r) {
+                    repos.push(r);
+                }
+            }
+
+            let dock_element = dock::view(
+                &standard_pinned,
+                &standard_running,
+                &repos,
+                self.dragging_app,
+                self.context_menu_app,
+                &all_running,
+                self.tokens,
+            )
+            .map(Message::DockInteraction);
+
+            workspace_stack = workspace_stack.push(
+                container(dock_element)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .align_x(iced::alignment::Horizontal::Center)
+                    .align_y(iced::alignment::Vertical::Bottom)
+                    .padding(iced::Padding {
+                        bottom: 0.0,
+                        ..Default::default()
+                    }),
+            );
+        }
+
         for &app_id in &self.window_manager.z_order {
             if let Some(state) = self.window_manager.window_states.get(&app_id) {
                 // Workspace Filtering
@@ -259,90 +324,13 @@ impl PeakNative {
         }
 
         // Menubar overlay (top) - Only for Cupertino/Redmond styles
-        let mut final_view = match self.shell_style {
-            peak_core::registry::ShellStyle::Cupertino
-            | peak_core::registry::ShellStyle::Redmond => workspace_stack.push(
-                container(menubar::view(self.tokens).map(Message::MenubarAction))
-                    .width(Length::Fill)
-                    .height(Length::Shrink)
-                    .align_y(iced::alignment::Vertical::Top),
-            ),
-            // Console/TV/AI: No traditional menubar
-            _ => workspace_stack,
-        };
+        // Menubar overlay (top) - DELEGATED TO SEPARATE PROCESS FOR CUPERTINO/REDMOND
+        let mut final_view = workspace_stack;
 
         // Bottom Shell overlay (Dock / Taskbar / Rail)
         final_view = match self.shell_style {
-            peak_core::registry::ShellStyle::Cupertino => {
-                if self.dock_visible {
-                    let mut standard_pinned = Vec::new();
-                    let mut repo_pinned = Vec::new();
-                    for &id in &self.pinned_apps {
-                        if id.is_repo() {
-                            repo_pinned.push(id);
-                        } else {
-                            standard_pinned.push(id);
-                        }
-                    }
-                    let mut standard_running = Vec::new();
-                    let mut repo_running = Vec::new();
-                    let all_running: Vec<_> =
-                        self.window_manager.window_states.keys().cloned().collect();
-                    for &id in &all_running {
-                        if id.is_repo() {
-                            if !repo_pinned.contains(&id) {
-                                repo_running.push(id);
-                            }
-                        } else if !standard_pinned.contains(&id) {
-                            standard_running.push(id);
-                        }
-                    }
-                    let mut repos = repo_pinned;
-                    for r in repo_running {
-                        if !repos.contains(&r) {
-                            repos.push(r);
-                        }
-                    }
-
-                    let dock_element = dock::view(
-                        &standard_pinned,
-                        &standard_running,
-                        &repos,
-                        self.dragging_app,
-                        self.context_menu_app,
-                        &all_running,
-                        self.tokens,
-                    )
-                    .map(Message::DockInteraction);
-
-                    final_view.push(
-                        container(dock_element)
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .align_x(iced::alignment::Horizontal::Center)
-                            .align_y(iced::alignment::Vertical::Bottom)
-                            .padding(iced::Padding {
-                                bottom: 10.0,
-                                ..Default::default()
-                            }),
-                    )
-                } else {
-                    final_view
-                }
-            }
-            peak_core::registry::ShellStyle::Redmond => {
-                let all_running: Vec<_> =
-                    self.window_manager.window_states.keys().cloned().collect();
-                final_view.push(
-                    container(
-                        redmond::taskbar::view(&self.pinned_apps, &all_running, self.tokens)
-                            .map(Message::RedmondTaskbar),
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .align_y(iced::alignment::Vertical::Bottom),
-                )
-            }
+            peak_core::registry::ShellStyle::Cupertino => final_view, // Delegated to separate dock process
+            peak_core::registry::ShellStyle::Redmond => final_view, // Delegated to separate dock process (TODO: Implement taskbar process)
             peak_core::registry::ShellStyle::Console => final_view.push(
                 container(
                     iced::widget::column![

@@ -8,4 +8,3 @@ pub mod omnibar;
 pub mod sidebar;
 pub mod spaces_strip;
 pub mod vapor_grid;
-pub mod vector_background;

@@ -47,18 +47,18 @@ cargo update -p smithay-clipboard --precise 0.7.2 || true
 # Pin dlopen2_derive
 cargo update -p dlopen2_derive --precise 0.4.1 || true
 # Pin async-lock
-cargo update -p async-lock --precise 3.4.1 || true
+# cargo update -p async-lock --precise 3.4.1 || true
 # Pin url to avoid zerovec issues
-cargo update -p url --precise 2.5.4 || true
+# cargo update -p url --precise 2.5.4 || true
 # Pin iced_graphics to match iced_renderer 0.13.0
-cargo update -p iced_graphics --precise 0.13.0 || true
+# cargo update -p iced_graphics --precise 0.13.0 || true
 
 # Use architecture-specific build directory
 # Use architecture-specific build directory
 export CARGO_TARGET_DIR=/build/target/$ARCH
-export CARGO_TARGET_DIR=/build/target/$ARCH
+# export CARGO_TARGET_DIR=/build/target/$ARCH
 # Use cargo clean which is safer for mounted volumes
-cargo clean --manifest-path /project/crates/modes/desktop/Cargo.toml
+# cargo clean --manifest-path /project/crates/modes/desktop/Cargo.toml
 
 # Build with explicit target to avoid host confusion
 # REVERT: Explicit target causes "can't find crate for core" on system rust. 
@@ -125,14 +125,19 @@ apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untr
     bluez bluez-tools bluez-deprecated \
     alsa-utils \
     glib openssl fontconfig libxcb vulkan-loader \
-    arc-theme \
+    libxml2 libxslt shared-mime-info gsettings-desktop-schemas \
     mesa-gl
 
 # Configure doas and sudo compatibility
 # Configure doas and sudo compatibility
 mkdir -p /build/rootfs/etc/doas.d
 echo "permit nopass keepenv root" > /build/rootfs/etc/doas.d/doas.conf
-ln -sf /usr/bin/doas /build/rootfs/usr/bin/sudo
+
+# Enable Services (Manual OpenRC configuration for chroot-less build)
+mkdir -p /build/rootfs/etc/runlevels/default
+ln -sf /etc/init.d/dbus /build/rootfs/etc/runlevels/default/dbus
+ln -sf /etc/init.d/seatd /build/rootfs/etc/runlevels/default/seatd
+ln -sf /etc/init.d/networkmanager /build/rootfs/etc/runlevels/default/networkmanager
 
 
 
@@ -179,9 +184,15 @@ EOF
 
 # labwc autostart (launches peak-desktop automatically)
 cat > /build/rootfs/etc/xdg/labwc/autostart <<EOF
-# Start the PeakOS Shell with logging
-# peak-desktop is the binary name.
-/usr/bin/peak-desktop > /tmp/peak-desktop.log 2>&1 &
+# Start the PeakOS Shell components
+# 1. Menubar (Top)
+/usr/bin/peak-desktop --layer --bar > /tmp/peak-bar.log 2>&1 &
+
+# 2. Dock (Bottom)
+/usr/bin/peak-desktop --layer --dock > /tmp/peak-dock.log 2>&1 &
+
+# 3. Wallpaper (Background)
+/usr/bin/peak-desktop --layer > /tmp/peak-bg.log 2>&1 &
 
 # Start the Intelligence Agent (Background) in daemon mode
 # peak-intelligence --daemon &

@@ -19,7 +19,9 @@ pub struct WizardState {
     pub password_confirm_input: String,
     pub password_hint_input: String,
     pub selected_network: Option<String>,
+    pub wifi_password_input: String,
     pub selected_avatar: Option<String>,
+    pub selected_mode: Option<String>, // "desktop", "mobile", "tv", "console"
     pub error_message: Option<String>,
 }
 
@@ -33,7 +35,9 @@ impl Default for WizardState {
             password_confirm_input: String::new(),
             password_hint_input: String::new(),
             selected_network: None,
+            wifi_password_input: String::new(),
             selected_avatar: None,
+            selected_mode: None,
             error_message: None,
         }
     }
@@ -49,7 +53,9 @@ pub enum WizardMessage {
     UpdatePasswordConfirm(String),
     UpdatePasswordHint(String),
     SelectNetwork(String),
+    UpdateWifiPassword(String),
     SelectAvatar(String),
+    SelectMode(String),
     CompleteSetup,
 }
 
@@ -80,7 +86,13 @@ pub fn update(state: &mut WizardState, message: WizardMessage) -> Task<WizardMes
                     }
                 }
                 WizardStep::WifiConnect => state.current_step = WizardStep::ThemeSelection,
-                WizardStep::ThemeSelection => state.current_step = WizardStep::Complete,
+                WizardStep::ThemeSelection => {
+                    if state.selected_mode.is_none() {
+                        state.error_message = Some("Please select an experience mode.".to_string());
+                    } else {
+                        state.current_step = WizardStep::Complete;
+                    }
+                }
                 WizardStep::Complete => {} // Handled by parent
             }
         }
@@ -116,7 +128,12 @@ pub fn update(state: &mut WizardState, message: WizardMessage) -> Task<WizardMes
             state.error_message = None;
         }
         WizardMessage::SelectNetwork(s) => state.selected_network = Some(s),
+        WizardMessage::UpdateWifiPassword(s) => state.wifi_password_input = s,
         WizardMessage::SelectAvatar(s) => state.selected_avatar = Some(s),
+        WizardMessage::SelectMode(s) => {
+            state.selected_mode = Some(s);
+            state.error_message = None;
+        }
         WizardMessage::CompleteSetup => {} // Handled by parent
     }
     Task::none()

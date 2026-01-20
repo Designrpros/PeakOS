@@ -418,7 +418,6 @@ impl PeakNative {
                 // We now rely on iced::window::Event::Moved for passive sync
                 // to avoid freezing the main thread with osascript.
 
-                self.vector_bg.clear_cache();
                 if self.last_monitor_update.elapsed() > std::time::Duration::from_millis(500) {
                     // Diagnostic: Disable sysinfo refresh to see if it fixes the freeze
                     // self.system.refresh_cpu();
@@ -859,7 +858,8 @@ impl PeakNative {
             Message::Wizard(msg) => {
                 let mut should_complete = false;
                 let mut new_profile_opt = None;
-                let mut theme_pref = String::new();
+                let theme_pref;
+                let mut selected_app_mode = ShellMode::Desktop;
 
                 if let AppState::Setup(ref mut wizard_state) = self.state {
                     match msg {
@@ -870,12 +870,30 @@ impl PeakNative {
                                 peak_core::theme::Theme::Dark => "Dark".to_string(),
                                 _ => "Light".to_string(),
                             };
+
+                            // Map string mode to ShellMode
+                            if let Some(mode_str) = &wizard_state.selected_mode {
+                                selected_app_mode = match mode_str.as_str() {
+                                    "desktop" => ShellMode::Desktop,
+                                    "mobile" => ShellMode::Mobile,
+                                    "tv" => ShellMode::TV,
+                                    "console" => ShellMode::Console,
+                                    _ => ShellMode::Desktop,
+                                };
+                            }
+
+                            // Use selected avatar or default to "peak"
+                            let avatar = wizard_state
+                                .selected_avatar
+                                .clone()
+                                .or(Some("peak".to_string()));
+
                             new_profile_opt = Some(peak_apps::auth::UserProfile {
                                 username: wizard_state.username_input.clone(),
                                 full_name: wizard_state.full_name_input.clone(),
                                 theme_preference: theme_pref.clone(),
-                                avatar_icon: wizard_state.selected_avatar.clone(),
-                                password_hash: wizard_state.password_input.clone(), // Saving password plain for now
+                                avatar_icon: avatar,
+                                password_hash: wizard_state.password_input.clone(),
                                 ..Default::default()
                             });
                         }
@@ -890,9 +908,8 @@ impl PeakNative {
                         if peak_apps::auth::save_user(&profile) {
                             self.user = Some(profile);
                             self.state = AppState::Desktop;
-                            if theme_pref == "Riviera" {
-                                self.mode = ShellMode::Desktop;
-                            }
+                            self.mode = selected_app_mode;
+                            self.update_tokens(); // Refresh styles for new mode
                         }
                     }
                 }

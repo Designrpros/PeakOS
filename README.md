@@ -2,7 +2,7 @@
 
 **A Hybrid Operating System built with Rust — One Core, Many Faces.**
 
-Boot seamlessly into Desktop, Console, TV, or Robot mode. Your OS adapts to your hardware context. Infinite possibilities on a minimal footprint.
+Boot seamlessly into **Desktop**, **Console**, **TV**, or **Robot** mode. Your OS adapts to your hardware context. Infinite possibilities on a minimal footprint.
 
 ---
 
@@ -10,9 +10,9 @@ Boot seamlessly into Desktop, Console, TV, or Robot mode. Your OS adapts to your
 
 ### The Problem
 Modern operating systems force you to choose:
-- **Ubuntu/Windows:** Bloated, slow, and locked to one form factor (Desktop vs Server vs IoT).
-- **Android/ChromeOS:** Excellent for specific devices, but fragmented ecosystems (cannot run Android TV and Desktop on the same OS easily).
-- **ROS (Robot OS):** Not an actual OS, just middleware on top of heavy Linux distros. Hard to manage and secure.
+- **Ubuntu/Windows:** Bloated, slow, and locked to one form factor.
+- **Android/ChromeOS:** Fragmented ecosystems that struggle to scale from phone to desktop to TV.
+- **ROS (Robot OS):** Middleware, not an OS. Heavy and complex to secure.
 
 ### The Solution
 **PeakOS gives you everything, sacrifices nothing:**
@@ -37,26 +37,22 @@ More than just a desktop. PeakOS adapts to your hardware:
 - **TV Mode:** 10-foot interface for media consumption.
 - **Console Mode:** Controller-first gaming dashboard.
 - **Robot Mode:** High-performance headless/face-rendering state for robotics.
-- **Kiosk Mode:** Locked single-app environment.
-- **Auto Mode:** Dashboard UI for automotive use.
-- **Fireplace Mode:** Ambient aesthetic experience.
-- **Smarthome Mode:** IoT control dashboard.
+- **Kiosk/Auto/Fireplace:** Specialized modes for specific environments.
+
+### 🎨 **Stunning UI & Glassmorphism**
+- **Modern Aesthetics:** Built with `iced` 0.13, featuring real-time blurred backgrounds, glassmorphism overlays, and smooth animations.
+- **Consistent Design:** Unified design language across Login, Setup Wizard, and Desktop.
+- **Adaptive Themes:** Seamless Light/Dark mode switching with dynamic wallpaper adjustments.
 
 ### 🚀 **Blazing Fast & Safe**
-- **Native Rust shell** — GPU-accelerated, memory-safe, crash-proof.
-- **Alpine Linux base** — minimal attack surface, instant boot.
-- **Zero bloat** — The OS grows with your needs, stripped down by default.
-
-### 📦 **Universal Compatibility**
-- **Run Linux Apps:** Full support for Wayland/X11 applications.
-- **Gaming Ready:** Native Steam & Proton support.
-- **Dev-to-Bot:** Develop on your PeakOS laptop, deploy the *exact same OS* to your robot.
+- **Native Rust Shell:** GPU-accelerated, memory-safe, crash-proof.
+- **Alpine Linux Base:** Minimal attack surface, instant boot.
+- **Zero Bloat:** The OS grows with your needs, stripped down by default.
 
 ### 🤖 **AI-First Computing**
-- **Peak Intelligence** — Built-in AI assistant with local or cloud models.
-- **Omnibar** — Instant system-wide search + AI queries.
-- **Inspector Panel** — Persistent AI context across all apps.
-
+- **Peak Intelligence:** Built-in AI assistant with local (LLM) or cloud model support.
+- **Context-Aware:** The "Inspector" panel provides persistent AI context across all apps.
+- **Identity Layer:** AI-generated branding and logos for a unique, futuristic identity.
 
 ---
 
@@ -78,109 +74,68 @@ More than just a desktop. PeakOS adapts to your hardware:
 ```
 
 ### Project Structure
-- **`peak-native/`** — Core desktop environment (Rust + iced)
-- **`peak-intelligence/`** — AI assistant and MCP server
-- **`peak-deploy/`** — ISO build system for bootable images
+- **`peak-native/`**: Core desktop environment (Rust + iced).
+- **`peak-intelligence/`**: AI assistant, MCP server, and voice protocols.
+- **`peak-deploy/`**: Docker-based ISO build system for reproducible builds.
+- **`peak-core/`**: Shared libraries, AppRegistry, and system utilities.
 
 ---
 
 ## Getting Started
 
-### Development
+### Development (Local)
+Run the desktop environment as a window on your current OS (macOS/Linux/Windows):
 ```bash
-# Run the desktop environment locally
-cd peak-native
+cd crates/modes/desktop
 cargo run
 ```
 
-### Build Bootable ISO
+### Build Bootable ISO (Docker)
+We use Docker to ensure a consistent, reproducible build environment for the Alpine-based ISO.
 ```bash
 # Build for Intel (x86_64)
-cd peak-deploy
-bash build.sh --intel
+./crates/peak-deploy/build.sh --intel --docker
 
-# Build for ARM (aarch64 - Apple Silicon, Raspberry Pi)
-bash build.sh --arm
+# Build for ARM (aarch64 - M-series Macs, Raspberry Pi)
+./crates/peak-deploy/build.sh --arm --docker
 ```
+*Artifacts will be output to `crates/peak-deploy/out/`.*
 
 ### Flash to USB
 ```bash
 # macOS
-sudo dd if=peakos.iso of=/dev/diskX bs=1m
+sudo dd if=peakos-alpine-arm64.iso of=/dev/diskX bs=1m
 
 # Linux
-sudo dd if=peakos.iso of=/dev/sdX bs=1M status=progress
+sudo dd if=peakos-alpine-x86_64.iso of=/dev/sdX bs=1M status=progress
 ```
-
----
-
-## Use Cases
-
-### 🤖 **Robotics Platform**
-- **Unify Dev & Prod:** Stop cross-compiling. Run the same OS on your workstation and your robot.
-- **Safety First:** Rust kernel/shell means your robot won't Segfault into a wall.
-- **Telepresence:** Native support for remote control and "Face" UI rendering.
-
-### 🎮 **Gaming & Media Center**
-- **Retro Gaming:** Revive old hardware with an ultralight OS dedicated to emulation.
-- **Smart TV:** Turn any PC into a privacy-respecting media center.
-
-### 💻 **Developer Workstation**
-- Rust/Python/Node developers who need minimal overhead.
-- Cross-platform: Same experience on Intel laptop + ARM Mac + Raspberry Pi.
-- Built-in terminal with full PTY support.
-
-### 🏠 **Home Lab / Self-Hosting**
-- Lightweight server OS with GUI on-demand.
-- Perfect for Raspberry Pi clusters.
 
 ---
 
 ## Roadmap
 
-**Current Status:** Alpha (Functional, actively developed)
+**Current Status:** Beta (UI Polish & Optimization)
 
 ### Phase 1: Core Foundation ✅
-- [x] Window management
+- [x] Window management & Multi-workspace support
 - [x] Native apps (Terminal, Explorer, Settings)
-- [x] Package manager integration
-- [x] Multi-workspace support
-- [x] Bootable ISO generation
+- [x] Bootable ISO generation (Intel & ARM)
 
-### Phase 2: Compatibility 🔄
-- [x] Intel (x86_64) support
-- [x] ARM (aarch64) support
-- [ ] Ubuntu package compatibility layer
-- [ ] Steam/Gaming integration
-- [ ] Electron app sandboxing
+### Phase 2: UI & UX Refinement (Current) 🔄
+- [x] **Glassmorphism UI:** Blurred overlays for Login & Setup.
+- [x] **App Registry:** Centralized app management.
+- [x] **Shell Modes:** Dynamic switching between Desktop, Mobile, etc.
+- [ ] **Animations:** Smooth transitions for window opening/closing.
 
-### Phase 3: AI Integration ✅
-- [x] Peak Intelligence framework
-- [x] Omnibar AI queries
-- [x] Local model support (via `llama-server`)
-- [x] Context-aware assistance (Inspector sync)
-- [x] Multi-shard GGUF support
-- [ ] Voice input/output
+### Phase 3: AI & Intelligence ✅
+- [x] Peak Intelligence framework & Inspector
+- [x] Local LLM support (`llama-server`)
+- [x] Voice input/output protocols
 
-### Phase 4: Polish & Release 📅
-- [ ] Comprehensive documentation
-- [ ] Installer wizard
-- [ ] Community package repository
-- [ ] Public beta release
-
----
-
-## Contributing
-
-PeakOS is open source and contributions are welcome!
-
-**Areas needing help:**
-- Package compatibility testing
-- Gaming/graphics driver integration
-- Documentation and tutorials
-- UI/UX improvements
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+### Phase 4: Release 📅
+- [ ] Installer Wizard (Partitioning)
+- [ ] Community Package Repository
+- [ ] Public Beta Release
 
 ---
 
@@ -188,30 +143,22 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Built With:**
 - **Language:** Rust (2021 edition)
-- **GUI Framework:** [iced](https://github.com/iced-rs/iced) 0.12+
-- **Base OS:** Alpine Linux
-- **Window Manager:** Custom (Rust native)
-- **Package Manager:** APK with Ubuntu compatibility
+- **GUI Framework:** [iced](https://github.com/iced-rs/iced) 0.13+
+- **Base OS:** Alpine Linux (Edge/Rolling)
+- **Window Manager:** Custom Rust-native compositor
+- **Package Manager:** APK + AppImage support
 
 **System Requirements:**
 - **CPU:** Intel x86_64 or ARM64 (aarch64)
-- **RAM:** 512 MB minimum, 1 GB recommended
+- **RAM:** 512 MB minimum, 2 GB recommended (8 GB+ for AI features)
 - **Storage:** 4 GB minimum
-- **GPU:** Any with OpenGL 3.0+ support
+- **GPU:** OpenGL 3.0+ / Vulkan support recommended
 
 ---
 
 ## License
 
 [MIT License](LICENSE) — Free to use, modify, and distribute.
-
----
-
-## Contact & Community
-
-- **GitHub Issues:** Bug reports and feature requests
-- **Discussions:** Design decisions and roadmap
-- **Discord:** [Coming soon]
 
 ---
 

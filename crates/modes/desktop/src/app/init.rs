@@ -63,7 +63,7 @@ impl PeakNative {
         let mut shell = Self {
             state: initial_state,
             user: user_profile,
-            vector_bg: crate::components::vector_background::VectorBackground::new(),
+            // vector_bg removed
             theme,
             current_page,
             games: final_games.clone(), // Clone for self.games

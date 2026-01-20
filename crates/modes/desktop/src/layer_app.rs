@@ -52,7 +52,7 @@ impl Application for PeakLayerShell {
 
     fn view(&self) -> iced::Element<Self::Message> {
         // Multi-surface support not implemented yet
-        self.native.view_desktop().map(LayerMessage::App)
+        self.native.view().map(LayerMessage::App)
     }
 
     fn theme(&self) -> Self::Theme {
@@ -74,8 +74,18 @@ pub fn get_dock_settings() -> LayerShellSettings {
     LayerShellSettings {
         anchor: Anchor::Bottom,
         layer: Layer::Bottom,
-        exclusive_zone: 100,
+        exclusive_zone: 60,
         keyboard_interactivity: KeyboardInteractivity::None,
+        ..Default::default()
+    }
+}
+
+pub fn get_desktop_settings() -> LayerShellSettings {
+    LayerShellSettings {
+        anchor: Anchor::Top | Anchor::Bottom | Anchor::Left | Anchor::Right,
+        layer: Layer::Bottom,
+        exclusive_zone: -1,
+        keyboard_interactivity: KeyboardInteractivity::OnDemand, // Needed for search/inputs
         ..Default::default()
     }
 }

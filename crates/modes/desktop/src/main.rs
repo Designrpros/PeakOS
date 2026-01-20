@@ -34,27 +34,9 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         launch_mode,
     };
 
-    #[cfg(target_os = "linux")]
-    if args.iter().any(|r| r == "--layer") {
-        use iced_layershell::Application;
-
-        let layer_settings = match launch_mode {
-            app::LaunchMode::Bar => layer_app::get_menubar_settings(),
-            app::LaunchMode::Dock => layer_app::get_dock_settings(),
-            _ => layer_app::get_menubar_settings(), // Fallback or Desktop (but desktop usually isn't layer)
-        };
-
-        return layer_app::PeakLayerShell::run(iced_layershell::settings::Settings {
-            flags,
-            layer_settings,
-            ..Default::default()
-        })
-        .map_err(|e| e.into());
-    }
-
     // Process spawning (Only for Desktop mode/Launcher)
     #[cfg(target_os = "linux")]
-    if launch_mode == app::LaunchMode::Desktop {
+    if launch_mode == app::LaunchMode::Desktop && !args.iter().any(|r| r == "--layer") {
         // Spawn bar and dock
         std::thread::spawn(|| {
             // In a real scenario, use std::process::Command
@@ -73,6 +55,24 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
+    #[cfg(target_os = "linux")]
+    if args.iter().any(|r| r == "--layer") {
+        use iced_layershell::Application;
+
+        let layer_settings = match launch_mode {
+            app::LaunchMode::Bar => layer_app::get_menubar_settings(),
+            app::LaunchMode::Dock => layer_app::get_dock_settings(),
+            app::LaunchMode::Desktop => layer_app::get_desktop_settings(), // Integrated Desktop (Wallpaper)
+        };
+
+        return layer_app::PeakLayerShell::run(iced_layershell::settings::Settings {
+            flags,
+            layer_settings,
+            ..Default::default()
+        })
+        .map_err(|e| e.into());
+    }
+
     let _is_game_mode = args.contains(&"--game".to_string());
 
     iced::application(PeakNative::title, PeakNative::update, PeakNative::view)
@@ -81,7 +81,11 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         .window(iced::window::Settings {
             decorations: false,
             transparent: true,
-            size: iced::Size::new(1280.0, 720.0), // Smaller default, will maximize on Linux
+            size: match launch_mode {
+                app::LaunchMode::Bar => iced::Size::new(1920.0, 48.0),
+                app::LaunchMode::Dock => iced::Size::new(800.0, 100.0),
+                _ => iced::Size::new(1280.0, 720.0),
+            },
             resizable: true,
             #[cfg(target_os = "linux")]
             platform_specific: iced::window::settings::PlatformSpecific {

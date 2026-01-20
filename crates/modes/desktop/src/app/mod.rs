@@ -75,7 +75,7 @@ pub struct PeakNative {
     pub show_reality_menu: bool,
     pub show_wifi_menu: bool,
     pub networks: Vec<String>,
-    pub vector_bg: crate::components::vector_background::VectorBackground,
+    // vector_bg removed
     pub show_app_grid: bool,
     // browser_process removed - using external Firefox
     pub window_position: iced::Point,
