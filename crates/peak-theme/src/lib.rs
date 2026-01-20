@@ -38,40 +38,8 @@ pub struct ThemeTokens {
     pub shadow_blur: f32,
     /// Base spacing unit (for consistent spacing)
     pub spacing_unit: f32,
-
-    // === Backward Compatibility (Deprecated) ===
-    // These are kept for backward compatibility and will be removed in a future version
-    #[deprecated(note = "Use colors.primary instead")]
-    pub accent: Color,
-
-    #[deprecated(note = "Use colors.background instead")]
-    pub background: Color,
-
-    #[deprecated(note = "Use colors.text_primary instead")]
-    pub text: Color,
-
-    #[deprecated(note = "Use colors.text_secondary instead")]
-    pub secondary_text: Color,
-
-    #[deprecated(
-        note = "Glassmorphism properties moved to theme-level, use colors.surface with glass_opacity"
-    )]
-    pub glass_bg: Color,
-
-    #[deprecated(note = "Use colors.border instead")]
-    pub glass_border: Color,
-
-    #[deprecated(note = "Use colors.border with reduced opacity")]
-    pub inner_border: Color,
-
-    #[deprecated(note = "Use colors.surface or colors.surface_variant instead")]
-    pub card_bg: Color,
-
-    #[deprecated(note = "Use colors.surface_variant instead")]
-    pub surface_bg: Color,
-
-    #[deprecated(note = "Use colors.divider instead")]
-    pub divider: Color,
+    /// Global UI scaling factor (e.g., 0.8 for compact desktop)
+    pub scaling: f32,
 }
 
 impl ThemeTokens {
@@ -106,12 +74,6 @@ impl ThemeTokens {
             Color::from_rgba(0.0, 0.0, 0.0, 0.15)
         };
 
-        // Backward compatibility aliases
-        let glass_bg = Color {
-            a: glass_opacity,
-            ..colors.surface
-        };
-
         Self {
             colors,
             glass_opacity,
@@ -121,21 +83,7 @@ impl ThemeTokens {
             shadow_offset,
             shadow_blur,
             spacing_unit,
-
-            // Backward compatibility (deprecated)
-            accent: colors.primary,
-            background: colors.background,
-            text: colors.text_primary,
-            secondary_text: colors.text_secondary,
-            glass_bg,
-            glass_border: colors.border,
-            inner_border: Color {
-                a: colors.border.a * 0.5,
-                ..colors.border
-            },
-            card_bg: colors.surface,
-            surface_bg: colors.surface_variant,
-            divider: colors.divider,
+            scaling: 1.0, // Default to 1.0, can be overridden
         }
     }
 

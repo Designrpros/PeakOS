@@ -345,7 +345,9 @@ impl Catalog {
     pub fn view(&self, context: &Context) -> Element<'static, CatalogMessage> {
         // Apply Catalog's selected theme to the context
         let mut local_context = context.clone();
-        local_context.theme = peak_theme::ThemeTokens::new(self.theme, self.tone);
+        let mut tokens = peak_theme::ThemeTokens::new(self.theme, self.tone);
+        tokens.scaling = 0.85; // Global shrink for desktop fit
+        local_context.theme = tokens;
         let context = &local_context;
 
         let items = self.items.clone();
@@ -360,13 +362,13 @@ impl Catalog {
 
         // Sidebar Content
         let sidebar_content = VStack::new()
-            .padding(16.0)
-            .spacing(24.0)
+            .padding(12.0)
+            .spacing(12.0)
             .push(
                 VStack::new()
-                    .spacing(4.0)
-                    .push(Text::new("PeakUI").large_title())
-                    .push(Text::new("Reference").secondary()),
+                    .spacing(2.0)
+                    .push(Text::new("PeakUI").headline())
+                    .push(Text::new("Reference").secondary().caption1()),
             )
             .push(render_category(&items, selected_id, Category::Design))
             .push(render_category(&items, selected_id, Category::Content))
@@ -391,8 +393,8 @@ impl Catalog {
                 "themes" => render_themes(context, self.theme, self.tone),
                 "text_field" | "inputs" => Box::new(
                     VStack::new()
-                        .spacing(24.0)
-                        .padding(32.0)
+                        .spacing(12.0)
+                        .padding(16.0)
                         .push(Text::new("Text Fields").title2())
                         .push(
                             TextField::new(
@@ -428,14 +430,14 @@ impl Catalog {
                         .push(
                             // Header
                             HStack::new()
-                                .padding(32.0)
+                                .padding(16.0)
                                 .align_y(iced::Alignment::Center)
                                 .push(
                                     VStack::new()
-                                        .spacing(8.0)
+                                        .spacing(4.0)
                                         .width(Length::Fill)
-                                        .push(Text::new(item.title).large_title())
-                                        .push(Text::new(item.description).body().secondary()),
+                                        .push(Text::new(item.title).title2())
+                                        .push(Text::new(item.description).caption1().secondary()),
                                 )
                                 .push(
                                     Button::new("Inspector")
@@ -485,6 +487,7 @@ fn render_category(
 
             Button::new(item.title)
                 .width(Length::Fill)
+                .size(Size::Small)
                 .intent(if is_selected {
                     Intent::Primary
                 } else {
@@ -509,8 +512,8 @@ fn render_category(
     }
 
     VStack::new()
-        .spacing(8.0)
-        .push(Text::new(category.title()).caption1().secondary())
+        .spacing(4.0)
+        .push(Text::new(category.title()).caption2().secondary())
         .push(list)
 }
 
@@ -519,19 +522,22 @@ fn render_category(
 fn render_coming_soon(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(16.0)
-            .padding(32.0)
-            .push(crate::atoms::Text::new("Coming Soon").title1())
-            .push(crate::atoms::Text::new("This component is not yet implemented.").secondary()),
+            .spacing(12.0)
+            .padding(16.0)
+            .push(crate::atoms::Text::new("Coming Soon").title2())
+            .push(
+                crate::atoms::Text::new("This component is not yet implemented.")
+                    .secondary()
+                    .caption1(),
+            ),
     )
 }
 
 fn render_typography(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(24.0)
-            .padding(32.0)
-            .push(Text::new("Large Title").large_title())
+            .spacing(12.0)
+            .padding(16.0)
             .push(Text::new("Title 1").title1())
             .push(Text::new("Title 2").title2())
             .push(Text::new("Title 3").title3())
@@ -549,8 +555,8 @@ fn render_colors(ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     let colors = ctx.theme.colors;
     Box::new(
         VStack::new()
-            .spacing(16.0)
-            .padding(32.0)
+            .spacing(12.0)
+            .padding(16.0)
             .push(Text::new("Semantic Colors").title2())
             .push(
                 ResponsiveGrid::new()
@@ -583,8 +589,8 @@ fn color_swatch(name: &str, color: iced::Color) -> impl View<CatalogMessage> {
 fn render_icons(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(16.0)
-            .padding(32.0)
+            .spacing(12.0)
+            .padding(16.0)
             .push(Text::new("Icons").title2())
             .push(
                 HStack::new()
@@ -613,8 +619,8 @@ fn render_controls(
 ) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(24.0)
-            .padding(32.0)
+            .spacing(16.0)
+            .padding(16.0)
             .push(Text::new("Toggles").title2())
             .push(Toggle::new(
                 "Airplane Mode",
@@ -656,8 +662,8 @@ fn render_inputs_placeholder(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
 fn render_content(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(24.0)
-            .padding(32.0)
+            .spacing(16.0)
+            .padding(16.0)
             .push(Text::new("Layout & Separators").title2())
             .push(Text::new("Below is a divider").body())
             .push(Divider::new())
@@ -694,8 +700,8 @@ fn render_content(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
 fn render_stacks(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(32.0)
-            .padding(32.0)
+            .spacing(16.0)
+            .padding(16.0)
             .push(Text::new("VStack & HStack").title2())
             .push(
                 HStack::new()
@@ -730,7 +736,7 @@ fn render_stacks(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
 }
 
 fn render_grid(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
-    let mut grid = ResponsiveGrid::new().spacing(20.0);
+    let mut grid = ResponsiveGrid::new().spacing(12.0);
 
     for i in 1..=12 {
         grid = grid.push(
@@ -750,9 +756,14 @@ fn render_grid(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
 
     Box::new(
         VStack::new()
-            .padding(32.0)
-            .spacing(24.0)
-            .push(Text::new("Resize window to see columns adapt").secondary())
+            .padding(16.0)
+            .spacing(12.0)
+            .push(Text::new("Responsive Grid").title2())
+            .push(
+                Text::new("Resize window to see columns adapt")
+                    .caption1()
+                    .secondary(),
+            )
             .push(grid),
     )
 }
@@ -771,8 +782,8 @@ fn render_scroll(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
 
     Box::new(
         VStack::new()
-            .padding(32.0)
-            .spacing(24.0)
+            .padding(16.0)
+            .spacing(12.0)
             .height(Length::Fill) // Important for ScrollView to work within
             .push(Text::new("Vertical Scroll").title2())
             .push(
@@ -784,14 +795,14 @@ fn render_scroll(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
 fn render_navigation(_context: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(16.0)
-            .padding(32.0)
-            .push(Text::new("Navigation").large_title())
+            .spacing(12.0)
+            .padding(16.0)
+            .push(Text::new("Navigation").title1())
             .push(Text::new("You are currently using NavigationSplitView.").body())
             .push(
                 Text::new("It supports:\n• 2-pane Desktop Layout\n• 3-pane Inspector Layout\n• Responsive Mobile Stack Navigation\n• Mobile Inspector Sheets")
                     .secondary()
-                    .callout()
+                    .caption1()
             )
     )
 }
@@ -799,9 +810,9 @@ fn render_navigation(_context: &Context) -> Box<dyn View<CatalogMessage>> {
 fn render_views(_context: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(16.0)
-            .padding(32.0)
-            .push(Text::new("System Views").large_title())
+            .spacing(12.0)
+            .padding(16.0)
+            .push(Text::new("System Views").title1())
             .push(Text::new("Alerts").title2())
             .push(
                 Button::new("Show Alert")
@@ -819,7 +830,7 @@ fn render_themes(
     current_theme: peak_theme::PeakTheme,
     current_tone: peak_theme::ThemeTone,
 ) -> Box<dyn View<CatalogMessage>> {
-    let mut grid = ResponsiveGrid::new().spacing(16.0);
+    let mut grid = ResponsiveGrid::new().spacing(12.0);
 
     for theme in peak_theme::PeakTheme::all() {
         let is_selected = *theme == current_theme;
@@ -828,27 +839,27 @@ fn render_themes(
         grid = grid.push(
             Card::new(
                 VStack::new()
-                    .spacing(12.0)
+                    .spacing(8.0)
                     .push(
-                        Rectangle::new(Length::Fill, Length::Fixed(40.0))
+                        Rectangle::new(Length::Fill, Length::Fixed(30.0))
                             .color(colors.primary)
-                            .corner_radius(8.0),
+                            .corner_radius(6.0),
                     )
                     .push(
                         HStack::new()
                             .spacing(4.0)
                             .push(
-                                Rectangle::new(Length::Fixed(20.0), Length::Fixed(20.0))
+                                Rectangle::new(Length::Fixed(16.0), Length::Fixed(16.0))
                                     .color(colors.background)
                                     .corner_radius(4.0),
                             )
                             .push(
-                                Rectangle::new(Length::Fixed(20.0), Length::Fixed(20.0))
+                                Rectangle::new(Length::Fixed(16.0), Length::Fixed(16.0))
                                     .color(colors.surface)
                                     .corner_radius(4.0),
                             )
                             .push(
-                                Rectangle::new(Length::Fixed(20.0), Length::Fixed(20.0))
+                                Rectangle::new(Length::Fixed(16.0), Length::Fixed(16.0))
                                     .color(colors.secondary)
                                     .corner_radius(4.0),
                             ),
@@ -875,8 +886,8 @@ fn render_themes(
 
     Box::new(
         VStack::new()
-            .spacing(24.0)
-            .padding(32.0)
+            .spacing(12.0)
+            .padding(16.0)
             .push(
                 HStack::new()
                     .align_y(iced::Alignment::Center)

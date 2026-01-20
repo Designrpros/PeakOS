@@ -58,12 +58,25 @@ impl<Message> VStack<Message> {
 impl<Message: 'static> View<Message> for VStack<Message> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let children: Vec<_> = self.children.iter().map(|c| c.view(context)).collect();
+        let scale = context.theme.scaling;
+        let scaled_spacing = self.spacing * scale;
+        let p = self.padding;
+        let scaled_padding = iced::Padding {
+            top: p.top * scale,
+            right: p.right * scale,
+            bottom: p.bottom * scale,
+            left: p.left * scale,
+        };
 
-        container(column(children).spacing(self.spacing).align_x(self.align_x))
-            .padding(self.padding)
-            .width(self.width)
-            .height(self.height)
-            .into()
+        container(
+            column(children)
+                .spacing(scaled_spacing)
+                .align_x(self.align_x),
+        )
+        .padding(scaled_padding)
+        .width(self.width)
+        .height(self.height)
+        .into()
     }
 }
 
@@ -122,9 +135,18 @@ impl<Message> HStack<Message> {
 impl<Message: 'static> View<Message> for HStack<Message> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let children: Vec<_> = self.children.iter().map(|c| c.view(context)).collect();
+        let scale = context.theme.scaling;
+        let scaled_spacing = self.spacing * scale;
+        let p = self.padding;
+        let scaled_padding = iced::Padding {
+            top: p.top * scale,
+            right: p.right * scale,
+            bottom: p.bottom * scale,
+            left: p.left * scale,
+        };
 
-        container(row(children).spacing(self.spacing).align_y(self.align_y))
-            .padding(self.padding)
+        container(row(children).spacing(scaled_spacing).align_y(self.align_y))
+            .padding(scaled_padding)
             .width(self.width)
             .height(self.height)
             .into()
@@ -215,6 +237,9 @@ impl<Message: 'static> View<Message> for ResponsiveGrid<Message> {
             5
         };
 
+        let scale = context.theme.scaling;
+        let scaled_spacing = self.spacing * scale;
+
         // Create rows with equal-width columns
         let mut rows = Vec::new();
         let mut current_row = Vec::new();
@@ -227,7 +252,7 @@ impl<Message: 'static> View<Message> for ResponsiveGrid<Message> {
             if count == items_per_row {
                 rows.push(
                     row(current_row)
-                        .spacing(self.spacing)
+                        .spacing(scaled_spacing)
                         .width(Length::Fill)
                         .into(),
                 );
@@ -249,13 +274,13 @@ impl<Message: 'static> View<Message> for ResponsiveGrid<Message> {
             }
             rows.push(
                 row(current_row)
-                    .spacing(self.spacing)
+                    .spacing(scaled_spacing)
                     .width(Length::Fill)
                     .into(),
             );
         }
 
-        container(column(rows).spacing(self.spacing).width(Length::Fill))
+        container(column(rows).spacing(scaled_spacing).width(Length::Fill))
             .width(Length::Fill)
             .into()
     }

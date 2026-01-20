@@ -145,7 +145,7 @@ impl<Message: 'static> View<Message> for Text {
         });
 
         let t = text(self.content.clone())
-            .size(self.size)
+            .size(self.size * context.theme.scaling)
             .color(color)
             .font(self.font);
 

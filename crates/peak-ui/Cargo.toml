@@ -10,7 +10,5 @@ iced = { version = "0.13", features = ["tokio", "canvas", "advanced", "wgpu", "i
 iced_widget = { version = "0.13", features = ["lazy"] }
 tiny-skia = "0.11"
 
-[[bin]]
-name = "peak-ui-showcase"
-path = "examples/showcase.rs"
+
 

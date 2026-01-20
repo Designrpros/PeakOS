@@ -175,7 +175,7 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                     )
                     .height(Length::Fill)
                 )
-                .width(Length::Fixed(260.0))
+                .width(Length::Fixed(180.0))
                 .height(Length::Fill)
                 .style(move |_| container::Style {
                     background: Some(if theme.colors.background.r < 0.1 {
@@ -221,7 +221,7 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                         )
                         .height(Length::Fill),
                     )
-                    .width(Length::Fixed(280.0)) // Standard inspector width
+                    .width(Length::Fixed(220.0)) // Standard inspector width
                     .height(Length::Fill)
                     .style(move |_| container::Style {
                         background: Some(if theme.colors.background.r < 0.1 {

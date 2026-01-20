@@ -2,7 +2,7 @@ use iced::{Element, Task, Theme};
 use peak_core::registry::ShellMode;
 use peak_theme::{ThemeTokens, ThemeTone};
 use peak_ui::catalog::{Catalog, CatalogMessage};
-use peak_ui::core::{responsive, View};
+use peak_ui::core::responsive;
 
 pub fn main() -> iced::Result {
     iced::application("PeakUI Showcase", App::update, App::view).run()
