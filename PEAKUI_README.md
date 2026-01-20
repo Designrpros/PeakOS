@@ -23,7 +23,9 @@ PeakUI enables a separated ecosystem where apps are libraries, not binaries.
 ```rust
 use peak_ui::prelude::*;
 
-struct MyApp;
+struct MyApp {
+    show_sidebar: bool,
+}
 
 impl View for MyApp {
     fn body(&self) -> impl View {
@@ -36,13 +38,22 @@ impl View for MyApp {
             
             // Detail (Content)
             VStack::new()
-                .push(Text::new("Welcome to PeakOS").font(.large_title))
+                .push(Text::new("Welcome to PeakOS").large_title())
                 .push(Toggle::new("Enable Wi-Fi", &self.wifi_enabled))
                 .padding()
         )
+        .force_sidebar_on_slim(self.show_sidebar)  // Stack navigation for mobile
+        .on_back(Message::GoBack)                  // Automatic back button
     }
 }
 ```
+
+**Adaptive Behavior:**
+- **Desktop (≥600px)**: Shows sidebar + content side-by-side
+- **Mobile (<600px)**: Stack navigation with automatic back button
+  - Starts at sidebar (category list)
+  - Taps navigate to detail view with "< Back" button
+- **Icons**: Buttons support `.icon(name)` for theme-aware graphics
 
 ## 4. Design System Specs (Cupertino Theme)
 PeakUI implements a premium visual language out of the box.
