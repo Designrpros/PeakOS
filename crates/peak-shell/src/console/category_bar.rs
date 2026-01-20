@@ -56,11 +56,11 @@ pub fn view<'a>(selected: GameCategory, tokens: ThemeTokens) -> Element<'a, Cate
         let cat_btn = button(text(label).size(if is_selected { 16 } else { 14 }).style(
             move |_| iced::widget::text::Style {
                 color: if is_selected {
-                    Some(tokens.text)
+                    Some(tokens.colors.text_primary)
                 } else {
                     Some(iced::Color {
                         a: 0.6,
-                        ..tokens.text
+                        ..tokens.colors.text_primary
                     })
                 },
             },
@@ -73,7 +73,7 @@ pub fn view<'a>(selected: GameCategory, tokens: ThemeTokens) -> Element<'a, Cate
                 background: Some(
                     iced::Color {
                         a: bg_alpha,
-                        ..tokens.text
+                        ..tokens.colors.text_primary
                     }
                     .into(),
                 ),

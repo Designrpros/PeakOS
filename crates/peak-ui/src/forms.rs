@@ -50,13 +50,13 @@ impl<Message: 'static> View<Message> for Form<Message> {
                             .padding(16)
                             .width(Length::Fill)
                             .style(move |_| iced::widget::container::Style {
-                                background: Some(theme.card_bg.into()),
+                                background: Some(theme.colors.surface.into()),
                                 border: iced::Border {
                                     radius: theme.radius.into(),
-                                    color: theme.inner_border,
+                                    color: theme.colors.border.scale_alpha(0.5),
                                     width: 1.0,
                                 },
-                                text_color: Some(theme.text),
+                                text_color: Some(theme.colors.text_primary),
                                 ..Default::default()
                             }),
                     )
@@ -64,7 +64,7 @@ impl<Message: 'static> View<Message> for Form<Message> {
                     .style(move |_| iced::widget::container::Style {
                         border: iced::Border {
                             radius: theme.radius.into(),
-                            color: theme.glass_border,
+                            color: theme.colors.border,
                             width: 1.0,
                         },
                         shadow: iced::Shadow {

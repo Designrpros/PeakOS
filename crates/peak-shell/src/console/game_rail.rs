@@ -41,7 +41,7 @@ pub fn view<'a>(
                 text(&game.title)
                     .size(14)
                     .style(move |_| iced::widget::text::Style {
-                        color: Some(tokens.text),
+                        color: Some(tokens.colors.text_primary),
                     }),
             )
             .width(Length::Fixed(width as f32))
@@ -49,7 +49,7 @@ pub fn view<'a>(
             .center_x(width as f32)
             .center_y(height as f32)
             .style(move |_| container::Style {
-                background: Some(tokens.card_bg.into()),
+                background: Some(tokens.colors.surface.into()),
                 border: iced::Border {
                     radius: 8.0.into(),
                     ..Default::default()
@@ -65,7 +65,7 @@ pub fn view<'a>(
             .padding(0)
             .style(move |_, status| {
                 let border_color = if is_selected {
-                    tokens.accent
+                    tokens.colors.primary
                 } else {
                     iced::Color::TRANSPARENT
                 };
@@ -79,7 +79,7 @@ pub fn view<'a>(
                     },
                     shadow: if status == iced::widget::button::Status::Hovered {
                         iced::Shadow {
-                            color: tokens.shadow_color,
+                            color: iced::Color::from_rgba(0.0, 0.0, 0.0, 0.5),
                             offset: iced::Vector::new(0.0, 8.0),
                             blur_radius: 16.0,
                         }

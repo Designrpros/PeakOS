@@ -84,7 +84,7 @@ pub fn view<'a>(
             container(iced::widget::Space::with_width(Length::Fixed(1.0)))
                 .height(Length::Fixed(24.0))
                 .style(move |_| container::Style {
-                    background: Some(tokens.divider.into()),
+                    background: Some(tokens.colors.divider.into()),
                     ..Default::default()
                 }),
         );
@@ -100,7 +100,7 @@ pub fn view<'a>(
             container(iced::widget::Space::with_width(Length::Fixed(1.0)))
                 .height(Length::Fixed(24.0))
                 .style(move |_| container::Style {
-                    background: Some(tokens.divider.into()),
+                    background: Some(tokens.colors.divider.into()),
                     ..Default::default()
                 }),
         );
@@ -113,7 +113,11 @@ pub fn view<'a>(
     container(dock_row)
         .padding(6)
         .style(move |_theme| container::Style {
-            background: Some(tokens.glass_bg.into()),
+            background: Some({
+                let mut c = tokens.colors.surface;
+                c.a = tokens.glass_opacity;
+                c.into()
+            }),
             border: Border {
                 radius: tokens.radius.into(),
                 ..Default::default()
@@ -135,9 +139,9 @@ pub fn render_dock_icon<'a>(
     let info = AppInfo::get_info(id);
     let hex_color = format!(
         "#{:02x}{:02x}{:02x}",
-        (tokens.text.r * 255.0) as u8,
-        (tokens.text.g * 255.0) as u8,
-        (tokens.text.b * 255.0) as u8
+        (tokens.colors.text_primary.r * 255.0) as u8,
+        (tokens.colors.text_primary.g * 255.0) as u8,
+        (tokens.colors.text_primary.b * 255.0) as u8
     );
     let icon: Element<DockMessage> =
         match peak_core::icons::IconResolver::resolve_app_icon(id, &hex_color) {
@@ -155,7 +159,7 @@ pub fn render_dock_icon<'a>(
         container(iced::widget::Space::with_width(Length::Fixed(3.0)))
             .height(Length::Fixed(3.0))
             .style(move |_| container::Style {
-                background: Some(tokens.text.into()),
+                background: Some(tokens.colors.text_primary.into()),
                 border: Border {
                     radius: 1.5.into(),
                     ..Default::default()
@@ -171,7 +175,7 @@ pub fn render_dock_icon<'a>(
             button(icon)
                 .on_press(DockMessage::Launch(id))
                 .style(move |_theme, status| {
-                    let hover_bg = tokens.text;
+                    let hover_bg = tokens.colors.text_primary;
                     let mut hover_bg = hover_bg;
                     hover_bg.a = 0.1;
 
@@ -194,7 +198,7 @@ pub fn render_dock_icon<'a>(
         .spacing(2)
         .align_x(iced::Alignment::Center);
 
-    let text_color = tokens.text;
+    let text_color = tokens.colors.text_primary;
     let element: Element<DockMessage> = tooltip(content, info.name, Position::Top)
         .style(move |_theme| container::Style {
             text_color: Some(text_color),

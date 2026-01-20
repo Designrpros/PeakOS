@@ -20,14 +20,18 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
     let time = Local::now().format("%H:%M").to_string();
     let date = Local::now().format("%a %b %d").to_string();
 
-    let text_color = tokens.text;
-    let bg_color = tokens.glass_bg;
+    let text_color = tokens.colors.text_primary;
+    let bg_color = {
+        let mut c = tokens.colors.surface;
+        c.a = tokens.glass_opacity;
+        c
+    };
 
     let hex_color = format!(
         "#{:02x}{:02x}{:02x}",
-        (tokens.text.r * 255.0) as u8,
-        (tokens.text.g * 255.0) as u8,
-        (tokens.text.b * 255.0) as u8
+        (tokens.colors.text_primary.r * 255.0) as u8,
+        (tokens.colors.text_primary.g * 255.0) as u8,
+        (tokens.colors.text_primary.b * 255.0) as u8
     );
 
     let switcher = button(text("Peak").size(13)) // Placeholder for mode string, can be passed if needed
@@ -40,7 +44,7 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
             text_color,
         });
 
-    let logo_file = if tokens.background.r < 0.2 {
+    let logo_file = if tokens.colors.background.r < 0.2 {
         "peak_logo_dark.png"
     } else {
         "peak_logo.png"

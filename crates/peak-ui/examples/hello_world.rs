@@ -20,7 +20,7 @@ fn view(_state: &()) -> Element<'_, ()> {
                 .spacing(20.0)
                 .padding(40.0)
                 .push(Text::new("Hello from PeakUI").large_title())
-                .push(Text::new("This is a declarative UI experiment.").title())
+                .push(Text::new("This is a declarative UI experiment.").title1())
                 .push(
                     HStack::new()
                         .spacing(10.0)

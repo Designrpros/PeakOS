@@ -989,7 +989,7 @@ impl SettingsDesktopView for SettingsApp {
                             },
                         );
                         container::Style {
-                            background: Some(tokens.accent.into()),
+                            background: Some(tokens.colors.primary.into()),
                             border: iced::Border {
                                 radius: 6.0.into(),
                                 ..Default::default()

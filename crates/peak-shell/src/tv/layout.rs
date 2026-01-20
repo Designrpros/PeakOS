@@ -54,7 +54,7 @@ where
             container(iced::widget::Space::with_width(Length::Fixed(1.0)))
                 .height(Length::Fixed(24.0))
                 .style(move |_| container::Style {
-                    background: Some(tokens.divider.into()),
+                    background: Some(tokens.colors.divider.into()),
                     ..Default::default()
                 }),
         );
@@ -83,7 +83,7 @@ where
     let top_dock = container(dock_row)
         .padding([12, 24])
         .style(move |_| container::Style {
-            background: Some(tokens.background.into()),
+            background: Some(tokens.colors.background.into()),
             border: iced::Border {
                 radius: iced::border::Radius {
                     top_left: 0.0,
@@ -100,12 +100,12 @@ where
     // --- BOTTOM BAR ---
     let hex_color = format!(
         "#{:02x}{:02x}{:02x}",
-        (tokens.text.r * 255.0) as u8,
-        (tokens.text.g * 255.0) as u8,
-        (tokens.text.b * 255.0) as u8
+        (tokens.colors.text_primary.r * 255.0) as u8,
+        (tokens.colors.text_primary.g * 255.0) as u8,
+        (tokens.colors.text_primary.b * 255.0) as u8
     );
 
-    let logo_path = if tokens.text.r > 0.5 {
+    let logo_path = if tokens.colors.text_primary.r > 0.5 {
         "icons/menubar/peak_logo_dark.png"
     } else {
         "icons/menubar/peak_logo.png"
@@ -149,7 +149,7 @@ where
         svg(peak_core::icons::get_status_icon("wifi", &hex_color)).width(Length::Fixed(16.0)),
         svg(peak_core::icons::get_status_icon("volume", &hex_color)).width(Length::Fixed(16.0)),
         text(time).size(12).style(move |_| text::Style {
-            color: Some(tokens.text)
+            color: Some(tokens.colors.text_primary)
         }),
     ]
     .spacing(12)
@@ -201,7 +201,7 @@ where
     .height(Length::Fill)
     .padding(20)
     .style(move |_| container::Style {
-        background: Some(tokens.background.into()),
+        background: Some(tokens.colors.background.into()),
         ..Default::default()
     })
     .into()

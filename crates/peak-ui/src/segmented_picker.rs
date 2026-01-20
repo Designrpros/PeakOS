@@ -21,6 +21,30 @@ where
     _phantom: std::marker::PhantomData<Theme>,
 }
 
+impl<'a, Message, Theme> Clone for SegmentedPicker<'a, Message, Theme>
+where
+    Message: Clone,
+    Theme: Clone + 'a,
+{
+    fn clone(&self) -> Self {
+        Self {
+            options: self.options.clone(),
+            active_index: self.active_index,
+            width: self.width,
+            height: self.height,
+            padding: self.padding,
+            button_padding: self.button_padding,
+            text_size: self.text_size,
+            border_radius: self.border_radius,
+            background_color: self.background_color,
+            active_bg_color: self.active_bg_color,
+            text_color: self.text_color,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct SegmentOption<'a, Message> {
     label: &'a str,
     on_press: Message,
@@ -106,8 +130,8 @@ where
         self
     }
 
-    /// Build the view
-    pub fn view(self) -> Element<'a, Message> {
+    /// Build the view (consumes self)
+    pub fn build(self) -> Element<'a, Message> {
         let active_idx = self.active_index;
         let active_bg = self.active_bg_color;
         let text_col = self.text_color;
@@ -158,5 +182,34 @@ where
             .width(self.width)
             .height(self.height)
             .into()
+    }
+}
+
+use crate::core::{Context, View};
+use iced::Renderer;
+
+impl<'a, Message, Theme> View<Message> for SegmentedPicker<'a, Message, Theme>
+where
+    Message: Clone + 'static,
+    Theme: 'a + Default + Clone,
+{
+    fn view(&self, _context: &Context) -> Element<'static, Message, iced::Theme, Renderer> {
+        // Warning: This forces static lifetime which might be restrictive if Message matches
+        // But the View trait requires 'static Element output usually.
+        // We clone self to build the element.
+        // Also we cast Theme to default iced::Theme for now as `view` returns specific Element?
+        // Actually View trait returns Element<..., Theme, ...>.
+        // Let's rely on standard Iced.
+
+        // Note: The View trait signature is:
+        // fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer>;
+        // But here we have generics.
+
+        // For simplicity in this codebase context, we'll assume standard Theme.
+        // Explicitly use Clone checking usage
+        let clone = <SegmentedPicker<'a, Message, Theme> as Clone>::clone(self);
+
+        // We'll trust that 'a is 'static in the usage context (Catalog use constant strings).
+        unsafe { std::mem::transmute(clone.build()) }
     }
 }

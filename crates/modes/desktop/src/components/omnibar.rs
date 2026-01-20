@@ -257,14 +257,14 @@ impl Omnibar {
                     width: 0.0,
                     ..Default::default()
                 },
-                icon: tokens.text,
+                icon: tokens.colors.text_primary,
                 placeholder: {
-                    let mut c = tokens.text;
+                    let mut c = tokens.colors.text_primary;
                     c.a = 0.4;
                     c
                 },
-                value: tokens.text,
-                selection: tokens.accent,
+                value: tokens.colors.text_primary,
+                selection: tokens.colors.primary,
             });
 
         // Content based on mode
@@ -279,9 +279,13 @@ impl Omnibar {
             .width(Length::Fixed(400.0))
             .padding(16)
             .style(move |_| container::Style {
-                background: Some(Background::Color(tokens.glass_bg)),
+                background: Some(Background::Color({
+                    let mut c = tokens.colors.surface;
+                    c.a = tokens.glass_opacity;
+                    c
+                })),
                 border: iced::Border {
-                    color: tokens.glass_border,
+                    color: tokens.colors.border,
                     width: 1.0,
                     radius: tokens.radius.into(),
                 },
@@ -316,7 +320,7 @@ impl Omnibar {
         tokens: peak_theme::ThemeTokens,
     ) -> Element<'_, OmnibarMessage> {
         let bg_color = if is_selected {
-            let mut c = tokens.accent;
+            let mut c = tokens.colors.primary;
             c.a = 0.2;
             c
         } else {
@@ -324,9 +328,9 @@ impl Omnibar {
         };
 
         let text_color = if is_selected {
-            tokens.accent
+            tokens.colors.primary
         } else {
-            tokens.text
+            tokens.colors.text_primary
         };
 
         let hex_color = format!(
@@ -351,7 +355,7 @@ impl Omnibar {
         .style(move |_, status| {
             let mut final_bg = bg_color;
             if status == button::Status::Hovered && !is_selected {
-                final_bg = tokens.text;
+                final_bg = tokens.colors.text_primary;
                 final_bg.a = 0.1;
             }
 
@@ -370,7 +374,7 @@ impl Omnibar {
 
     fn view_search_results(&self, tokens: peak_theme::ThemeTokens) -> Element<'_, OmnibarMessage> {
         if self.search_results.is_empty() {
-            let mut text_color = tokens.text;
+            let mut text_color = tokens.colors.text_primary;
             text_color.a = 0.4;
             container(text("No apps found").size(14).color(text_color))
                 .padding(20)
@@ -399,7 +403,7 @@ impl Omnibar {
         tokens: peak_theme::ThemeTokens,
     ) -> Element<'a, OmnibarMessage> {
         let bg_color = if is_selected {
-            let mut c = tokens.accent;
+            let mut c = tokens.colors.primary;
             c.a = 0.2;
             c
         } else {
@@ -407,9 +411,9 @@ impl Omnibar {
         };
 
         let text_color = if is_selected {
-            tokens.accent
+            tokens.colors.primary
         } else {
-            tokens.text
+            tokens.colors.text_primary
         };
 
         let msg = if let Some(app_id) = result.app_id {
@@ -446,7 +450,7 @@ impl Omnibar {
         .style(move |_, status| {
             let mut final_bg = bg_color;
             if status == button::Status::Hovered && !is_selected {
-                final_bg = tokens.text;
+                final_bg = tokens.colors.text_primary;
                 final_bg.a = 0.1;
             }
             button::Style {
@@ -466,7 +470,7 @@ impl Omnibar {
         &self,
         tokens: peak_theme::ThemeTokens,
     ) -> Element<'_, OmnibarMessage> {
-        let mut placeholder_color = tokens.text;
+        let mut placeholder_color = tokens.colors.text_primary;
         placeholder_color.a = 0.4;
 
         if self.query.is_empty() {
@@ -493,7 +497,7 @@ impl Omnibar {
                 .map(|(i, pkg)| {
                     let is_selected = i == self.selected_index;
                     let bg_color = if is_selected {
-                        let mut c = tokens.accent;
+                        let mut c = tokens.colors.primary;
                         c.a = 0.2;
                         c
                     } else {
@@ -501,9 +505,9 @@ impl Omnibar {
                     };
 
                     let text_color = if is_selected {
-                        tokens.accent
+                        tokens.colors.primary
                     } else {
-                        tokens.text
+                        tokens.colors.text_primary
                     };
 
                     button(
@@ -523,7 +527,7 @@ impl Omnibar {
                     .style(move |_, status| {
                         let mut final_bg = bg_color;
                         if status == button::Status::Hovered && !is_selected {
-                            final_bg = tokens.text;
+                            final_bg = tokens.colors.text_primary;
                             final_bg.a = 0.1;
                         }
                         button::Style {

@@ -5,6 +5,7 @@ pub mod editor;
 pub mod explorer;
 pub mod jukebox;
 pub mod library;
+pub mod peak_ui;
 pub mod settings;
 pub mod store;
 pub mod terminal;

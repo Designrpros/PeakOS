@@ -115,10 +115,10 @@ fn control_button<'a>(
     button(
         column![
             text("○").size(24).style(move |_| text::Style {
-                color: Some(tokens.text),
+                color: Some(tokens.colors.text_primary),
             }),
             text(label).size(11).style(move |_| text::Style {
-                color: Some(tokens.text),
+                color: Some(tokens.colors.text_primary),
             })
         ]
         .spacing(8)
@@ -144,7 +144,7 @@ fn icon_button<'a>(
     tokens: ThemeTokens,
 ) -> Element<'a, ControlCenterMessage> {
     button(text("◎").size(24).style(move |_| text::Style {
-        color: Some(tokens.text),
+        color: Some(tokens.colors.text_primary),
     }))
     .on_press(ControlCenterMessage::CloseControlCenter)
     .padding(12)

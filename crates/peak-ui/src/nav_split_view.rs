@@ -5,6 +5,7 @@ use iced::{Element, Length, Renderer, Theme};
 pub struct NavigationSplitView<Message> {
     sidebar: Box<dyn View<Message>>,
     content: Box<dyn View<Message>>,
+    inspector: Option<Box<dyn View<Message>>>,
     force_sidebar_on_slim: bool,
     on_back: Option<Message>,
 }
@@ -17,9 +18,15 @@ impl<Message: Clone> NavigationSplitView<Message> {
         Self {
             sidebar: Box::new(sidebar),
             content: Box::new(content),
+            inspector: None,
             force_sidebar_on_slim: false,
             on_back: None,
         }
+    }
+
+    pub fn inspector(mut self, inspector: impl View<Message> + 'static) -> Self {
+        self.inspector = Some(Box::new(inspector));
+        self
     }
 
     pub fn force_sidebar_on_slim(mut self, force: bool) -> Self {
@@ -52,33 +59,32 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .style(move |_| container::Style {
-                        background: Some(theme.background.into()),
-                        text_color: Some(theme.text),
+                        background: Some(theme.colors.background.into()),
+                        text_color: Some(theme.colors.text_primary),
                         ..Default::default()
                     })
                     .into()
             } else {
                 // Mobile Content View (with optional back button)
-                let mut content_stack: iced::widget::Column<'static, Message, Theme, Renderer> =
-                    column![]
-                        .spacing(0)
-                        .width(Length::Fill)
-                        .height(Length::Fill);
+                let mut content_col = column![]
+                    .spacing(0)
+                    .width(Length::Fill)
+                    .height(Length::Fill);
 
                 if let Some(back_msg) = self.on_back.clone() {
                     let back_button = crate::controls::Button::new("Back")
                         .icon("chevron_left")
-                        .style(crate::controls::ButtonStyle::Ghost)
+                        .variant(crate::modifiers::Variant::Ghost)
                         .on_press(back_msg)
                         .width(Length::Shrink)
                         .view(context);
 
-                    content_stack = content_stack.push(
+                    content_col = content_col.push(
                         container(back_button)
                             .padding([16, 20])
                             .width(Length::Fill)
                             .style(move |_| container::Style {
-                                background: Some(theme.background.into()),
+                                background: Some(theme.colors.background.into()),
                                 ..Default::default()
                             }),
                     );
@@ -91,73 +97,159 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                 .width(Length::Fill)
                 .height(Length::Fill);
 
-                content_stack = content_stack.push(
+                content_col = content_col.push(
                     container(content_view)
                         .width(Length::Fill)
                         .height(Length::Fill),
                 );
 
-                container(content_stack)
+                let base_content = container(content_col)
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .style(move |_| container::Style {
-                        background: Some(theme.background.into()),
-                        text_color: Some(theme.text),
+                        background: Some(theme.colors.background.into()),
+                        text_color: Some(theme.colors.text_primary),
                         ..Default::default()
-                    })
-                    .into()
+                    });
+
+                // Use Stack to support Inspector Overlay
+                let mut stack = iced::widget::stack![base_content];
+
+                if let Some(inspector) = &self.inspector {
+                    // Dimmed Background
+                    stack = stack.push(
+                        container(iced::widget::Space::new(Length::Fill, Length::Fill)).style(
+                            |_| container::Style {
+                                background: Some(
+                                    iced::Color {
+                                        a: 0.5,
+                                        ..iced::Color::BLACK
+                                    }
+                                    .into(),
+                                ),
+                                ..Default::default()
+                            },
+                        ),
+                    );
+
+                    // Sheet Content
+                    let sheet = container(crate::scroll_view::ScrollView::apply_style(
+                        iced::widget::scrollable(inspector.view(context)),
+                        &theme,
+                    ))
+                    .width(Length::Fill)
+                    .height(Length::FillPortion(1)) // Take up half screen? Or fixed height?
+                    .padding(16)
+                    .style(move |_| container::Style {
+                        background: Some(theme.colors.surface_variant.into()),
+                        border: iced::Border {
+                            radius: 16.0.into(), // Top corners rounded - simplified to all for now
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    });
+
+                    // Align to bottom
+                    stack = stack.push(
+                        container(column![
+                            // Push content down
+                            iced::widget::Space::new(Length::Fill, Length::FillPortion(1)),
+                            // The Sheet
+                            sheet.height(Length::FillPortion(1))
+                        ])
+                        .height(Length::Fill)
+                        .align_y(iced::alignment::Vertical::Bottom),
+                    );
+                }
+
+                stack.into()
             }
         } else {
-            // Desktop: Sidebar + Content
-            container(
-                row![
+            // Desktop Layout
+            let mut main_row = row![
+                // 1. Sidebar
+                container(
+                    crate::scroll_view::ScrollView::apply_style(
+                        iced::widget::scrollable(self.sidebar.view(context)),
+                        &theme,
+                    )
+                    .height(Length::Fill)
+                )
+                .width(Length::Fixed(260.0))
+                .height(Length::Fill)
+                .style(move |_| container::Style {
+                    background: Some(if theme.colors.background.r < 0.1 {
+                        iced::Color::from_rgb8(28, 28, 30).into()
+                    } else {
+                        let mut c = theme.colors.surface;
+                        c.a = theme.glass_opacity;
+                        c.into()
+                    }),
+                    border: iced::Border {
+                        color: theme.colors.divider,
+                        width: 1.0,
+                        ..Default::default()
+                    },
+                    text_color: Some(theme.colors.text_primary),
+                    ..Default::default()
+                }),
+                // 2. Content
+                container(
+                    crate::scroll_view::ScrollView::apply_style(
+                        iced::widget::scrollable(self.content.view(context)),
+                        &theme,
+                    )
+                    .height(Length::Fill)
+                )
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .style(move |_| container::Style {
+                    background: Some(theme.colors.background.into()),
+                    text_color: Some(theme.colors.text_primary),
+                    ..Default::default()
+                })
+            ]
+            .height(Length::Fill);
+
+            // 3. Inspector (Optional)
+            if let Some(inspector) = &self.inspector {
+                main_row = main_row.push(
                     container(
                         crate::scroll_view::ScrollView::apply_style(
-                            iced::widget::scrollable(self.sidebar.view(context)),
+                            iced::widget::scrollable(inspector.view(context)),
                             &theme,
                         )
-                        .height(Length::Fill)
+                        .height(Length::Fill),
                     )
-                    .width(Length::Fixed(260.0))
+                    .width(Length::Fixed(280.0)) // Standard inspector width
                     .height(Length::Fill)
                     .style(move |_| container::Style {
-                        background: Some(if theme.background.r < 0.1 {
-                            iced::Color::from_rgb8(28, 28, 30).into()
+                        background: Some(if theme.colors.background.r < 0.1 {
+                            iced::Color::from_rgb8(28, 28, 30).into() // Darker sidebar match
                         } else {
-                            theme.glass_bg.into()
+                            let mut c = theme.colors.surface;
+                            c.a = 0.5; // Slightly more transparent than sidebar
+                            c.into()
                         }),
                         border: iced::Border {
-                            color: theme.divider,
+                            color: theme.colors.divider,
                             width: 1.0,
                             ..Default::default()
                         },
-                        text_color: Some(theme.text),
+                        text_color: Some(theme.colors.text_primary),
                         ..Default::default()
                     }),
-                    container(
-                        crate::scroll_view::ScrollView::apply_style(
-                            iced::widget::scrollable(self.content.view(context)),
-                            &theme,
-                        )
-                        .height(Length::Fill)
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .style(move |_| container::Style {
-                        background: Some(theme.background.into()),
-                        text_color: Some(theme.text),
-                        ..Default::default()
-                    })
-                ]
-                .height(Length::Fill),
-            )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .style(move |_| container::Style {
-                background: Some(theme.background.into()),
-                ..Default::default()
-            })
-            .into()
+                );
+            }
+
+            container(main_row)
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .style(move |_| container::Style {
+                    background: Some(theme.colors.background.into()),
+                    ..Default::default()
+                })
+                .into()
         }
     }
 }

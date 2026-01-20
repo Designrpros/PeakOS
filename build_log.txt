@@ -1,0 +1,369 @@
+warning: /Users/vegarberentsen/Documents/PeakOS/crates/peak-ui/Cargo.toml: file `/Users/vegarberentsen/Documents/PeakOS/crates/peak-ui/examples/showcase.rs` found to be present in multiple build targets:
+  * `bin` target `peak-ui-showcase`
+  * `example` target `showcase`
+warning: use of deprecated field `ThemeTokens::accent`: Use colors.primary instead
+   --> crates/peak-theme/src/lib.rs:126:13
+    |
+126 |             accent: colors.primary,
+    |             ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated field `ThemeTokens::background`: Use colors.background instead
+   --> crates/peak-theme/src/lib.rs:127:13
+    |
+127 |             background: colors.background,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-theme/src/lib.rs:128:13
+    |
+128 |             text: colors.text_primary,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `ThemeTokens::secondary_text`: Use colors.text_secondary instead
+   --> crates/peak-theme/src/lib.rs:129:13
+    |
+129 |             secondary_text: colors.text_secondary,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `ThemeTokens::glass_bg`: Glassmorphism properties moved to theme-level, use colors.surface with glass_opacity
+   --> crates/peak-theme/src/lib.rs:130:13
+    |
+130 |             glass_bg,
+    |             ^^^^^^^^
+
+warning: use of deprecated field `ThemeTokens::glass_border`: Use colors.border instead
+   --> crates/peak-theme/src/lib.rs:131:13
+    |
+131 |             glass_border: colors.border,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `ThemeTokens::inner_border`: Use colors.border with reduced opacity
+   --> crates/peak-theme/src/lib.rs:132:13
+    |
+132 | /             inner_border: Color {
+133 | |                 a: colors.border.a * 0.5,
+134 | |                 ..colors.border
+135 | |             },
+    | |_____________^
+
+warning: use of deprecated field `ThemeTokens::card_bg`: Use colors.surface or colors.surface_variant instead
+   --> crates/peak-theme/src/lib.rs:136:13
+    |
+136 |             card_bg: colors.surface,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `ThemeTokens::surface_bg`: Use colors.surface_variant instead
+   --> crates/peak-theme/src/lib.rs:137:13
+    |
+137 |             surface_bg: colors.surface_variant,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `ThemeTokens::divider`: Use colors.divider instead
+   --> crates/peak-theme/src/lib.rs:138:13
+    |
+138 |             divider: colors.divider,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `peak-theme` (lib) generated 10 warnings
+    Checking peak-ui v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-ui)
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:106:32
+    |
+106 |             Intent::Primary => theme.colors.primary,
+    |                                ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:107:34
+    |
+107 |             Intent::Secondary => theme.colors.secondary,
+    |                                  ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:108:32
+    |
+108 |             Intent::Success => theme.colors.success,
+    |                                ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:109:32
+    |
+109 |             Intent::Warning => theme.colors.warning,
+    |                                ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:110:31
+    |
+110 |             Intent::Danger => theme.colors.danger,
+    |                               ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:111:29
+    |
+111 |             Intent::Info => theme.colors.info,
+    |                             ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:112:32
+    |
+112 |             Intent::Neutral => theme.colors.text_primary, // Or specific neutral color
+    |                                ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:117:35
+    |
+117 |                 Variant::Solid => theme.colors.on_primary, // Should depend on intent bg contrast
+    |                                   ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:159:39
+    |
+157 |             .style(move |_theme, status| {
+    |                          ------ `_theme` defined here
+158 |                 let text_color = match variant {
+159 |                     Variant::Solid => theme.colors.on_primary, // Need robust verification
+    |                                       ^^^^^
+    |
+help: the leading underscore in `_theme` marks it as unused, consider renaming it to `theme`
+    |
+157 -             .style(move |_theme, status| {
+157 +             .style(move |theme, status| {
+    |
+
+error[E0425]: cannot find value `theme` in this scope
+   --> crates/peak-ui/src/controls.rs:212:32
+    |
+157 |             .style(move |_theme, status| {
+    |                          ------ `_theme` defined here
+...
+212 |                         color: theme.shadow_color,
+    |                                ^^^^^
+    |
+help: the leading underscore in `_theme` marks it as unused, consider renaming it to `theme`
+    |
+157 -             .style(move |_theme, status| {
+157 +             .style(move |theme, status| {
+    |
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/navigation.rs:66:14
+   |
+66 |             (tokens.text.r * 255.0) as u8,
+   |              ^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/navigation.rs:67:14
+   |
+67 |             (tokens.text.g * 255.0) as u8,
+   |              ^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/navigation.rs:68:14
+   |
+68 |             (tokens.text.b * 255.0) as u8
+   |              ^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/navigation.rs:89:39
+   |
+89 | ...                   ..tokens.text
+   |                         ^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/navigation.rs:91:40
+   |
+91 | ...                   value: tokens.text,
+   |                              ^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-ui/src/navigation.rs:101:37
+    |
+101 |                         let mut c = tokens.text;
+    |                                     ^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-ui/src/navigation.rs:125:17
+    |
+125 |                 tokens.text
+    |                 ^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-ui/src/navigation.rs:152:37
+    |
+152 |                         let mut c = tokens.text;
+    |                                     ^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::card_bg`: Use colors.surface or colors.surface_variant instead
+   --> crates/peak-ui/src/navigation.rs:177:34
+    |
+177 |                 background: Some(tokens.card_bg.into()),
+    |                                  ^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::card_bg`: Use colors.surface or colors.surface_variant instead
+  --> crates/peak-ui/src/containers.rs:45:38
+   |
+45 |                     background: Some(theme.card_bg.into()),
+   |                                      ^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::inner_border`: Use colors.border with reduced opacity
+  --> crates/peak-ui/src/containers.rs:48:32
+   |
+48 |                         color: theme.inner_border,
+   |                                ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/containers.rs:51:38
+   |
+51 |                     text_color: Some(theme.text),
+   |                                      ^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::glass_border`: Use colors.border instead
+  --> crates/peak-ui/src/containers.rs:60:24
+   |
+60 |                 color: theme.glass_border,
+   |                        ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-ui/src/containers.rs:108:28
+    |
+108 |                     .color(context.theme.text.scale_alpha(0.6)),
+    |                            ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-ui/src/controls.rs:265:28
+    |
+265 |                     .color(theme.text),
+    |                            ^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::accent`: Use colors.primary instead
+   --> crates/peak-ui/src/controls.rs:311:39
+    |
+311 |                         backgrounds: (theme.accent.into(), theme.surface_bg.into()),
+    |                                       ^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::surface_bg`: Use colors.surface_variant instead
+   --> crates/peak-ui/src/controls.rs:311:60
+    |
+311 |                         backgrounds: (theme.accent.into(), theme.surface_bg.into()),
+    |                                                            ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::divider`: Use colors.divider instead
+   --> crates/peak-ui/src/controls.rs:322:39
+    |
+322 |                         border_color: theme.divider,
+    |                                       ^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::card_bg`: Use colors.surface or colors.surface_variant instead
+  --> crates/peak-ui/src/forms.rs:53:50
+   |
+53 | ...                   background: Some(theme.card_bg.into()),
+   |                                        ^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::inner_border`: Use colors.border with reduced opacity
+  --> crates/peak-ui/src/forms.rs:56:44
+   |
+56 | ...                   color: theme.inner_border,
+   |                              ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/forms.rs:59:50
+   |
+59 | ...                   text_color: Some(theme.text),
+   |                                        ^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::glass_border`: Use colors.border instead
+  --> crates/peak-ui/src/forms.rs:67:36
+   |
+67 | ...                   color: theme.glass_border,
+   |                              ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::background`: Use colors.background instead
+  --> crates/peak-ui/src/nav_split_view.rs:55:42
+   |
+55 |                         background: Some(theme.background.into()),
+   |                                          ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/nav_split_view.rs:56:42
+   |
+56 |                         text_color: Some(theme.text),
+   |                                          ^^^^^^^^^^
+
+warning: use of deprecated method `controls::Button::<'a, Message>::style`: Use .intent() and .variant() instead
+  --> crates/peak-ui/src/nav_split_view.rs:71:26
+   |
+71 |                         .style(crate::controls::ButtonStyle::Ghost)
+   |                          ^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::background`: Use colors.background instead
+  --> crates/peak-ui/src/nav_split_view.rs:81:50
+   |
+81 | ...                   background: Some(theme.background.into()),
+   |                                        ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::background`: Use colors.background instead
+   --> crates/peak-ui/src/nav_split_view.rs:104:42
+    |
+104 |                         background: Some(theme.background.into()),
+    |                                          ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-ui/src/nav_split_view.rs:105:42
+    |
+105 |                         text_color: Some(theme.text),
+    |                                          ^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::background`: Use colors.background instead
+   --> crates/peak-ui/src/nav_split_view.rs:124:45
+    |
+124 |                         background: Some(if theme.background.r < 0.1 {
+    |                                             ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::glass_bg`: Glassmorphism properties moved to theme-level, use colors.surface with glass_opacity
+   --> crates/peak-ui/src/nav_split_view.rs:127:29
+    |
+127 | ...                   theme.glass_bg.into()
+    |                       ^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::divider`: Use colors.divider instead
+   --> crates/peak-ui/src/nav_split_view.rs:130:36
+    |
+130 | ...                   color: theme.divider,
+    |                              ^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-ui/src/nav_split_view.rs:134:42
+    |
+134 |                         text_color: Some(theme.text),
+    |                                          ^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::background`: Use colors.background instead
+   --> crates/peak-ui/src/nav_split_view.rs:147:42
+    |
+147 |                         background: Some(theme.background.into()),
+    |                                          ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+   --> crates/peak-ui/src/nav_split_view.rs:148:42
+    |
+148 |                         text_color: Some(theme.text),
+    |                                          ^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::background`: Use colors.background instead
+   --> crates/peak-ui/src/nav_split_view.rs:157:34
+    |
+157 |                 background: Some(theme.background.into()),
+    |                                  ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `peak_theme::ThemeTokens::text`: Use colors.text_primary instead
+  --> crates/peak-ui/src/scroll_view.rs:47:26
+   |
+47 |         let text_color = theme.text;
+   |                          ^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0425`.
+warning: `peak-ui` (lib) generated 36 warnings
+error: could not compile `peak-ui` (lib) due to 10 previous errors; 36 warnings emitted

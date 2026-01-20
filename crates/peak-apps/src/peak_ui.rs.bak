@@ -1,0 +1,415 @@
+use iced::{Element, Length, Renderer, Task};
+use peak_core::app_traits::{PeakApp, ShellContext};
+use peak_core::registry::ShellMode;
+use peak_theme::{ThemeTokens, ThemeTone};
+use peak_ui::atoms::Rectangle;
+use peak_ui::prelude::*;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Category {
+    Foundations,
+    Components,
+    Layouts,
+}
+
+impl Category {
+    fn title(&self) -> &'static str {
+        match self {
+            Self::Foundations => "Foundations",
+            Self::Components => "Components",
+            Self::Layouts => "Layouts",
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct CatalogItem {
+    pub id: &'static str,
+    pub title: &'static str,
+    pub description: &'static str,
+    pub category: Category,
+    pub render: fn(&Context) -> Box<dyn View<Message>>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Message {
+    ItemSelected(&'static str),
+    ToggleInspector,
+    // Control States
+    ToggleChanged(bool),
+    SliderChanged(f32),
+    StepperChanged(i32),
+    TextChanged(String),
+    None,
+}
+
+pub struct PeakUIApp {
+    selected_id: Option<&'static str>,
+    inspector_open: bool,
+    items: Vec<CatalogItem>,
+    // Interactive State
+    toggle_value: bool,
+    slider_value: f32,
+    stepper_value: i32,
+    text_value: String,
+}
+
+impl PeakUIApp {
+    pub fn new() -> Self {
+        Self {
+            selected_id: Some("typography"),
+            inspector_open: true,
+            items: Self::build_catalog(),
+            toggle_value: false,
+            slider_value: 50.0,
+            stepper_value: 1,
+            text_value: String::new(),
+        }
+    }
+
+    fn build_catalog() -> Vec<CatalogItem> {
+        vec![
+            CatalogItem {
+                id: "typography",
+                title: "Typography",
+                description: "The type scale used throughout PeakOS.",
+                category: Category::Foundations,
+                render: render_typography,
+            },
+            CatalogItem {
+                id: "colors",
+                title: "Colors",
+                description: "Semantic color palette.",
+                category: Category::Foundations,
+                render: render_colors,
+            },
+            // Controls
+            CatalogItem {
+                id: "controls",
+                title: "Basic Controls",
+                description: "Interactive elements like Toggles, Sliders, and Steppers.",
+                category: Category::Components,
+                render: render_controls,
+            },
+            // Content
+            CatalogItem {
+                id: "inputs",
+                title: "Text Inputs",
+                description: "Fields for user text entry.",
+                category: Category::Components,
+                render: render_inputs,
+            },
+            CatalogItem {
+                id: "content",
+                title: "Content",
+                description: "Basic building blocks: Icons, Images, and Dividers.",
+                category: Category::Components,
+                render: render_content,
+            },
+        ]
+    }
+}
+
+fn render_typography(_ctx: &Context) -> Box<dyn View<Message>> {
+    Box::new(
+        VStack::new()
+            .spacing(24.0)
+            .padding(32.0)
+            .push(Text::new("Large Title").large_title())
+            .push(Text::new("Title 1").title1())
+            .push(Text::new("Title 2").title2())
+            .push(Text::new("Title 3").title3())
+            .push(Text::new("Headline").headline())
+            .push(Text::new("Body").body())
+            .push(Text::new("Callout").callout())
+            .push(Text::new("Subheadline").subheadline())
+            .push(Text::new("Footnote").footnote())
+            .push(Text::new("Caption 1").caption1())
+            .push(Text::new("Caption 2").caption2()),
+    )
+}
+
+fn render_colors(ctx: &Context) -> Box<dyn View<Message>> {
+    let colors = ctx.theme.colors;
+    Box::new(
+        VStack::new()
+            .spacing(16.0)
+            .padding(32.0)
+            .push(Text::new("Semantic Colors").title2())
+            .push(
+                ResponsiveGrid::new()
+                    .spacing(12.0)
+                    .push(color_swatch("Primary", colors.primary))
+                    .push(color_swatch("Background", colors.background))
+                    .push(color_swatch("Surface", colors.surface))
+                    .push(color_swatch("Text Primary", colors.text_primary)),
+            ),
+    )
+}
+
+fn color_swatch(name: &str, color: iced::Color) -> impl View<Message> {
+    VStack::new()
+        .spacing(8.0)
+        .push(
+            Rectangle::new(Length::Fill, Length::Fixed(80.0))
+                .color(color)
+                .corner_radius(12.0),
+        )
+        .push(Text::new(name).caption1().center())
+}
+
+impl Default for PeakUIApp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl PeakApp for PeakUIApp {
+    type Message = Message;
+
+    fn title(&self) -> String {
+        "PeakUI".into()
+    }
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _context: &dyn ShellContext,
+    ) -> Task<Self::Message> {
+        match message {
+            Message::ItemSelected(id) => {
+                self.selected_id = Some(id);
+                Task::none()
+            }
+            Message::ToggleInspector => {
+                self.inspector_open = !self.inspector_open;
+                Task::none()
+            }
+            Message::ToggleChanged(val) => {
+                self.toggle_value = val;
+                Task::none()
+            }
+            Message::SliderChanged(val) => {
+                self.slider_value = val;
+                Task::none()
+            }
+            Message::StepperChanged(val) => {
+                self.stepper_value = val;
+                Task::none()
+            }
+            Message::TextChanged(val) => {
+                self.text_value = val;
+                Task::none()
+            }
+            _ => Task::none(),
+        }
+    }
+
+    fn view(&self, theme: &peak_core::theme::Theme) -> Element<'_, Self::Message> {
+        let tone = match theme {
+            peak_core::theme::Theme::Dark => ThemeTone::Dark,
+            peak_core::theme::Theme::Light => ThemeTone::Light,
+            _ => ThemeTone::Dark,
+        };
+
+        let mode = ShellMode::Desktop;
+
+        let tokens = ThemeTokens::get(mode, tone);
+
+        // Clone state for closure
+        let items = self.items.clone();
+        let selected_id = self.selected_id;
+        let inspector_open = self.inspector_open;
+
+        responsive(mode, tokens, move |context| {
+            // Sidebar Content
+            let sidebar_content = VStack::new()
+                .padding(16.0)
+                .spacing(24.0)
+                .push(
+                    VStack::new()
+                        .spacing(4.0)
+                        .push(Text::new("PeakUI").large_title())
+                        .push(Text::new("Reference").secondary()),
+                )
+                .push(render_category(&items, selected_id, Category::Foundations))
+                .push(render_category(&items, selected_id, Category::Components))
+                .push(render_category(&items, selected_id, Category::Layouts));
+
+            // Detail Content
+            let detail_view: Box<dyn View<Message>> = if let Some(sid) = selected_id {
+                if let Some(item) = items.iter().find(|i| i.id == sid) {
+                    Box::new(
+                        VStack::new()
+                            .width(Length::Fill)
+                            .push(
+                                // Header
+                                HStack::new()
+                                    .padding(32.0)
+                                    .align_y(iced::Alignment::Center)
+                                    .push(
+                                        VStack::new()
+                                            .spacing(8.0)
+                                            .width(Length::Fill)
+                                            .push(Text::new(item.title).large_title())
+                                            .push(Text::new(item.description).body().secondary()),
+                                    )
+                                    .push(
+                                        Button::new("Inspector")
+                                            .icon("layout_sidebar_right")
+                                            .variant(Variant::Ghost)
+                                            .on_press(Message::ToggleInspector),
+                                    ),
+                            )
+                            .push(
+                                // Render the item's helper
+                                (item.render)(&context),
+                            ),
+                    )
+                } else {
+                    Box::new(Text::new("Item not found").large_title().center())
+                }
+            } else {
+                Box::new(Text::new("Select an item").large_title().center())
+            };
+
+            let mut nav = NavigationSplitView::new(sidebar_content, detail_view);
+
+            if inspector_open {
+                nav = nav.inspector(
+                    VStack::new()
+                        .padding(16.0)
+                        .push(Text::new("Inspector").headline())
+                        .push(Text::new("Controls coming soon...").secondary().caption1()),
+                );
+            }
+
+            nav.view(&context)
+        })
+    }
+
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        iced::Subscription::none()
+    }
+}
+
+fn render_category(
+    items: &[CatalogItem],
+    selected_id: Option<&str>,
+    category: Category,
+) -> impl View<Message> {
+    let category_items: Vec<_> = items
+        .iter()
+        .filter(|i| i.category == category)
+        .map(|item| {
+            let is_selected = Some(item.id) == selected_id;
+
+            Button::new(item.title)
+                .width(Length::Fill)
+                .intent(if is_selected {
+                    Intent::Primary
+                } else {
+                    Intent::Neutral
+                })
+                .variant(if is_selected {
+                    Variant::Solid
+                } else {
+                    Variant::Ghost
+                })
+                .on_press(Message::ItemSelected(item.id))
+        })
+        .collect();
+
+    if category_items.is_empty() {
+        return VStack::new();
+    }
+
+    let mut list = VStack::new().spacing(4.0);
+    for item in category_items {
+        list = list.push(item);
+    }
+
+    VStack::new()
+        .spacing(8.0)
+        .push(Text::new(category.title()).caption1().secondary())
+        .push(list)
+}
+
+fn render_controls(_ctx: &Context, app: &PeakUIApp) -> Box<dyn View<Message>> {
+    Box::new(
+        VStack::new()
+            .spacing(24.0)
+            .padding(32.0)
+            .push(Text::new("Toggles").title2())
+            .push(Toggle::new(
+                "Airplane Mode",
+                app.toggle_value,
+                Message::ToggleChanged,
+            ))
+            .push(Text::new("Sliders").title2())
+            .push(
+                Slider::new(0.0..=100.0, app.slider_value, Message::SliderChanged)
+                    .width(Length::Fixed(200.0)),
+            )
+            .push(Text::new("Steppers").title2())
+            .push(Stepper::new(
+                "Quantity",
+                app.stepper_value,
+                Message::StepperChanged,
+            )),
+    )
+}
+
+fn render_inputs(_ctx: &Context, app: &PeakUIApp) -> Box<dyn View<Message>> {
+    Box::new(
+        VStack::new()
+            .spacing(24.0)
+            .padding(32.0)
+            .push(Text::new("Text Fields").title2())
+            .push(
+                TextField::new("Username", app.text_value.clone(), Message::TextChanged)
+                    .placeholder("Enter username")
+                    .width(Length::Fixed(300.0)),
+            )
+            .push(
+                TextField::new("Password", "", |_| Message::None)
+                    .placeholder("Enter password")
+                    .secure(true)
+                    .width(Length::Fixed(300.0)),
+            ),
+    )
+}
+
+fn render_content(_ctx: &Context, _app: &PeakUIApp) -> Box<dyn View<Message>> {
+    Box::new(
+        VStack::new()
+            .spacing(24.0)
+            .padding(32.0)
+            .push(Text::new("Icons").title2())
+            .push(
+                HStack::new()
+                    .spacing(16.0)
+                    .push(Icon::new("settings").size(32.0))
+                    .push(Icon::new("user").size(32.0))
+                    .push(
+                        Icon::new("home")
+                            .size(32.0)
+                            .color(iced::Color::from_rgb(1.0, 0.0, 0.5)),
+                    ),
+            )
+            .push(Divider::new())
+            .push(Text::new("Images").title2())
+            // Placeholder image path
+            .push(
+                Image::new(std::path::PathBuf::from("assets/images/placeholder.png"))
+                    .width(Length::Fixed(200.0))
+                    .height(Length::Fixed(150.0))
+                    .corner_radius(12.0),
+            )
+            .push(
+                Text::new("Note: Image requires valid asset path")
+                    .caption1()
+                    .secondary(),
+            ),
+    )
+}

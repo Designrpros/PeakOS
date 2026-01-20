@@ -63,9 +63,9 @@ where
         let tokens = self.tokens;
         let hex_text = format!(
             "#{:02X}{:02X}{:02X}",
-            (tokens.text.r * 255.0) as u8,
-            (tokens.text.g * 255.0) as u8,
-            (tokens.text.b * 255.0) as u8
+            (tokens.colors.text_primary.r * 255.0) as u8,
+            (tokens.colors.text_primary.g * 255.0) as u8,
+            (tokens.colors.text_primary.b * 255.0) as u8
         );
         let mut content = column![].spacing(4);
 
@@ -86,9 +86,9 @@ where
                                 icon: Color::TRANSPARENT,
                                 placeholder: iced::Color {
                                     a: 0.5,
-                                    ..tokens.text
+                                    ..tokens.colors.text_primary
                                 },
-                                value: tokens.text,
+                                value: tokens.colors.text_primary,
                                 selection: Color::from_rgba(0.0, 0.5, 1.0, 0.3),
                             }),
                     ]
@@ -98,7 +98,7 @@ where
                 )
                 .style(move |_| container::Style {
                     background: Some({
-                        let mut c = tokens.text;
+                        let mut c = tokens.colors.text_primary;
                         c.a = 0.05;
                         c.into()
                     }),
@@ -122,7 +122,7 @@ where
             let text_color = if item.is_selected {
                 Color::WHITE
             } else {
-                tokens.text
+                tokens.colors.text_primary
             };
 
             let icon_color_hex = if item.is_selected {
@@ -149,7 +149,7 @@ where
                     let final_bg = if item.is_selected {
                         bg
                     } else if status == iced::widget::button::Status::Hovered {
-                        let mut c = tokens.text;
+                        let mut c = tokens.colors.text_primary;
                         c.a = 0.05;
                         c
                     } else {
@@ -174,7 +174,7 @@ where
             .height(Length::Fill)
             .padding(12)
             .style(move |_| container::Style {
-                background: Some(tokens.card_bg.into()),
+                background: Some(tokens.colors.surface_variant.into()),
                 ..Default::default()
             })
             .into()

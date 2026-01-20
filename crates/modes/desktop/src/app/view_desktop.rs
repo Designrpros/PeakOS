@@ -601,7 +601,7 @@ impl PeakNative {
                     container(
                         button(text(""))
                             .style(move |_, _| button::Style {
-                                background: Some(self.tokens.background.into()),
+                                background: Some(self.tokens.colors.background.into()),
                                 ..Default::default()
                             })
                             .on_press(Message::ToggleAppGrid)
@@ -660,8 +660,8 @@ impl PeakNative {
 
         if self.show_system_menu || self.show_reality_menu || self.show_wifi_menu {
             let tokens = self.tokens;
-            let text_color = tokens.text;
-            let bg = tokens.glass_bg;
+            let text_color = tokens.colors.text_primary;
+            let bg = tokens.colors.surface;
 
             let menu_button =
                 move |label: String, msg: Message, active: bool| -> Element<'_, Message> {
@@ -674,11 +674,11 @@ impl PeakNative {
                     .style(move |_, status| {
                         let is_hovered = status == iced::widget::button::Status::Hovered;
                         let final_bg = if active {
-                            let mut c = tokens.accent;
+                            let mut c = tokens.colors.primary;
                             c.a = 0.2;
                             c
                         } else if is_hovered {
-                            let mut c = tokens.text;
+                            let mut c = tokens.colors.text_primary;
                             c.a = 0.1;
                             c
                         } else {
@@ -687,7 +687,11 @@ impl PeakNative {
 
                         button::Style {
                             background: Some(final_bg.into()),
-                            text_color: if active { tokens.accent } else { tokens.text },
+                            text_color: if active {
+                                tokens.colors.primary
+                            } else {
+                                tokens.colors.text_primary
+                            },
                             border: iced::Border {
                                 radius: 4.0.into(),
                                 ..Default::default()

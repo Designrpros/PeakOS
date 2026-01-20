@@ -104,6 +104,9 @@ impl PeakNative {
                 }
                 Task::none()
             }
+            Message::PeakUI(msg) => {
+                self.forward_to_app(peak_core::registry::AppId::PeakUI, Message::PeakUI(msg))
+            }
             Message::CloseAlert => {
                 self.alert = None;
                 Task::none()
@@ -533,6 +536,9 @@ impl PeakNative {
                 self.current_page = page;
                 Task::none()
             }
+            Message::TogglePeakUI => {
+                self.toggle_app(peak_core::registry::AppId::PeakUI, 1000.0, 800.0)
+            }
             Message::DockInteraction(dock_msg) => {
                 match dock_msg {
                     dock::DockMessage::LaunchMedia(item) => {
@@ -580,6 +586,9 @@ impl PeakNative {
                         match app_id {
                             peak_core::registry::AppId::Terminal => {
                                 return Task::done(Message::ToggleTerminal);
+                            }
+                            peak_core::registry::AppId::PeakUI => {
+                                return Task::done(Message::TogglePeakUI);
                             }
                             peak_core::registry::AppId::Browser => {
                                 return Task::done(Message::LaunchBrowser(

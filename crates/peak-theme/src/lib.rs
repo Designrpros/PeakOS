@@ -1,3 +1,9 @@
+mod colors;
+mod themes;
+
+pub use colors::PeakColors;
+pub use themes::PeakTheme;
+
 use iced::Color;
 use peak_core::registry::ShellMode;
 
@@ -7,237 +13,143 @@ pub enum ThemeTone {
     Dark,
 }
 
+/// Theme tokens for PeakUI components
+///
+/// This combines semantic colors (PeakColors) with visual properties
+/// like blur, shadows, and spacing.
 #[derive(Debug, Clone, Copy)]
 pub struct ThemeTokens {
-    pub accent: Color,
-    pub background: Color,
-    pub text: Color,
-    pub secondary_text: Color,
-    pub glass_bg: Color,
-    pub glass_border: Color,
-    pub inner_border: Color,
+    // === Semantic Colors ===
+    /// Peak Colors semantic color system
+    pub colors: PeakColors,
+
+    // === Visual Properties ===
+    /// Glassmorphism opacity (0.0 - 1.0)
     pub glass_opacity: f32,
-    pub card_bg: Color,
-    pub surface_bg: Color,
+    /// Blur radius for glass effects
+    pub blur_radius: f32,
+    /// Border radius for rounded corners
     pub radius: f32,
+    /// Shadow color
     pub shadow_color: Color,
+    /// Shadow offset [x, y]
     pub shadow_offset: [f32; 2],
+    /// Shadow blur radius
     pub shadow_blur: f32,
+    /// Base spacing unit (for consistent spacing)
+    pub spacing_unit: f32,
+
+    // === Backward Compatibility (Deprecated) ===
+    // These are kept for backward compatibility and will be removed in a future version
+    #[deprecated(note = "Use colors.primary instead")]
+    pub accent: Color,
+
+    #[deprecated(note = "Use colors.background instead")]
+    pub background: Color,
+
+    #[deprecated(note = "Use colors.text_primary instead")]
+    pub text: Color,
+
+    #[deprecated(note = "Use colors.text_secondary instead")]
+    pub secondary_text: Color,
+
+    #[deprecated(
+        note = "Glassmorphism properties moved to theme-level, use colors.surface with glass_opacity"
+    )]
+    pub glass_bg: Color,
+
+    #[deprecated(note = "Use colors.border instead")]
+    pub glass_border: Color,
+
+    #[deprecated(note = "Use colors.border with reduced opacity")]
+    pub inner_border: Color,
+
+    #[deprecated(note = "Use colors.surface or colors.surface_variant instead")]
+    pub card_bg: Color,
+
+    #[deprecated(note = "Use colors.surface_variant instead")]
+    pub surface_bg: Color,
+
+    #[deprecated(note = "Use colors.divider instead")]
     pub divider: Color,
 }
 
 impl ThemeTokens {
-    pub fn get(mode: ShellMode, tone: ThemeTone) -> Self {
-        match mode {
-            ShellMode::Desktop => match tone {
-                ThemeTone::Light => Self {
-                    accent: Color::from_rgb8(0, 122, 255),
-                    background: Color::from_rgb8(242, 242, 247),
-                    text: Color::from_rgb8(25, 25, 25),
-                    secondary_text: Color::from_rgba8(25, 25, 25, 0.6),
-                    glass_bg: Color::from_rgba8(255, 255, 255, 0.7),
-                    glass_border: Color::from_rgba8(0, 0, 0, 0.1),
-                    inner_border: Color::from_rgba8(255, 255, 255, 0.6),
-                    glass_opacity: 0.7,
-                    card_bg: Color::from_rgba8(255, 255, 255, 0.45),
-                    surface_bg: Color::from_rgba8(0, 0, 0, 0.03),
-                    radius: 10.0,
-                    shadow_color: Color::from_rgba(0.0, 0.0, 0.0, 0.08),
-                    shadow_offset: [0.0, 4.0],
-                    shadow_blur: 12.0,
-                    divider: Color::from_rgba(0.0, 0.0, 0.0, 0.08),
-                },
-                ThemeTone::Dark => Self {
-                    accent: Color::from_rgb8(10, 132, 255),
-                    background: Color::from_rgb8(16, 16, 18), // Deeper #101012
-                    text: Color::from_rgb8(242, 242, 247),
-                    secondary_text: Color::from_rgba8(242, 242, 247, 0.6),
-                    glass_bg: Color::from_rgba8(15, 15, 17, 0.8), // Truer dark glass
-                    glass_border: Color::from_rgba8(255, 255, 255, 0.1),
-                    inner_border: Color::from_rgba8(255, 255, 255, 0.05),
-                    glass_opacity: 0.8,
-                    card_bg: Color::from_rgba8(28, 28, 30, 0.8),
-                    surface_bg: Color::from_rgba8(255, 255, 255, 0.03),
-                    radius: 10.0,
-                    shadow_color: Color::from_rgba(0.0, 0.0, 0.0, 0.4),
-                    shadow_offset: [0.0, 8.0],
-                    shadow_blur: 24.0,
-                    divider: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-                },
+    /// Create theme tokens from a PeakTheme and tone
+    pub fn new(theme: PeakTheme, tone: ThemeTone) -> Self {
+        let colors = theme.colors(tone);
+
+        // Theme-specific visual properties
+        let (glass_opacity, blur_radius, radius, shadow_blur, spacing_unit) = match theme {
+            PeakTheme::Cupertino => (0.8, 20.0, 10.0, 12.0, 8.0),
+            PeakTheme::Gaming => (0.6, 15.0, 8.0, 16.0, 12.0),
+            PeakTheme::MediaCenter => (0.8, 30.0, 16.0, 40.0, 16.0),
+            PeakTheme::Ambient => (0.4, 25.0, 30.0, 20.0, 16.0),
+            PeakTheme::Terminal => (0.9, 0.0, 0.0, 0.0, 8.0),
+            PeakTheme::Automotive => (1.0, 0.0, 40.0, 10.0, 16.0),
+            PeakTheme::Smart => (0.9, 20.0, 24.0, 15.0, 12.0),
+            PeakTheme::Material => (1.0, 0.0, 4.0, 8.0, 8.0),
+            PeakTheme::Fluent => (0.9, 30.0, 4.0, 8.0, 8.0),
+            PeakTheme::HighContrast => (1.0, 0.0, 0.0, 0.0, 8.0),
+        };
+
+        let shadow_offset = match theme {
+            PeakTheme::MediaCenter => [0.0, 20.0],
+            PeakTheme::Ambient => [0.0, 10.0],
+            PeakTheme::Terminal | PeakTheme::HighContrast | PeakTheme::Automotive => [0.0, 0.0],
+            _ => [0.0, 4.0],
+        };
+
+        let shadow_color = if colors.is_dark() {
+            Color::from_rgba(0.0, 0.0, 0.0, 0.5)
+        } else {
+            Color::from_rgba(0.0, 0.0, 0.0, 0.15)
+        };
+
+        // Backward compatibility aliases
+        let glass_bg = Color {
+            a: glass_opacity,
+            ..colors.surface
+        };
+
+        Self {
+            colors,
+            glass_opacity,
+            blur_radius,
+            radius,
+            shadow_color,
+            shadow_offset,
+            shadow_blur,
+            spacing_unit,
+
+            // Backward compatibility (deprecated)
+            accent: colors.primary,
+            background: colors.background,
+            text: colors.text_primary,
+            secondary_text: colors.text_secondary,
+            glass_bg,
+            glass_border: colors.border,
+            inner_border: Color {
+                a: colors.border.a * 0.5,
+                ..colors.border
             },
-            ShellMode::Mobile => match tone {
-                ThemeTone::Light => Self {
-                    accent: Color::from_rgb8(255, 45, 85),
-                    background: Color::from_rgb8(255, 255, 255),
-                    text: Color::BLACK,
-                    secondary_text: Color::from_rgba(0.0, 0.0, 0.0, 0.5),
-                    glass_bg: Color::from_rgba(1.0, 1.0, 1.0, 0.9),
-                    glass_border: Color::from_rgba(0.0, 0.0, 0.0, 0.1),
-                    inner_border: Color::from_rgba(1.0, 1.0, 1.0, 0.5),
-                    glass_opacity: 0.9,
-                    card_bg: Color::from_rgba(0.95, 0.95, 0.95, 1.0),
-                    surface_bg: Color::from_rgba(0.0, 0.0, 0.0, 0.02),
-                    radius: 20.0,
-                    shadow_color: Color::from_rgba(0.0, 0.0, 0.0, 0.1),
-                    shadow_offset: [0.0, 4.0],
-                    shadow_blur: 8.0,
-                    divider: Color::from_rgba(0.0, 0.0, 0.0, 0.05),
-                },
-                ThemeTone::Dark => Self {
-                    accent: Color::from_rgb8(255, 55, 95),
-                    background: Color::from_rgb8(10, 10, 12), // Deep black #0A0A0C
-                    text: Color::WHITE,
-                    secondary_text: Color::from_rgba(1.0, 1.0, 1.0, 0.5),
-                    glass_bg: Color::from_rgba(0.05, 0.05, 0.07, 0.9), // Darker glass
-                    glass_border: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-                    inner_border: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-                    glass_opacity: 0.9,
-                    card_bg: Color::from_rgba(0.12, 0.12, 0.14, 1.0),
-                    surface_bg: Color::from_rgba(1.0, 1.0, 1.0, 0.02),
-                    radius: 20.0,
-                    shadow_color: Color::from_rgba(0.0, 0.0, 0.0, 0.5),
-                    shadow_offset: [0.0, 8.0],
-                    shadow_blur: 16.0,
-                    divider: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-                },
-            },
-            ShellMode::Console => Self {
-                accent: Color::from_rgb8(50, 255, 50),
-                background: Color::from_rgb8(10, 10, 10),
-                text: Color::from_rgb8(240, 240, 240),
-                secondary_text: Color::from_rgba(0.0, 1.0, 0.0, 0.5),
-                glass_bg: Color::from_rgba(0.0, 0.0, 0.0, 0.6),
-                glass_border: Color::from_rgba(0.2, 1.0, 0.2, 0.3),
-                inner_border: Color::from_rgba(0.2, 1.0, 0.2, 0.1),
-                glass_opacity: 0.6,
-                card_bg: Color::from_rgba(0.1, 0.1, 0.1, 0.8),
-                surface_bg: Color::from_rgba(0.0, 1.0, 0.0, 0.05),
-                radius: 4.0,
-                shadow_color: Color::from_rgba(0.0, 1.0, 0.0, 0.1),
-                shadow_offset: [0.0, 0.0],
-                shadow_blur: 4.0,
-                divider: Color::from_rgba(0.0, 1.0, 0.0, 0.2),
-            },
-            ShellMode::Fireplace => Self {
-                accent: Color::from_rgb8(255, 150, 50),
-                background: Color::from_rgb8(20, 10, 5),
-                text: Color::from_rgb8(255, 230, 200),
-                secondary_text: Color::from_rgba(1.0, 0.6, 0.0, 0.5),
-                glass_bg: Color::from_rgba(0.1, 0.05, 0.0, 0.4),
-                glass_border: Color::from_rgba(1.0, 0.6, 0.0, 0.1),
-                inner_border: Color::from_rgba(1.0, 0.6, 0.0, 0.05),
-                glass_opacity: 0.4,
-                card_bg: Color::from_rgba(1.0, 0.6, 0.0, 0.05),
-                surface_bg: Color::from_rgba(1.0, 0.6, 0.0, 0.02),
-                radius: 30.0,
-                shadow_color: Color::from_rgba(1.0, 0.4, 0.0, 0.1),
-                shadow_offset: [0.0, 10.0],
-                shadow_blur: 20.0,
-                divider: Color::from_rgba(1.0, 0.6, 0.0, 0.1),
-            },
-            ShellMode::Robot => Self {
-                accent: Color::from_rgb8(255, 200, 0),
-                background: Color::from_rgb8(30, 30, 35),
-                text: Color::from_rgb8(200, 200, 210),
-                secondary_text: Color::from_rgba8(200, 200, 210, 0.5),
-                glass_bg: Color::from_rgba(0.1, 0.1, 0.15, 0.95),
-                glass_border: Color::from_rgba(1.0, 0.8, 0.0, 0.5),
-                inner_border: Color::from_rgba(1.0, 0.8, 0.0, 0.2),
-                glass_opacity: 0.95,
-                card_bg: Color::from_rgba(0.2, 0.2, 0.25, 1.0),
-                surface_bg: Color::from_rgba(1.0, 0.8, 0.0, 0.05),
-                radius: 0.0,
-                shadow_color: Color::from_rgba(0.0, 0.0, 0.0, 0.4),
-                shadow_offset: [0.0, 0.0],
-                shadow_blur: 0.0,
-                divider: Color::from_rgba(1.0, 0.8, 0.0, 0.1),
-            },
-            ShellMode::Server => Self {
-                accent: Color::from_rgb8(0, 255, 65),
-                background: Color::from_rgb8(5, 5, 5),
-                text: Color::from_rgb8(0, 255, 65),
-                secondary_text: Color::from_rgba8(0, 255, 65, 0.5),
-                glass_bg: Color::from_rgba(0.0, 0.1, 0.0, 0.9),
-                glass_border: Color::from_rgba(0.0, 1.0, 0.0, 0.2),
-                inner_border: Color::from_rgba(0.0, 1.0, 0.0, 0.1),
-                glass_opacity: 0.9,
-                card_bg: Color::from_rgba(0.0, 0.0, 0.0, 1.0),
-                surface_bg: Color::from_rgba(0.0, 1.0, 0.0, 0.05),
-                radius: 2.0,
-                shadow_color: Color::TRANSPARENT,
-                shadow_offset: [0.0, 0.0],
-                shadow_blur: 0.0,
-                divider: Color::from_rgba(0.0, 1.0, 0.0, 0.3),
-            },
-            ShellMode::SmartHome => Self {
-                accent: Color::from_rgb8(100, 210, 255),
-                background: Color::from_rgb8(250, 252, 255),
-                text: Color::from_rgb8(40, 60, 80),
-                secondary_text: Color::from_rgba8(40, 60, 80, 0.5),
-                glass_bg: Color::from_rgba(1.0, 1.0, 1.0, 0.9),
-                glass_border: Color::from_rgba(0.5, 0.8, 1.0, 0.2),
-                inner_border: Color::from_rgba(1.0, 1.0, 1.0, 1.0),
-                glass_opacity: 0.9,
-                card_bg: Color::WHITE,
-                surface_bg: Color::from_rgba(0.0, 0.3, 0.6, 0.02),
-                radius: 24.0,
-                shadow_color: Color::from_rgba(0.0, 0.3, 0.6, 0.05),
-                shadow_offset: [0.0, 6.0],
-                shadow_blur: 15.0,
-                divider: Color::from_rgba(0.0, 0.0, 0.0, 0.03),
-            },
-            ShellMode::TV => Self {
-                accent: Color::from_rgb8(255, 255, 255),
-                background: Color::from_rgb8(15, 15, 25),
-                text: Color::WHITE,
-                secondary_text: Color::from_rgba(1.0, 1.0, 1.0, 0.6),
-                glass_bg: Color::from_rgba(0.0, 0.0, 0.0, 0.8),
-                glass_border: Color::from_rgba(1.0, 1.0, 1.0, 0.2),
-                inner_border: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-                glass_opacity: 0.8,
-                card_bg: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-                surface_bg: Color::from_rgba(1.0, 1.0, 1.0, 0.05),
-                radius: 16.0,
-                shadow_color: Color::from_rgba(0.0, 0.0, 0.0, 0.8),
-                shadow_offset: [0.0, 20.0],
-                shadow_blur: 40.0,
-                divider: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
-            },
-            ShellMode::Auto => Self {
-                accent: Color::from_rgb8(255, 0, 0),
-                background: Color::from_rgb8(10, 10, 10),
-                text: Color::WHITE,
-                secondary_text: Color::from_rgba(1.0, 0.0, 0.0, 0.7),
-                glass_bg: Color::from_rgba(0.1, 0.1, 0.1, 1.0),
-                glass_border: Color::from_rgba(1.0, 0.0, 0.0, 0.3),
-                inner_border: Color::from_rgba(1.0, 0.0, 0.0, 0.1),
-                glass_opacity: 1.0,
-                card_bg: Color::from_rgba(0.2, 0.2, 0.2, 1.0),
-                surface_bg: Color::from_rgba(1.0, 0.0, 0.0, 0.05),
-                radius: 40.0,
-                shadow_color: Color::BLACK,
-                shadow_offset: [0.0, 0.0],
-                shadow_blur: 10.0,
-                divider: Color::from_rgba(1.0, 0.0, 0.0, 0.2),
-            },
-            ShellMode::Kiosk => Self {
-                accent: Color::from_rgb8(0, 0, 0),
-                background: Color::WHITE,
-                text: Color::BLACK,
-                secondary_text: Color::from_rgba(0.0, 0.0, 0.0, 0.4),
-                glass_bg: Color::WHITE,
-                glass_border: Color::BLACK,
-                inner_border: Color::TRANSPARENT,
-                glass_opacity: 1.0,
-                card_bg: Color::WHITE,
-                surface_bg: Color::from_rgba(0.0, 0.0, 0.0, 0.05),
-                radius: 0.0,
-                shadow_color: Color::TRANSPARENT,
-                shadow_offset: [0.0, 0.0],
-                shadow_blur: 0.0,
-                divider: Color::BLACK,
-            },
+            card_bg: colors.surface,
+            surface_bg: colors.surface_variant,
+            divider: colors.divider,
         }
+    }
+
+    /// Get theme tokens for a shell mode using its default theme
+    ///
+    /// This is the backward-compatible constructor that existing code uses.
+    pub fn get(mode: ShellMode, tone: ThemeTone) -> Self {
+        let theme = PeakTheme::default_for_mode(mode);
+        Self::new(theme, tone)
+    }
+
+    /// Get theme tokens with explicit theme choice
+    pub fn with_theme(theme: PeakTheme, tone: ThemeTone) -> Self {
+        Self::new(theme, tone)
     }
 }
 

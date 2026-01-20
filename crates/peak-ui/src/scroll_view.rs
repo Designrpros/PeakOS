@@ -44,7 +44,7 @@ impl<Message> ScrollView<Message> {
         s: iced::widget::Scrollable<'a, Message, Theme, Renderer>,
         theme: &peak_theme::ThemeTokens,
     ) -> iced::widget::Scrollable<'a, Message, Theme, Renderer> {
-        let text_color = theme.text;
+        let text_color = theme.colors.text_primary;
         s.style(move |_, _| iced::widget::scrollable::Style {
             container: iced::widget::container::Style::default(),
             vertical_rail: iced::widget::scrollable::Rail {

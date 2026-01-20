@@ -19,9 +19,9 @@ pub fn view<'a>(
             .on_press(SpacesMessage::SwitchDesktop(idx))
             .style(move |_theme, status| {
                 let mut bg = if is_active {
-                    tokens.accent
+                    tokens.colors.primary
                 } else {
-                    tokens.text
+                    tokens.colors.text_primary
                 };
 
                 if !is_active {
@@ -30,7 +30,7 @@ pub fn view<'a>(
 
                 let mut base = button::Style {
                     background: Some(Background::Color(bg)),
-                    text_color: tokens.text,
+                    text_color: tokens.colors.text_primary,
                     border: iced::Border {
                         radius: 4.0.into(),
                         ..Default::default()
@@ -40,9 +40,9 @@ pub fn view<'a>(
 
                 if status == button::Status::Hovered {
                     let mut hover_bg = if is_active {
-                        tokens.accent
+                        tokens.colors.primary
                     } else {
-                        tokens.text
+                        tokens.colors.text_primary
                     };
                     hover_bg.a = 0.8;
                     base.background = Some(Background::Color(hover_bg));
@@ -62,7 +62,7 @@ pub fn view<'a>(
     .spacing(10)
     .align_y(Alignment::Center);
 
-    let mut label_color = tokens.text;
+    let mut label_color = tokens.colors.text_primary;
     label_color.a = 0.4;
 
     container(
@@ -78,9 +78,13 @@ pub fn view<'a>(
     )
     .padding(15)
     .style(move |_| container::Style {
-        background: Some(Background::Color(tokens.glass_bg)),
+        background: Some(Background::Color({
+            let mut c = tokens.colors.surface;
+            c.a = tokens.glass_opacity;
+            c
+        })),
         border: iced::Border {
-            color: tokens.glass_border,
+            color: tokens.colors.border,
             width: 1.0,
             radius: tokens.radius.into(),
         },

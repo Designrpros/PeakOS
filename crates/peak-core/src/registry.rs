@@ -145,6 +145,7 @@ impl std::fmt::Display for ShellStyle {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum AppId {
     Terminal,
+    PeakUI,  // The PeakUI Reference App
     Browser, // The Tauri Guest
     Library, // Internal View
     Cortex,  // Internal View
@@ -180,6 +181,19 @@ impl AppId {
                     system_icon: Some("terminal".to_string()),
                 },
                 accent_color: "#00FF88",
+            },
+            AppId::PeakUI => AppMetadata {
+                id: *self,
+                name: "PeakUI",
+                description: "The definitive reference and showcase for the PeakUI design system.",
+                category: AppCategoryPrimary::Development,
+                source: InstallSource::System,
+                icons: IconConfiguration {
+                    logo: None,
+                    brand_icon: None,
+                    system_icon: Some("design".to_string()),
+                },
+                accent_color: "#FF0055",
             },
             AppId::Browser => AppMetadata {
                 id: *self,
@@ -340,6 +354,7 @@ impl std::str::FromStr for AppId {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "Terminal" => Ok(AppId::Terminal),
+            "PeakUI" => Ok(AppId::PeakUI),
             "Browser" => Ok(AppId::Browser),
             "Library" => Ok(AppId::Library),
             "Cortex" => Ok(AppId::Cortex),
@@ -366,6 +381,7 @@ impl AppInfo {
     pub fn get_info(id: AppId) -> Self {
         let name = match id {
             AppId::Terminal => "Terminal",
+            AppId::PeakUI => "PeakUI",
             AppId::Browser => "Netscape",
             AppId::Library => "Arcade",
             AppId::Cortex => "Neural Link",
@@ -385,6 +401,7 @@ impl AppInfo {
     pub fn dock() -> Vec<Self> {
         vec![
             AppId::Terminal,
+            AppId::PeakUI,
             AppId::Browser,
             AppId::Turntable,
             AppId::Library,
@@ -401,6 +418,7 @@ impl AppInfo {
     pub fn all() -> Vec<Self> {
         vec![
             AppId::Terminal,
+            AppId::PeakUI,
             AppId::Browser,
             AppId::Library,
             AppId::Cortex,

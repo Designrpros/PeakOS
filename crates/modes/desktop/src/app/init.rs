@@ -134,6 +134,7 @@ impl PeakNative {
             // Initialize Advanced Dock State
             pinned_apps: vec![
                 peak_core::registry::AppId::Terminal,
+                peak_core::registry::AppId::PeakUI,
                 peak_core::registry::AppId::Browser,
                 peak_core::registry::AppId::Turntable,
                 peak_core::registry::AppId::Library,
@@ -193,6 +194,20 @@ impl PeakNative {
                 map_msg: Message::Terminal,
                 try_unmap: |msg| match msg {
                     Message::Terminal(t) => Some(t),
+                    _ => None,
+                },
+            }),
+        );
+
+        // PeakUI Reference App
+        let peak_ui = peak_apps::peak_ui::PeakUIApp::new();
+        shell.registry.register(
+            peak_core::registry::AppId::PeakUI,
+            Box::new(crate::systems::registry::AppWrapper {
+                app: peak_ui,
+                map_msg: Message::PeakUI,
+                try_unmap: |msg| match msg {
+                    Message::PeakUI(m) => Some(m),
                     _ => None,
                 },
             }),

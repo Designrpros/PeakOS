@@ -42,13 +42,13 @@ impl<Message: 'static> View<Message> for Card<Message> {
                 .width(self.width)
                 .height(self.height)
                 .style(move |_theme| container::Style {
-                    background: Some(theme.card_bg.into()),
+                    background: Some(theme.colors.surface.into()),
                     border: iced::Border {
                         radius: theme.radius.into(),
-                        color: theme.inner_border,
+                        color: theme.colors.border.scale_alpha(0.5),
                         width: 1.0,
                     },
-                    text_color: Some(theme.text),
+                    text_color: Some(theme.colors.text_primary),
                     ..Default::default()
                 }),
         )
@@ -57,7 +57,7 @@ impl<Message: 'static> View<Message> for Card<Message> {
         .style(move |_theme| container::Style {
             border: iced::Border {
                 radius: theme.radius.into(),
-                color: theme.glass_border,
+                color: theme.colors.border,
                 width: 1.0,
             },
             shadow: iced::Shadow {
@@ -105,7 +105,7 @@ impl<Message: 'static> View<Message> for Section<Message> {
             column![
                 text(self.title.clone())
                     .size(12)
-                    .color(context.theme.text.scale_alpha(0.6)),
+                    .color(context.theme.colors.text_primary.scale_alpha(0.6)),
                 self.content.view(context)
             ]
             .spacing(8),

@@ -15,9 +15,9 @@ pub fn view<'a>(
     // Determine icon color based on tokens
     let hex_color = format!(
         "#{:02x}{:02x}{:02x}",
-        (tokens.text.r * 255.0) as u8,
-        (tokens.text.g * 255.0) as u8,
-        (tokens.text.b * 255.0) as u8
+        (tokens.colors.text_primary.r * 255.0) as u8,
+        (tokens.colors.text_primary.g * 255.0) as u8,
+        (tokens.colors.text_primary.b * 255.0) as u8
     );
 
     let chunk_size = 6;
@@ -57,14 +57,14 @@ pub fn view<'a>(
                     .push(
                         text(name)
                             .size(13)
-                            .color(tokens.text) // Use tokens.text
+                            .color(tokens.colors.text_primary) // Use tokens.colors.text_primary
                             .align_y(Alignment::Center),
                     ),
             )
             .on_press(DockMessage::LaunchMedia(item.clone()))
             .style(move |_, status| {
                 if status == iced::widget::button::Status::Hovered {
-                    let mut hover_bg = tokens.text;
+                    let mut hover_bg = tokens.colors.text_primary;
                     hover_bg.a = 0.1;
                     iced::widget::button::Style {
                         background: Some(hover_bg.into()),
@@ -101,7 +101,11 @@ pub fn view<'a>(
         .center_x(Length::Fill)
         .center_y(Length::Fill)
         .style(move |_| container::Style {
-            background: Some(tokens.glass_bg.into()),
+            background: Some({
+                let mut c = tokens.colors.surface;
+                c.a = tokens.glass_opacity;
+                c.into()
+            }),
             ..Default::default()
         })
         .into()

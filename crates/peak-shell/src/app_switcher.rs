@@ -46,21 +46,25 @@ impl AppSwitcher {
     }
 
     pub fn view(&self, tokens: peak_theme::ThemeTokens) -> Element<'_, SwitcherMessage> {
-        let text_color = tokens.text;
-        let card_bg = tokens.glass_bg;
+        let text_color = tokens.colors.text_primary;
+        let card_bg = {
+            let mut c = tokens.colors.surface;
+            c.a = tokens.glass_opacity;
+            c
+        };
 
         let hex_color = format!(
             "#{:02x}{:02x}{:02x}",
-            (tokens.text.r * 255.0) as u8,
-            (tokens.text.g * 255.0) as u8,
-            (tokens.text.b * 255.0) as u8
+            (tokens.colors.text_primary.r * 255.0) as u8,
+            (tokens.colors.text_primary.g * 255.0) as u8,
+            (tokens.colors.text_primary.b * 255.0) as u8
         );
 
         let content = row(self.apps.iter().enumerate().map(|(i, app)| {
             let is_selected = i == self.selected_index;
 
             let bg = if is_selected {
-                let mut c = tokens.text;
+                let mut c = tokens.colors.text_primary;
                 c.a = 0.1;
                 c
             } else {
@@ -68,7 +72,7 @@ impl AppSwitcher {
             };
 
             let border_color = if is_selected {
-                tokens.glass_border
+                tokens.colors.border
             } else {
                 Color::TRANSPARENT
             };
@@ -119,7 +123,7 @@ impl AppSwitcher {
             .style(move |_| container::Style {
                 background: Some(Background::Color(card_bg)),
                 border: Border {
-                    color: tokens.glass_border,
+                    color: tokens.colors.border,
                     width: 1.0,
                     radius: (tokens.radius * 2.0).into(),
                 },

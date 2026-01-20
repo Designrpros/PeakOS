@@ -201,14 +201,62 @@ impl<Message> ResponsiveGrid<Message> {
 impl<Message: 'static> View<Message> for ResponsiveGrid<Message> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let children: Vec<_> = self.children.iter().map(|c| c.view(context)).collect();
-        if context.is_slim() {
-            container(iced::widget::column(children).spacing(self.spacing))
-                .width(Length::Fill)
-                .into()
+
+        // Calculate columns based on screen width
+        let items_per_row = if context.size.width < 600.0 {
+            1
+        } else if context.size.width < 900.0 {
+            2
+        } else if context.size.width < 1200.0 {
+            3
+        } else if context.size.width < 1600.0 {
+            4
         } else {
-            container(iced::widget::row(children).spacing(self.spacing))
-                .width(Length::Fill)
-                .into()
+            5
+        };
+
+        // Create rows with equal-width columns
+        let mut rows = Vec::new();
+        let mut current_row = Vec::new();
+        let mut count = 0;
+
+        for child in children {
+            current_row.push(container(child).width(Length::FillPortion(1)).into());
+            count += 1;
+
+            if count == items_per_row {
+                rows.push(
+                    row(current_row)
+                        .spacing(self.spacing)
+                        .width(Length::Fill)
+                        .into(),
+                );
+                current_row = Vec::new();
+                count = 0;
+            }
         }
+
+        // Handle last row with fillers
+        if !current_row.is_empty() {
+            for _ in count..items_per_row {
+                current_row.push(
+                    container(iced::widget::Space::new(
+                        Length::FillPortion(1),
+                        Length::Shrink,
+                    ))
+                    .into(),
+                );
+            }
+            rows.push(
+                row(current_row)
+                    .spacing(self.spacing)
+                    .width(Length::Fill)
+                    .into(),
+            );
+        }
+
+        container(column(rows).spacing(self.spacing).width(Length::Fill))
+            .width(Length::Fill)
+            .into()
     }
 }

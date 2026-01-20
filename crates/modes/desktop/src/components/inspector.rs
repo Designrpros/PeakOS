@@ -102,7 +102,7 @@ impl Inspector {
                     .map(|(role, msg)| {
                         let is_user = role == "user";
                         let bubble = container(text(msg.clone()).style(move |_| text::Style {
-                            color: Some(tokens.text),
+                            color: Some(tokens.colors.text_primary),
                         }))
                         .padding(12)
                         .style(move |_| container::Style {
@@ -148,7 +148,7 @@ impl Inspector {
                 container(text("No model").size(11).style(move |_theme| text::Style {
                     color: Some(iced::Color {
                         a: 0.5,
-                        ..tokens.text
+                        ..tokens.colors.text_primary
                     }),
                 }))
                 .padding([0, 8])
@@ -165,12 +165,12 @@ impl Inspector {
                     .placeholder("Select model")
                     .style(
                         move |_theme: &iced::Theme, _status| iced::widget::pick_list::Style {
-                            text_color: tokens.text,
+                            text_color: tokens.colors.text_primary,
                             placeholder_color: iced::Color {
                                 a: 0.5,
-                                ..tokens.text
+                                ..tokens.colors.text_primary
                             },
-                            handle_color: tokens.text,
+                            handle_color: tokens.colors.text_primary,
                             background: iced::Color::from_rgba(0.0, 0.0, 0.0, 0.15).into(),
                             border: iced::Border {
                                 radius: 8.0.into(),
@@ -192,12 +192,12 @@ impl Inspector {
                     .style(move |_theme, _status| iced::widget::text_input::Style {
                         background: iced::Color::TRANSPARENT.into(),
                         border: iced::Border::default(),
-                        icon: tokens.text,
+                        icon: tokens.colors.text_primary,
                         placeholder: iced::Color {
                             a: 0.5,
-                            ..tokens.text
+                            ..tokens.colors.text_primary
                         },
-                        value: tokens.text,
+                        value: tokens.colors.text_primary,
                         selection: iced::Color::from_rgba(0.5, 0.5, 0.5, 0.3),
                     }),
                 row![
@@ -208,9 +208,9 @@ impl Inspector {
                             "arrow_up",
                             &format!(
                                 "#{:02X}{:02X}{:02X}",
-                                (tokens.text.r * 255.0) as u8,
-                                (tokens.text.g * 255.0) as u8,
-                                (tokens.text.b * 255.0) as u8
+                                (tokens.colors.text_primary.r * 255.0) as u8,
+                                (tokens.colors.text_primary.g * 255.0) as u8,
+                                (tokens.colors.text_primary.b * 255.0) as u8
                             )
                         ))
                         .width(16)
@@ -240,7 +240,7 @@ impl Inspector {
                 width: 1.0,
                 color: iced::Color {
                     a: 0.1,
-                    ..tokens.text
+                    ..tokens.colors.text_primary
                 },
                 radius: 12.0.into(),
             },
@@ -255,7 +255,11 @@ impl Inspector {
             .width(Length::Fixed(340.0))
             .height(Length::Fill)
             .style(move |_: &iced::Theme| container::Style {
-                background: Some(tokens.glass_bg.into()),
+                background: Some({
+                    let mut c = tokens.colors.surface;
+                    c.a = tokens.glass_opacity;
+                    c.into()
+                }),
                 border: iced::Border {
                     radius: 16.0.into(),
                     ..Default::default()

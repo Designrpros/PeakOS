@@ -23,16 +23,16 @@ pub fn view<'a>(
 ) -> Element<'a, TaskbarMessage> {
     let hex_color = format!(
         "#{:02x}{:02x}{:02x}",
-        (tokens.text.r * 255.0) as u8,
-        (tokens.text.g * 255.0) as u8,
-        (tokens.text.b * 255.0) as u8
+        (tokens.colors.text_primary.r * 255.0) as u8,
+        (tokens.colors.text_primary.g * 255.0) as u8,
+        (tokens.colors.text_primary.b * 255.0) as u8
     );
 
     // Left section: Start button + Search
     // START BUTTON: Use Peak Logo (PNG)
     // Logic: If text is light (Dark Mode), use the 'Dark Mode' logo (which is usually white/light to contrast)
     // If text is dark (Light Mode), use the 'Standard' logo (which is usually dark/colored)
-    let logo_path = if tokens.text.r > 0.5 {
+    let logo_path = if tokens.colors.text_primary.r > 0.5 {
         "icons/menubar/peak_logo_dark.png"
     } else {
         "icons/menubar/peak_logo.png"
@@ -48,7 +48,7 @@ pub fn view<'a>(
     .on_press(TaskbarMessage::OpenStart)
     .padding(8)
     .style(move |_, status| {
-        let hover_bg = tokens.text;
+        let hover_bg = tokens.colors.text_primary;
         let mut hover_bg = hover_bg;
         hover_bg.a = 0.1;
 
@@ -71,7 +71,7 @@ pub fn view<'a>(
     .on_press(TaskbarMessage::Search)
     .padding(10)
     .style(move |_, status| {
-        let hover_bg = tokens.text;
+        let hover_bg = tokens.colors.text_primary;
         let mut hover_bg = hover_bg;
         hover_bg.a = 0.1;
 
@@ -114,7 +114,7 @@ pub fn view<'a>(
         text(format!("{}\n{}", time, date))
             .size(11)
             .style(move |_| text::Style {
-                color: Some(tokens.text),
+                color: Some(tokens.colors.text_primary),
             }),
     ]
     .spacing(12)
@@ -136,7 +136,7 @@ pub fn view<'a>(
     .width(Length::Fill)
     .height(40)
     .style(move |_| container::Style {
-        background: Some(tokens.glass_bg.into()), // Dynamic Theme Background
+        background: Some(tokens.colors.surface.into()), // Dynamic Theme Background
         ..Default::default()
     })
     .into()
@@ -161,7 +161,7 @@ fn render_taskbar_icon<'a>(
         };
 
     let indicator_color = if is_running {
-        tokens.accent
+        tokens.colors.primary
     } else {
         iced::Color::TRANSPARENT
     };
@@ -172,7 +172,7 @@ fn render_taskbar_icon<'a>(
                 .on_press(TaskbarMessage::LaunchApp(app_id))
                 .padding(8)
                 .style(move |_, status| {
-                    let hover_bg = tokens.text;
+                    let hover_bg = tokens.colors.text_primary;
                     let mut hover_bg = hover_bg;
                     hover_bg.a = 0.15;
 

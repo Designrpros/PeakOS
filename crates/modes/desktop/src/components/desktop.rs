@@ -273,9 +273,9 @@ fn view_icon<'a>(
 
     let hex_color = format!(
         "#{:02X}{:02X}{:02X}",
-        (tokens.text.r * 255.0) as u8,
-        (tokens.text.g * 255.0) as u8,
-        (tokens.text.b * 255.0) as u8
+        (tokens.colors.text_primary.r * 255.0) as u8,
+        (tokens.colors.text_primary.g * 255.0) as u8,
+        (tokens.colors.text_primary.b * 255.0) as u8
     );
 
     svg(peak_core::icons::get_ui_icon(icon_name, &hex_color))
