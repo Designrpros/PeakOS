@@ -4,7 +4,7 @@ use peak_core::registry::AppId;
 use peak_theme::ThemeTokens;
 
 #[derive(Debug, Clone)]
-pub enum AiShellMessage {
+pub enum ConsoleShellMessage {
     Launch(AppId),
     OpenOmnibar,
     OpenStart,
@@ -18,7 +18,7 @@ pub fn layout<'a, Message>(
     ai_input_value: &str,
     on_input: impl Fn(String) -> Message + 'a + Clone,
     on_submit: Message,
-    map_msg: impl Fn(AiShellMessage) -> Message + 'a + Clone,
+    map_msg: impl Fn(ConsoleShellMessage) -> Message + 'a + Clone,
 ) -> Element<'a, Message>
 where
     Message: Clone + 'a,
@@ -29,8 +29,8 @@ where
 
     // Reuse dock icon logic
     let map_dock_msg = |msg: crate::dock::DockMessage| match msg {
-        crate::dock::DockMessage::Launch(id) => AiShellMessage::Launch(id),
-        _ => AiShellMessage::Launch(AppId::Terminal), // Fallback/Ignore others
+        crate::dock::DockMessage::Launch(id) => ConsoleShellMessage::Launch(id),
+        _ => ConsoleShellMessage::Launch(AppId::Terminal), // Fallback
     };
 
     // Pinned
@@ -109,10 +109,7 @@ where
         (tokens.text.b * 255.0) as u8
     );
 
-    // PEAK LOGO (Replaces Robot)
-    // If bezel (tokens.background) is Light -> Dark Logo.
-    // If bezel is Dark -> Light Logo.
-    // We check text color: Light Text -> Dark Background -> Light Logo.
+    // PEAK LOGO
     let logo_path = if tokens.text.r > 0.5 {
         "icons/menubar/peak_logo_dark.png"
     } else {
@@ -127,14 +124,14 @@ where
                 .width(Length::Fixed(32.0))
                 .height(Length::Fixed(32.0)),
         )
-        .on_press(AiShellMessage::OpenStart)
+        .on_press(ConsoleShellMessage::OpenStart)
         .padding(4)
         .style(move |_, _| iced::widget::button::Style::default()),
     )
     .map(map_msg.clone());
 
-    // TEXT INPUT ("Ask something...")
-    let omni_input = text_input("Ask something...", ai_input_value)
+    // TEXT INPUT ("Ask AI...") - Console version might act as universal search
+    let omni_input = text_input("Ask Cortex...", ai_input_value)
         .on_input(on_input)
         .on_submit(on_submit)
         .padding([10, 20])
@@ -151,6 +148,7 @@ where
             value: iced::Color::BLACK,
             selection: iced::Color::from_rgb(0.2, 0.4, 0.8),
         });
+
     let time = chrono::Local::now().format("%H:%M").to_string();
     let system_tray = row![
         svg(peak_core::icons::get_status_icon("wifi", &hex_color)).width(Length::Fixed(16.0)),
@@ -172,22 +170,18 @@ where
             .align_x(iced::alignment::Horizontal::Right),
     ]
     .spacing(20)
-    .padding([10, 40]) // Padding for the bar in the bezel
+    .padding([10, 40])
     .align_y(Alignment::Center);
 
     // --- ASSEMBLY ---
-
-    // 1. Desktop Content + Top Dock Overlay
-    // Stack: Content (Bottom), Dock (Top)
     let desktop_with_dock = iced::widget::Stack::new().push(content).push(
         container(top_dock)
             .width(Length::Fill)
             .align_x(iced::alignment::Horizontal::Center)
-            .align_y(iced::alignment::Vertical::Top), // Attached to top
+            .align_y(iced::alignment::Vertical::Top),
     );
 
-    // 2. Bezel Frame
-
+    // Bezel Frame
     container(
         iced::widget::column![
             // Inner Desktop (Rounded Screen)
@@ -195,21 +189,15 @@ where
                 .width(Length::Fill)
                 .height(Length::Fill)
                 .style(move |_| container::Style {
-                    // The desktop wallpaper is inside 'content'.
-                    // We just provide the clipping checks/radius here.
                     border: iced::Border {
-                        radius: 24.0.into(), // Large rounded corners for the "Screen"
+                        radius: 24.0.into(), // Inner Screen Rounded Corners
                         width: 1.0,
-                        color: iced::Color::from_rgba(0.0, 0.0, 0.0, 0.1), // Subtle border for screen
+                        color: iced::Color::from_rgba(0.0, 0.0, 0.0, 0.1),
                     },
-                    // Transparent background so wallpaper (passed in content) shows through!
-                    // If content is missing, it will be the bezel color behind it.
-                    // But we want black if no wallpaper? No, normally wallpaper is there.
-                    // Let's use transparent.
                     background: None,
                     ..Default::default()
                 })
-                .clip(true), // CLIP content to rounded corners!
+                .clip(true),
             // Bottom Bar (In the bezel)
             container(bottom_bar)
                 .width(Length::Fill)
@@ -219,9 +207,8 @@ where
     )
     .width(Length::Fill)
     .height(Length::Fill)
-    .padding(20) // The BEZEL thickness
+    .padding(20) // Bezel thickness
     .style(move |_| container::Style {
-        // The Frame Color
         background: Some(tokens.background.into()),
         ..Default::default()
     })

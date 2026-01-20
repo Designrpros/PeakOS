@@ -22,6 +22,7 @@ pub struct WizardState {
     pub wifi_password_input: String,
     pub selected_avatar: Option<String>,
     pub selected_mode: Option<String>, // "desktop", "mobile", "tv", "console"
+    pub selected_theme: Option<String>, // "cupertino", "redmond", "ai"
     pub error_message: Option<String>,
 }
 
@@ -38,6 +39,7 @@ impl Default for WizardState {
             wifi_password_input: String::new(),
             selected_avatar: None,
             selected_mode: None,
+            selected_theme: None,
             error_message: None,
         }
     }
@@ -56,6 +58,7 @@ pub enum WizardMessage {
     UpdateWifiPassword(String),
     SelectAvatar(String),
     SelectMode(String),
+    SelectTheme(String),
     CompleteSetup,
 }
 
@@ -132,6 +135,10 @@ pub fn update(state: &mut WizardState, message: WizardMessage) -> Task<WizardMes
         WizardMessage::SelectAvatar(s) => state.selected_avatar = Some(s),
         WizardMessage::SelectMode(s) => {
             state.selected_mode = Some(s);
+            state.error_message = None;
+        }
+        WizardMessage::SelectTheme(s) => {
+            state.selected_theme = Some(s);
             state.error_message = None;
         }
         WizardMessage::CompleteSetup => {} // Handled by parent

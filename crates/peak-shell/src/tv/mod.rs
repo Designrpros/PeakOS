@@ -6,3 +6,4 @@ pub mod control_center;
 
 pub use app_rail::{view as app_rail_view, AppRailMessage};
 pub use control_center::{view as control_center_view, ControlCenterMessage};
+pub mod layout;

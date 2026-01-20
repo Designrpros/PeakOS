@@ -6,3 +6,4 @@ pub mod game_rail;
 
 pub use category_bar::{view as category_bar_view, CategoryBarMessage};
 pub use game_rail::{view as game_rail_view, GameRailMessage};
+pub mod layout;

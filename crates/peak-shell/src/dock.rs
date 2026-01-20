@@ -123,7 +123,7 @@ pub fn view<'a>(
         .into()
 }
 
-fn render_dock_icon<'a>(
+pub fn render_dock_icon<'a>(
     id: AppId,
     index: usize,
     _is_pinned: bool,

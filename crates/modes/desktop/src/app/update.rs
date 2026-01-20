@@ -51,6 +51,33 @@ impl PeakNative {
         }
     }
 
+    pub fn update_style_from_mode(&mut self) {
+        match self.mode {
+            ShellMode::Console => {
+                self.shell_style = peak_core::registry::ShellStyle::Console;
+                self.theme = peak_core::theme::Theme::Dark;
+            }
+            ShellMode::TV => {
+                self.shell_style = peak_core::registry::ShellStyle::TV;
+                self.theme = peak_core::theme::Theme::Dark;
+            }
+            ShellMode::Desktop => {
+                self.shell_style = peak_core::registry::ShellStyle::Cupertino;
+                self.theme = peak_core::theme::Theme::Light;
+            }
+            ShellMode::Mobile => {
+                self.shell_style = peak_core::registry::ShellStyle::AI;
+                self.theme = peak_core::theme::Theme::Light;
+            }
+            _ => {
+                // Default fallback
+                self.shell_style = peak_core::registry::ShellStyle::Cupertino;
+                self.theme = peak_core::theme::Theme::Light;
+            }
+        }
+        self.update_tokens();
+    }
+
     pub fn update_tokens(&mut self) {
         let tone = match self.theme {
             peak_core::theme::Theme::Light => peak_theme::ThemeTone::Light,
@@ -767,7 +794,7 @@ impl PeakNative {
                     }
                     peak_apps::settings::SettingsMessage::ModeChanged(mode) => {
                         self.mode = *mode;
-                        self.update_tokens();
+                        self.update_style_from_mode();
                     }
                     peak_apps::settings::SettingsMessage::ShellStyleChanged(style) => {
                         self.shell_style = *style;
@@ -784,10 +811,23 @@ impl PeakNative {
                     ShellMode::Desktop => self.current_page = Page::Home,
                     _ => self.current_page = Page::Home,
                 }
+                self.update_style_from_mode();
                 Task::none()
             }
             Message::SwitchShellStyle(style) => {
                 self.shell_style = style;
+                Task::none()
+            }
+            Message::AiInputChange(text) => {
+                self.ai_input_text = text;
+                Task::none()
+            }
+            Message::AiSubmit => {
+                let prompt = self.ai_input_text.trim().to_string();
+                if !prompt.is_empty() {
+                    self.pending_chat = Some(prompt);
+                    self.ai_input_text.clear();
+                }
                 Task::none()
             }
             Message::ToggleMode => {
@@ -796,6 +836,7 @@ impl PeakNative {
                     _ => ShellMode::Desktop,
                 };
                 self.current_page = Page::Home;
+                self.update_style_from_mode();
                 Task::none()
             }
 
@@ -860,6 +901,7 @@ impl PeakNative {
                 let mut new_profile_opt = None;
                 let theme_pref;
                 let mut selected_app_mode = ShellMode::Desktop;
+                let mut selected_shell_style = peak_core::registry::ShellStyle::Cupertino;
 
                 if let AppState::Setup(ref mut wizard_state) = self.state {
                     match msg {
@@ -879,6 +921,16 @@ impl PeakNative {
                                     "tv" => ShellMode::TV,
                                     "console" => ShellMode::Console,
                                     _ => ShellMode::Desktop,
+                                };
+                            }
+
+                            // Map string theme to ShellStyle
+                            if let Some(theme_str) = &wizard_state.selected_theme {
+                                selected_shell_style = match theme_str.as_str() {
+                                    "cupertino" => peak_core::registry::ShellStyle::Cupertino,
+                                    "redmond" => peak_core::registry::ShellStyle::Redmond,
+                                    "ai" => peak_core::registry::ShellStyle::AI,
+                                    _ => peak_core::registry::ShellStyle::Cupertino,
                                 };
                             }
 
@@ -909,7 +961,8 @@ impl PeakNative {
                             self.user = Some(profile);
                             self.state = AppState::Desktop;
                             self.mode = selected_app_mode;
-                            self.update_tokens(); // Refresh styles for new mode
+                            self.shell_style = selected_shell_style;
+                            self.update_style_from_mode(); // Refresh styles for new mode
                         }
                     }
                 }

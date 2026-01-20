@@ -141,66 +141,308 @@ impl PeakNative {
         // Integrated Desktop UI for non-Linux (macOS/Windows)
         #[cfg(not(target_os = "linux"))]
         {
-            // Add Menubar (Top)
-            workspace_stack = workspace_stack.push(
-                container(menubar::view(self.tokens).map(Message::MenubarAction))
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .align_y(iced::alignment::Vertical::Top),
-            );
+            match self.shell_style {
+                peak_core::registry::ShellStyle::Cupertino => {
+                    // --- CUPERTINO: Menubar (Top) + Dock (Bottom) ---
 
-            // Add Dock (Bottom)
-            // Use same logic as Dock Mode but integrated
-            let mut standard_pinned = Vec::new();
-            let mut repo_pinned = Vec::new();
-            for &id in &self.pinned_apps {
-                if id.is_repo() {
-                    repo_pinned.push(id);
-                } else {
-                    standard_pinned.push(id);
-                }
-            }
-            let mut standard_running = Vec::new();
-            let mut repo_running = Vec::new();
-            let all_running: Vec<_> = self.window_manager.window_states.keys().cloned().collect();
-            for &id in &all_running {
-                if id.is_repo() {
-                    if !repo_pinned.contains(&id) {
-                        repo_running.push(id);
+                    // Add Menubar (Top)
+                    workspace_stack = workspace_stack.push(
+                        container(menubar::view(self.tokens).map(Message::MenubarAction))
+                            .width(Length::Fill)
+                            .height(Length::Fill)
+                            .align_y(iced::alignment::Vertical::Top),
+                    );
+
+                    // Add Dock (Bottom)
+                    let mut standard_pinned = Vec::new();
+                    let mut repo_pinned = Vec::new();
+                    for &id in &self.pinned_apps {
+                        if id.is_repo() {
+                            repo_pinned.push(id);
+                        } else {
+                            standard_pinned.push(id);
+                        }
                     }
-                } else if !standard_pinned.contains(&id) {
-                    standard_running.push(id);
-                }
-            }
-            let mut repos = repo_pinned;
-            for r in repo_running {
-                if !repos.contains(&r) {
-                    repos.push(r);
-                }
-            }
+                    let mut standard_running = Vec::new();
+                    let mut repo_running = Vec::new();
+                    let all_running: Vec<_> =
+                        self.window_manager.window_states.keys().cloned().collect();
+                    for &id in &all_running {
+                        if id.is_repo() {
+                            if !repo_pinned.contains(&id) {
+                                repo_running.push(id);
+                            }
+                        } else if !standard_pinned.contains(&id) {
+                            standard_running.push(id);
+                        }
+                    }
+                    let mut repos = repo_pinned;
+                    for r in repo_running {
+                        if !repos.contains(&r) {
+                            repos.push(r);
+                        }
+                    }
 
-            let dock_element = dock::view(
-                &standard_pinned,
-                &standard_running,
-                &repos,
-                self.dragging_app,
-                self.context_menu_app,
-                &all_running,
-                self.tokens,
-            )
-            .map(Message::DockInteraction);
+                    let dock_element = dock::view(
+                        &standard_pinned,
+                        &standard_running,
+                        &repos,
+                        self.dragging_app,
+                        self.context_menu_app,
+                        &all_running,
+                        self.tokens,
+                    )
+                    .map(Message::DockInteraction);
 
-            workspace_stack = workspace_stack.push(
-                container(dock_element)
+                    workspace_stack = workspace_stack.push(
+                        container(dock_element)
+                            .width(Length::Fill)
+                            .height(Length::Fill)
+                            .align_x(iced::alignment::Horizontal::Center)
+                            .align_y(iced::alignment::Vertical::Bottom)
+                            .padding(iced::Padding {
+                                bottom: 0.0,
+                                ..Default::default()
+                            }),
+                    );
+                }
+                peak_core::registry::ShellStyle::Redmond => {
+                    // --- REDMOND: Taskbar (Bottom) ---
+                    // Note: No top menubar in Redmond style
+
+                    let taskbar_element = peak_shell::redmond::taskbar::view(
+                        &self.pinned_apps,
+                        &self.running_apps, // Use running_apps vec instead of z_order check for simplicity first
+                        self.tokens,
+                    )
+                    .map(Message::RedmondTaskbar);
+
+                    workspace_stack = workspace_stack.push(
+                        container(taskbar_element)
+                            .width(Length::Fill)
+                            .height(Length::Fill)
+                            .align_y(iced::alignment::Vertical::Bottom),
+                    );
+                }
+                peak_core::registry::ShellStyle::AI => {
+                    // --- PEAK AI: Warmwind UI (Frame Layout) ---
+                    // Wraps the entire desktop content in a rounded frame + bottom bar
+
+                    // Apply Wallpaper INSIDE the frame (Screen) with Rounded Corners
+                    // We inline the desktop container logic here to apply border radius
+                    let wallpaper = container(
+                        iced::widget::image(iced::widget::image::Handle::from_path(
+                            &wallpaper_path,
+                        ))
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .content_fit(iced::ContentFit::Cover),
+                    )
                     .width(Length::Fill)
                     .height(Length::Fill)
-                    .align_x(iced::alignment::Horizontal::Center)
-                    .align_y(iced::alignment::Vertical::Bottom)
-                    .padding(iced::Padding {
-                        bottom: 0.0,
+                    .clip(true) // Helper check
+                    .style(|_| container::Style {
+                        background: Some(iced::Background::Color(iced::Color::from_rgb8(
+                            10, 10, 15,
+                        ))),
+                        border: iced::Border {
+                            radius: 24.0.into(), // Force rounded corners on the wallpaper container itself
+                            width: 0.0,
+                            color: iced::Color::TRANSPARENT,
+                        },
                         ..Default::default()
-                    }),
-            );
+                    });
+
+                    let content_with_wallpaper = iced::widget::stack![
+                        wallpaper,
+                        container(workspace_stack)
+                            .width(Length::Fill)
+                            .height(Length::Fill)
+                    ];
+
+                    let desktop_content = container(content_with_wallpaper)
+                        .width(Length::Fill)
+                        .height(Length::Fill); // Wrap current stack
+
+                    let framed = peak_shell::ai::layout(
+                        desktop_content.into(),
+                        &self.pinned_apps,
+                        &self.running_apps,
+                        self.tokens,
+                        &self.ai_input_text,
+                        |input| Message::AiInputChange(input),
+                        Message::AiSubmit,
+                        |msg| match msg {
+                            peak_shell::ai::AiShellMessage::Launch(id) => {
+                                Message::DockInteraction(peak_shell::dock::DockMessage::Launch(id))
+                            }
+                            peak_shell::ai::AiShellMessage::OpenOmnibar => Message::ToggleOmnibar,
+                            peak_shell::ai::AiShellMessage::OpenStart => Message::ToggleAppGrid,
+                        },
+                    );
+
+                    // Re-initialize stack with the framed content
+                    workspace_stack = Stack::new().push(framed);
+                }
+                peak_core::registry::ShellStyle::Console => {
+                    // --- CONSOLE: AI Shell Frame + Game Rail ---
+
+                    // 1. Content (Game Rail)
+                    let console_content = container(
+                        iced::widget::column![
+                            console::category_bar::view(
+                                console::category_bar::GameCategory::All,
+                                self.tokens
+                            )
+                            .map(Message::ConsoleCategory),
+                            console::game_rail::view(&self.games, 0, self.tokens)
+                                .map(Message::ConsoleGame),
+                        ]
+                        .spacing(20),
+                    )
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .align_y(iced::alignment::Vertical::Bottom)
+                    .padding(40);
+
+                    // 2. Wallpaper (Inner Screen)
+                    let wallpaper = container(
+                        iced::widget::image(iced::widget::image::Handle::from_path(
+                            &wallpaper_path,
+                        ))
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .content_fit(iced::ContentFit::Cover),
+                    )
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .clip(true)
+                    .style(|_| container::Style {
+                        background: Some(iced::Background::Color(iced::Color::from_rgb8(
+                            10, 10, 15,
+                        ))),
+                        border: iced::Border {
+                            radius: 24.0.into(),
+                            width: 0.0,
+                            color: iced::Color::TRANSPARENT,
+                        },
+                        ..Default::default()
+                    });
+
+                    // 3. Stack Content on Wallpaper
+                    // NOTE: workspace_stack contains windows. We put them UNDER the game rail?
+                    // Or do we assume Console mode has no windows?
+                    // Let's stack: Wallpaper -> Windows -> Game Rail
+                    let content_with_wallpaper = iced::widget::stack![
+                        wallpaper,
+                        container(workspace_stack)
+                            .width(Length::Fill)
+                            .height(Length::Fill),
+                        console_content
+                    ];
+
+                    let desktop_content = container(content_with_wallpaper)
+                        .width(Length::Fill)
+                        .height(Length::Fill);
+
+                    // 4. Wrap with Frame
+                    let framed = peak_shell::console::layout::layout(
+                        desktop_content.into(),
+                        &self.pinned_apps,
+                        &self.running_apps,
+                        self.tokens,
+                        &self.ai_input_text,
+                        |input| Message::AiInputChange(input),
+                        Message::AiSubmit,
+                        |msg| match msg {
+                            peak_shell::console::layout::ConsoleShellMessage::Launch(id) => {
+                                Message::DockInteraction(peak_shell::dock::DockMessage::Launch(id))
+                            }
+                            peak_shell::console::layout::ConsoleShellMessage::OpenOmnibar => {
+                                Message::ToggleOmnibar
+                            }
+                            peak_shell::console::layout::ConsoleShellMessage::OpenStart => {
+                                Message::ToggleAppGrid
+                            }
+                        },
+                    );
+
+                    workspace_stack = Stack::new().push(framed);
+                }
+                peak_core::registry::ShellStyle::TV => {
+                    // --- TV: AI Shell Frame + App Rail ---
+
+                    // 1. Content (App Rail)
+                    let tv_content = container(
+                        tv::app_rail::view(&self.pinned_apps, 0, self.tokens).map(Message::TVApp),
+                    )
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .align_y(iced::alignment::Vertical::Bottom)
+                    .padding(60);
+
+                    // 2. Wallpaper (Inner Screen)
+                    let wallpaper = container(
+                        iced::widget::image(iced::widget::image::Handle::from_path(
+                            &wallpaper_path,
+                        ))
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .content_fit(iced::ContentFit::Cover),
+                    )
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .clip(true)
+                    .style(|_| container::Style {
+                        background: Some(iced::Background::Color(iced::Color::from_rgb8(
+                            10, 10, 15,
+                        ))),
+                        border: iced::Border {
+                            radius: 24.0.into(),
+                            width: 0.0,
+                            color: iced::Color::TRANSPARENT,
+                        },
+                        ..Default::default()
+                    });
+
+                    // 3. Stack Content on Wallpaper
+                    let content_with_wallpaper = iced::widget::stack![
+                        wallpaper,
+                        container(workspace_stack)
+                            .width(Length::Fill)
+                            .height(Length::Fill),
+                        tv_content
+                    ];
+
+                    let desktop_content = container(content_with_wallpaper)
+                        .width(Length::Fill)
+                        .height(Length::Fill);
+
+                    // 4. Wrap with Frame
+                    let framed = peak_shell::tv::layout::layout(
+                        desktop_content.into(),
+                        &self.pinned_apps,
+                        &self.running_apps,
+                        self.tokens,
+                        &self.ai_input_text,
+                        |input| Message::AiInputChange(input),
+                        Message::AiSubmit,
+                        |msg| match msg {
+                            peak_shell::tv::layout::TvShellMessage::Launch(id) => {
+                                Message::DockInteraction(peak_shell::dock::DockMessage::Launch(id))
+                            }
+                            peak_shell::tv::layout::TvShellMessage::OpenOmnibar => {
+                                Message::ToggleOmnibar
+                            }
+                            peak_shell::tv::layout::TvShellMessage::OpenStart => {
+                                Message::ToggleAppGrid
+                            }
+                        },
+                    );
+
+                    workspace_stack = Stack::new().push(framed);
+                }
+            }
         }
 
         for &app_id in &self.window_manager.z_order {
@@ -296,14 +538,18 @@ impl PeakNative {
             }
         }
 
-        // Dock Logic Reuse (If we wanted to show dock in Desktop mode as well, e.g. for inspection)
-        // But for now, we assume if we are Refactored, we DON'T show them here.
-        // However, existing code logic for Pinned Apps calculation is deep in here.
-        // ...
         // Simplification: We remove Dock/Bar from THIS view.
 
-        let workspace =
-            crate::components::desktop_container::view(&wallpaper_path, workspace_stack.into());
+        // Check if wallpaper needs to be applied (For AI Shell, it's already inside the frame)
+        let workspace = match self.shell_style {
+            peak_core::registry::ShellStyle::AI
+            | peak_core::registry::ShellStyle::Console
+            | peak_core::registry::ShellStyle::TV => workspace_stack.into(),
+
+            _ => {
+                crate::components::desktop_container::view(&wallpaper_path, workspace_stack.into())
+            }
+        };
 
         let mut workspace_stack = Stack::new().push(workspace);
 
@@ -329,35 +575,10 @@ impl PeakNative {
 
         // Bottom Shell overlay (Dock / Taskbar / Rail)
         final_view = match self.shell_style {
-            peak_core::registry::ShellStyle::Cupertino => final_view, // Delegated to separate dock process
-            peak_core::registry::ShellStyle::Redmond => final_view, // Delegated to separate dock process (TODO: Implement taskbar process)
-            peak_core::registry::ShellStyle::Console => final_view.push(
-                container(
-                    iced::widget::column![
-                        console::category_bar::view(
-                            console::category_bar::GameCategory::All,
-                            self.tokens
-                        )
-                        .map(Message::ConsoleCategory),
-                        console::game_rail::view(&self.games, 0, self.tokens)
-                            .map(Message::ConsoleGame),
-                    ]
-                    .spacing(20),
-                )
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .align_y(iced::alignment::Vertical::Bottom)
-                .padding(40),
-            ),
-            peak_core::registry::ShellStyle::TV => final_view.push(
-                container(
-                    tv::app_rail::view(&self.pinned_apps, 0, self.tokens).map(Message::TVApp),
-                )
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .align_y(iced::alignment::Vertical::Bottom)
-                .padding(60),
-            ),
+            peak_core::registry::ShellStyle::Cupertino => final_view, // Delegated
+            peak_core::registry::ShellStyle::Redmond => final_view,   // Delegated
+            peak_core::registry::ShellStyle::Console => final_view,
+            peak_core::registry::ShellStyle::TV => final_view,
             peak_core::registry::ShellStyle::AI => {
                 // Placeholder for AI input / dock
                 final_view

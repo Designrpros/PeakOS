@@ -29,13 +29,24 @@ pub fn view<'a>(
     );
 
     // Left section: Start button + Search
+    // START BUTTON: Use Peak Logo (PNG)
+    // Logic: If text is light (Dark Mode), use the 'Dark Mode' logo (which is usually white/light to contrast)
+    // If text is dark (Light Mode), use the 'Standard' logo (which is usually dark/colored)
+    let logo_path = if tokens.text.r > 0.5 {
+        "icons/menubar/peak_logo_dark.png"
+    } else {
+        "icons/menubar/peak_logo.png"
+    };
+
+    let logo_abs_path = peak_core::utils::assets::get_asset_path(logo_path);
+
     let start_btn = button(
-        svg(peak_core::icons::get_ui_icon("grid", &hex_color))
-            .width(Length::Fixed(20.0))
-            .height(Length::Fixed(20.0)),
+        iced::widget::image(logo_abs_path)
+            .width(Length::Fixed(24.0))
+            .height(Length::Fixed(24.0)),
     )
     .on_press(TaskbarMessage::OpenStart)
-    .padding(10)
+    .padding(8)
     .style(move |_, status| {
         let hover_bg = tokens.text;
         let mut hover_bg = hover_bg;
@@ -51,29 +62,27 @@ pub fn view<'a>(
         }
     });
 
+    // SEARCH BUTTON: Icon only
     let search_btn = button(
-        row![
-            svg(peak_core::icons::get_ui_icon("search", &hex_color))
-                .width(Length::Fixed(16.0))
-                .height(Length::Fixed(16.0)),
-            text("Type here to search")
-                .size(12)
-                .style(move |_| text::Style {
-                    color: Some(tokens.text),
-                })
-        ]
-        .spacing(8)
-        .align_y(Alignment::Center),
+        svg(peak_core::icons::get_ui_icon("search", &hex_color))
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0)),
     )
     .on_press(TaskbarMessage::Search)
-    .padding([6, 12])
-    .style(move |_, _| iced::widget::button::Style {
-        background: Some(iced::Color::from_rgba(1.0, 1.0, 1.0, 0.1).into()),
-        border: iced::Border {
-            radius: 4.0.into(),
+    .padding(10)
+    .style(move |_, status| {
+        let hover_bg = tokens.text;
+        let mut hover_bg = hover_bg;
+        hover_bg.a = 0.1;
+
+        iced::widget::button::Style {
+            background: if status == iced::widget::button::Status::Hovered {
+                Some(hover_bg.into())
+            } else {
+                None
+            },
             ..Default::default()
-        },
-        ..Default::default()
+        }
     });
 
     // Center section: Pinned + Running apps
@@ -127,7 +136,7 @@ pub fn view<'a>(
     .width(Length::Fill)
     .height(40)
     .style(move |_| container::Style {
-        background: Some(iced::Color::from_rgba8(30, 30, 30, 0.95).into()),
+        background: Some(tokens.glass_bg.into()), // Dynamic Theme Background
         ..Default::default()
     })
     .into()

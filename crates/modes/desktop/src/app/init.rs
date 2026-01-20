@@ -19,12 +19,10 @@ impl PeakNative {
 
         let theme = peak_core::theme::Theme::Light;
 
-        // Initialize apps
-        let final_games = MediaItem::scan_system();
+        // Initialize apps (moved down)
 
-        // Initialize Audio (One-time, optional)
-        // ONLY valid for Desktop mode to avoid fighting for audio device, or shared?
-        // Let's keep it simple: Only Desktop process handles audio for now.
+        // Initialize Audio (One-time)
+        // ONLY valid for Desktop mode to avoid fighting for audio device
         let stream = if launch_mode == crate::app::LaunchMode::Desktop {
             audio::init()
         } else {
@@ -35,29 +33,51 @@ impl PeakNative {
             audio::set_volume(0.5);
         }
 
+        // Initialize apps (Skip for Bar/Dock to save RAM/Time and avoid DB locks)
+        let final_games = if launch_mode == crate::app::LaunchMode::Desktop {
+            MediaItem::scan_system()
+        } else {
+            Vec::new()
+        };
+
         let mut current_page = Page::Home;
         if mode_str == "poolside" {
             current_page = Page::Poolside;
         }
 
-        let load_images_task = Task::batch(final_games.iter().map(|g| {
-            let url = g.cover_image.clone();
-            Task::perform(
-                peak_core::systems::image_loader::ImageLoader::load(url.clone()),
-                move |handle| match handle {
-                    Some(h) => Message::Library(LibraryMessage::ImageLoaded(url.clone(), h)),
-                    None => Message::Library(LibraryMessage::ImageLoadFailed(url.clone())),
-                },
-            )
-        }));
-
-        // Check for existing user
-        let user_profile = peak_apps::auth::load_user();
-
-        let initial_state = if user_profile.is_some() {
-            AppState::Login(String::new())
+        let load_images_task = if launch_mode == crate::app::LaunchMode::Desktop {
+            Task::batch(final_games.iter().map(|g| {
+                let url = g.cover_image.clone();
+                Task::perform(
+                    peak_core::systems::image_loader::ImageLoader::load(url.clone()),
+                    move |handle| match handle {
+                        Some(h) => Message::Library(LibraryMessage::ImageLoaded(url.clone(), h)),
+                        None => Message::Library(LibraryMessage::ImageLoadFailed(url.clone())),
+                    },
+                )
+            }))
         } else {
-            AppState::Setup(peak_apps::wizard::WizardState::default())
+            Task::none()
+        };
+
+        // Check for existing user (Skip for Bar/Dock, they don't need auth state)
+        let user_profile = if launch_mode == crate::app::LaunchMode::Desktop {
+            peak_apps::auth::load_user()
+        } else {
+            None
+        };
+
+        // If we are Bar/Dock, we are always "Logged In" effectively (or at least running)
+        // But to avoid rendering the Login screen, we must set state to Desktop
+        let initial_state = if launch_mode == crate::app::LaunchMode::Desktop {
+            if user_profile.is_some() {
+                AppState::Login(String::new())
+            } else {
+                AppState::Setup(peak_apps::wizard::WizardState::default())
+            }
+        } else {
+            // Bar/Dock always start in Desktop state to render their views immediately
+            AppState::Desktop
         };
 
         let mut shell = Self {
@@ -157,6 +177,7 @@ impl PeakNative {
             assistant: None,
             active_model_id: None,
             pending_chat: None,
+            ai_input_text: String::new(),
         };
 
         // --- Register Modular Apps ---
@@ -261,6 +282,7 @@ impl PeakNative {
             }),
         );
 
+        shell.update_style_from_mode();
         (shell, load_images_task)
     }
 }

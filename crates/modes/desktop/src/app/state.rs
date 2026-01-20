@@ -78,4 +78,6 @@ pub enum Message {
     ConsoleGame(peak_shell::console::game_rail::GameRailMessage),
     TVApp(peak_shell::tv::app_rail::AppRailMessage),
     RedmondTaskbar(peak_shell::redmond::taskbar::TaskbarMessage),
+    AiInputChange(String),
+    AiSubmit,
 }

@@ -102,6 +102,7 @@ pub struct PeakNative {
     pub assistant: Option<peak_intelligence::brain::Assistant>,
     pub active_model_id: Option<String>,
     pub pending_chat: Option<String>,
+    pub ai_input_text: String,
 }
 
 impl PeakNative {

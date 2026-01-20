@@ -863,7 +863,175 @@ impl PeakNative {
                         }),
                     ]
                     .spacing(10),
-                    iced::widget::Space::with_height(40.0),
+                    iced::widget::Space::with_height(20.0),
+                    // Shell Style Section
+                    text("Shell Style").size(12).style(move |_| t::Style {
+                        color: Some(Color::from_rgba(0.5, 0.5, 0.5, 0.8))
+                    }),
+                    iced::widget::row![
+                        // Cupertino
+                        iced::widget::button(
+                            iced::widget::column![
+                                iced::widget::svg(peak_core::icons::get_status_icon(
+                                    "layout",
+                                    if state.selected_theme.as_deref() == Some("cupertino") {
+                                        "#007AFF"
+                                    } else {
+                                        "#888888"
+                                    }
+                                ))
+                                .width(Length::Fixed(24.0))
+                                .height(Length::Fixed(24.0)),
+                                text("Cupertino").size(12)
+                            ]
+                            .align_x(iced::Alignment::Center)
+                            .spacing(5)
+                        )
+                        .on_press(Message::Wizard(
+                            peak_apps::wizard::WizardMessage::SelectTheme("cupertino".to_string())
+                        ))
+                        .width(Length::Fixed(80.0))
+                        .padding(10)
+                        .style(move |_, _| {
+                            let is_sel = state.selected_theme.as_deref() == Some("cupertino");
+                            iced::widget::button::Style {
+                                background: if is_sel {
+                                    Some(Color::from_rgba(0.0, 0.48, 1.0, 0.1).into())
+                                } else {
+                                    None
+                                },
+                                border: iced::Border {
+                                    radius: 12.0.into(),
+                                    width: if is_sel { 2.0 } else { 1.0 },
+                                    color: if is_sel {
+                                        Color::from_rgba(0.0, 0.48, 1.0, 1.0)
+                                    } else {
+                                        Color::from_rgba(0.5, 0.5, 0.5, 0.2)
+                                    },
+                                },
+                                ..Default::default()
+                            }
+                        }),
+                        // Redmond
+                        iced::widget::button(
+                            iced::widget::column![
+                                iced::widget::svg(peak_core::icons::get_status_icon(
+                                    "grid",
+                                    if state.selected_theme.as_deref() == Some("redmond") {
+                                        "#007AFF"
+                                    } else {
+                                        "#888888"
+                                    }
+                                ))
+                                .width(Length::Fixed(24.0))
+                                .height(Length::Fixed(24.0)),
+                                text("Redmond").size(12)
+                            ]
+                            .align_x(iced::Alignment::Center)
+                            .spacing(5)
+                        )
+                        .on_press(Message::Wizard(
+                            peak_apps::wizard::WizardMessage::SelectTheme("redmond".to_string())
+                        ))
+                        .width(Length::Fixed(80.0))
+                        .padding(10)
+                        .style(move |_, _| {
+                            let is_sel = state.selected_theme.as_deref() == Some("redmond");
+                            iced::widget::button::Style {
+                                background: if is_sel {
+                                    Some(Color::from_rgba(0.0, 0.48, 1.0, 0.1).into())
+                                } else {
+                                    None
+                                },
+                                border: iced::Border {
+                                    radius: 12.0.into(),
+                                    width: if is_sel { 2.0 } else { 1.0 },
+                                    color: if is_sel {
+                                        Color::from_rgba(0.0, 0.48, 1.0, 1.0)
+                                    } else {
+                                        Color::from_rgba(0.5, 0.5, 0.5, 0.2)
+                                    },
+                                },
+                                ..Default::default()
+                            }
+                        }),
+                        // AI
+                        iced::widget::button(
+                            iced::widget::column![
+                                iced::widget::svg(peak_core::icons::get_status_icon(
+                                    "cpu",
+                                    if state.selected_theme.as_deref() == Some("ai") {
+                                        "#007AFF"
+                                    } else {
+                                        "#888888"
+                                    }
+                                ))
+                                .width(Length::Fixed(24.0))
+                                .height(Length::Fixed(24.0)),
+                                text("Peak AI").size(12)
+                            ]
+                            .align_x(iced::Alignment::Center)
+                            .spacing(5)
+                        )
+                        .on_press(Message::Wizard(
+                            peak_apps::wizard::WizardMessage::SelectTheme("ai".to_string())
+                        ))
+                        .width(Length::Fixed(80.0))
+                        .padding(10)
+                        .style(move |_, _| {
+                            let is_sel = state.selected_theme.as_deref() == Some("ai");
+                            iced::widget::button::Style {
+                                background: if is_sel {
+                                    Some(Color::from_rgba(0.0, 0.48, 1.0, 0.1).into())
+                                } else {
+                                    None
+                                },
+                                border: iced::Border {
+                                    radius: 12.0.into(),
+                                    width: if is_sel { 2.0 } else { 1.0 },
+                                    color: if is_sel {
+                                        Color::from_rgba(0.0, 0.48, 1.0, 1.0)
+                                    } else {
+                                        Color::from_rgba(0.5, 0.5, 0.5, 0.2)
+                                    },
+                                },
+                                ..Default::default()
+                            }
+                        }),
+                    ]
+                    .spacing(10),
+                    iced::widget::Space::with_height(20.0),
+                    // Time Picker (Visual Only)
+                    text("Time Zone").size(12).style(move |_| t::Style {
+                        color: Some(Color::from_rgba(0.5, 0.5, 0.5, 0.8))
+                    }),
+                    container(
+                        iced::widget::row![
+                            iced::widget::text("UTC-08:00 Pacific TIme (US & Canada)").size(13),
+                            iced::widget::horizontal_space(),
+                            iced::widget::svg(peak_core::icons::get_status_icon(
+                                "clock", "#888888"
+                            ))
+                            .width(Length::Fixed(16.0))
+                            .height(Length::Fixed(16.0))
+                        ]
+                        .align_y(iced::Alignment::Center)
+                        .padding(10)
+                    )
+                    .width(Length::Fill)
+                    .style(move |_| container::Style {
+                        background: Some(if is_light {
+                            Color::WHITE.into()
+                        } else {
+                            Color::from_rgba(1.0, 1.0, 1.0, 0.1).into()
+                        }),
+                        border: iced::Border {
+                            radius: 8.0.into(),
+                            width: 1.0,
+                            color: Color::from_rgba(0.5, 0.5, 0.5, 0.2),
+                        },
+                        ..Default::default()
+                    }),
                     iced::widget::row![
                         iced::widget::button(text("Back").size(14))
                             .on_press(Message::Wizard(peak_apps::wizard::WizardMessage::PrevStep))
