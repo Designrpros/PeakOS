@@ -277,8 +277,8 @@ From `peak-apps/src/`:
 
 **Critical for 1.0:**
 - **Installer:** Found `peak-installer/` but it's minimal (2 files only)
-- **Network UI:** No WiFi setup UI found in `settings.rs` (need to verify)
-- **Audio Controls:** No volume/audio management UI
+- **Network UI:** **PARTIALLY FOUND.** `settings.rs` contains WiFi toggles and "Known Networks" UI, but it appears to be UI-only logic (mock data or partial wiring).
+- **Audio Controls:** **PARTIALLY FOUND.** `SettingsTab::Sound` has a volume slider (`self.volume`), but backend integration (PulseAudio/PipeWire) is not visible in `dependencies`.
 - **Power Management:** No battery indicators in codebase
 - **System Tray:** No background app support
 
@@ -289,12 +289,15 @@ From `peak-apps/src/`:
 The gap between "demo-able OS" and "daily-driver OS" is larger than the previous assessment suggested. You have excellent apps, but missing system integration (WiFi, audio, power).
 
 **Timeline Estimate:**
-- WiFi UI (NetworkManager): 2-3 weeks
-- Audio (PipeWire/PulseAudio): 2 weeks
+- WiFi Backend (NetworkManager bindings): 2-3 weeks
+- Audio Backend (cpal or pipewire-rs): 2 weeks
 - Power management: 1 week
 - System tray: 2 weeks
 
 **Total:** ~8 weeks to "daily-driver" status for basic use cases.
+
+> [!NOTE]
+> **Codebase Reality Check:** The UI for these features exists in `settings.rs` (lines 413-460 for WiFi), which is great news. It means you only need to wire the backend, not build the UI from scratch.
 
 ---
 
@@ -389,6 +392,7 @@ The previous assessment gave 7.5/10. I give 8.5/10 because:
 - [ ] Write comprehensive README with examples
 - [ ] Publish `peak-ui 0.1.0` to crates.io
 - [ ] Create showcase website with live demos
+- [ ] **Enable WASM Support:** Refactor `peak-ui` to feature-gate `peak-core` dependencies (currently `portable-pty` blocks Web compilation).
 - [ ] Post to r/rust, Hacker News, Iced Discord
 
 **Why:** This builds community, gets contributors, and validates your design. Even if PeakOS fails, PeakUI could succeed independently.
@@ -604,6 +608,11 @@ Focus on **one vertical** to establish product-market fit:
 3. **Resource Constraints**
    - Solo/small team can't out-execute System76
    - Strategy: Open-source framework, build community
+
+### 4. Web Compatibility (WASM)
+   - **Observation:** `peak-ui` depends on `peak-core`, which pulls in native system crates (`portable-pty`, `sysinfo`).
+   - **Risk:** Cannot showcase on web without refactoring.
+   - **Mitigation:** Abstract system calls behind a `SystemTrait` and provide a `WasmSystem` implementation (stubbed) for the showcase.
 
 ### My Honest Take
 

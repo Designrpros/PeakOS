@@ -1,24 +1,30 @@
 use crate::atoms::{Divider, Icon, Image, Rectangle};
 use crate::core::{Context, View};
 use crate::prelude::*;
-use iced::{Length, Task};
+use iced::{Element, Length, Task};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Category {
-    Foundations,
-    Components,
+    Design,
+    System,
     Layouts,
+    Collections,
     Navigation,
+    Content,
+    Controls,
     View,
 }
 
 impl Category {
     fn title(&self) -> &'static str {
         match self {
-            Self::Foundations => "Foundations",
-            Self::Components => "Components",
+            Self::Design => "Design",
+            Self::System => "System",
             Self::Layouts => "Layouts",
+            Self::Collections => "Collections",
             Self::Navigation => "Navigation",
+            Self::Content => "Content",
+            Self::Controls => "Controls",
             Self::View => "View",
         }
     }
@@ -45,6 +51,8 @@ pub enum CatalogMessage {
     PickerChanged(usize),
     TextChanged(String),
     ToggleAlert(bool),
+    ThemeChanged(peak_theme::PeakTheme),
+    ToneChanged(peak_theme::ThemeTone),
     None,
 }
 
@@ -60,6 +68,9 @@ pub struct Catalog {
     pub picker_value: usize,
     pub text_value: String,
     pub show_alert: bool,
+    // Theme State
+    pub theme: peak_theme::PeakTheme,
+    pub tone: peak_theme::ThemeTone,
 }
 
 impl Catalog {
@@ -74,6 +85,8 @@ impl Catalog {
             picker_value: 0,
             text_value: String::new(),
             show_alert: false,
+            theme: peak_theme::PeakTheme::Cupertino,
+            tone: peak_theme::ThemeTone::Light,
         }
     }
 
@@ -115,85 +128,226 @@ impl Catalog {
                 self.show_alert = show;
                 Task::none()
             }
+            CatalogMessage::ThemeChanged(theme) => {
+                self.theme = theme;
+                Task::none()
+            }
+            CatalogMessage::ToneChanged(tone) => {
+                self.tone = tone;
+                Task::none()
+            }
             _ => Task::none(),
         }
     }
 
     fn build_items() -> Vec<CatalogItem> {
         vec![
+            // --- Design ---
             CatalogItem {
-                id: "typography",
-                title: "Typography",
-                description: "The type scale used throughout PeakOS.",
-                category: Category::Foundations,
-                render: render_typography,
+                id: "themes",
+                title: "Themes",
+                description: "Visual identity and dark mode support.",
+                category: Category::Design,
+                render: render_coming_soon, // Will be overridden in view dispatch
             },
             CatalogItem {
                 id: "colors",
                 title: "Colors",
-                description: "Semantic color palette.",
-                category: Category::Foundations,
+                description: "System colors and semantic tokens.",
+                category: Category::Design,
                 render: render_colors,
             },
             CatalogItem {
-                id: "controls",
-                title: "Basic Controls",
-                description: "Interactive elements like Toggles, Sliders, Steppers, and Pickers.",
-                category: Category::Components,
-                render: render_controls_stub,
+                id: "gradient",
+                title: "Gradient",
+                description: "Linear, Radial, and Angular gradients.",
+                category: Category::Design,
+                render: render_coming_soon,
             },
+            // --- System ---
             CatalogItem {
-                id: "inputs",
-                title: "Text Inputs",
-                description: "Fields for user text entry.",
-                category: Category::Components,
-                render: render_inputs_placeholder,
+                id: "system",
+                title: "System Info",
+                description: "OS, Device, and Screen details.",
+                category: Category::System,
+                render: render_coming_soon,
             },
-            CatalogItem {
-                id: "navigation",
-                title: "Navigation",
-                description: "Navigation Split View, Sidebar, and stacks.",
-                category: Category::Navigation,
-                render: render_navigation,
-            },
-            CatalogItem {
-                id: "view",
-                title: "Views & Alerts",
-                description: "Sheets, Popovers, and Alerts.",
-                category: Category::View,
-                render: render_views,
-            },
+            // --- Layouts ---
             CatalogItem {
                 id: "stacks",
                 title: "Stacks",
-                description: "VStack, HStack, and ZStack layouts.",
+                description: "VStack, HStack, and ZStack.",
                 category: Category::Layouts,
                 render: render_stacks,
             },
             CatalogItem {
-                id: "grid",
-                title: "Responsive Grid",
-                description: "Grid that adapts columns to screen width.",
+                id: "spacer",
+                title: "Spacer",
+                description: "Flexible space between views.",
                 category: Category::Layouts,
+                render: render_coming_soon,
+            },
+            CatalogItem {
+                id: "padding",
+                title: "Padding",
+                description: "Spacing around views.",
+                category: Category::Layouts,
+                render: render_coming_soon,
+            },
+            CatalogItem {
+                id: "frame",
+                title: "Frame",
+                description: "Positioning and sizing constraints.",
+                category: Category::Layouts,
+                render: render_coming_soon,
+            },
+            CatalogItem {
+                id: "geometry",
+                title: "Geometry Reader",
+                description: "Size-dependent layout logic.",
+                category: Category::Layouts,
+                render: render_coming_soon,
+            },
+            // --- Collections ---
+            CatalogItem {
+                id: "grid",
+                title: "Grid",
+                description: "Fixed and responsive grid layouts.",
+                category: Category::Collections,
                 render: render_grid,
+            },
+            CatalogItem {
+                id: "lazy_grid",
+                title: "Lazy Grids",
+                description: "Scrollable large-dataset grids.",
+                category: Category::Collections,
+                render: render_coming_soon,
             },
             CatalogItem {
                 id: "scroll",
                 title: "Scroll View",
-                description: "Scrollable container for overflowing content.",
-                category: Category::Layouts, // Or Collections, but Layouts fits for now
+                description: "Scrollable content containers.",
+                category: Category::Collections,
                 render: render_scroll,
+            },
+            CatalogItem {
+                id: "tab_view",
+                title: "Tab View",
+                description: "Tab-based navigation.",
+                category: Category::Collections,
+                render: render_coming_soon,
+            },
+            // --- Navigation ---
+            CatalogItem {
+                id: "nav_split",
+                title: "Navigation Split View",
+                description: "Two or three pane navigation.",
+                category: Category::Navigation,
+                render: render_navigation,
+            },
+            CatalogItem {
+                id: "nav_stack",
+                title: "Navigation Stack",
+                description: "Push/Pop navigation.",
+                category: Category::Navigation,
+                render: render_coming_soon,
+            },
+            // --- Content ---
+            CatalogItem {
+                id: "typography",
+                title: "Typography",
+                description: "Font hierarchy and text styles.",
+                category: Category::Content,
+                render: render_typography,
+            },
+            CatalogItem {
+                id: "icons",
+                title: "Icons",
+                description: "System icons and symbols.",
+                category: Category::Content,
+                render: render_icons,
+            },
+            CatalogItem {
+                id: "text",
+                title: "Text",
+                description: "Text variants and labels.",
+                category: Category::Content,
+                render: render_content, // Reusing render_content for generic content demos
+            },
+            CatalogItem {
+                id: "text_field",
+                title: "Text Field",
+                description: "Single line text input.",
+                category: Category::Content,
+                render: render_inputs_placeholder, // Specifically for inputs
+            },
+            CatalogItem {
+                id: "image",
+                title: "Image",
+                description: "Asset and memory images.",
+                category: Category::Content,
+                render: render_content,
+            },
+            CatalogItem {
+                id: "divider",
+                title: "Divider",
+                description: "Visual separators.",
+                category: Category::Content,
+                render: render_content,
+            },
+            CatalogItem {
+                id: "shape",
+                title: "Shape",
+                description: "Rectangle, Circle, Capsule, etc.",
+                category: Category::Content,
+                render: render_coming_soon,
+            },
+            // --- Controls ---
+            CatalogItem {
+                id: "controls", // ID matching manual dispatch
+                title: "Basic Controls",
+                description: "Toggle, Slider, Stepper, Picker.",
+                category: Category::Controls,
+                render: render_controls_stub,
+            },
+            CatalogItem {
+                id: "button",
+                title: "Button",
+                description: "Push buttons and styles.",
+                category: Category::Controls,
+                render: render_coming_soon,
+            },
+            CatalogItem {
+                id: "menu",
+                title: "Menu",
+                description: "Dropdown and context menus.",
+                category: Category::Controls,
+                render: render_coming_soon,
+            },
+            // --- Views ---
+            CatalogItem {
+                id: "sheets",
+                title: "Sheets & Alerts",
+                description: "Modal views and popovers.",
+                category: Category::View,
+                render: render_views,
+            },
+            CatalogItem {
+                id: "popover",
+                title: "Popover",
+                description: "Contextual info bubbles.",
+                category: Category::View,
+                render: render_coming_soon,
             },
         ]
     }
-}
 
-// Implement View for Catalog directly
-impl View<CatalogMessage> for Catalog {
-    fn view(
-        &self,
-        context: &Context,
-    ) -> iced::Element<'static, CatalogMessage, iced::Theme, iced::Renderer> {
+    pub fn view(&self, context: &Context) -> Element<'static, CatalogMessage> {
+        // Apply Catalog's selected theme to the context
+        let mut local_context = context.clone();
+        local_context.theme = peak_theme::ThemeTokens::new(self.theme, self.tone);
+        let context = &local_context;
+
         let items = self.items.clone();
         let selected_id = self.selected_id;
         let inspector_open = self.inspector_open;
@@ -214,16 +368,19 @@ impl View<CatalogMessage> for Catalog {
                     .push(Text::new("PeakUI").large_title())
                     .push(Text::new("Reference").secondary()),
             )
-            .push(render_category(&items, selected_id, Category::Foundations))
-            .push(render_category(&items, selected_id, Category::Components))
-            .push(render_category(&items, selected_id, Category::Layouts));
+            .push(render_category(&items, selected_id, Category::Design))
+            .push(render_category(&items, selected_id, Category::Content))
+            .push(render_category(&items, selected_id, Category::Controls))
+            .push(render_category(&items, selected_id, Category::Collections))
+            .push(render_category(&items, selected_id, Category::Layouts))
+            .push(render_category(&items, selected_id, Category::Navigation))
+            .push(render_category(&items, selected_id, Category::View))
+            .push(render_category(&items, selected_id, Category::System));
 
         // Detail Content
         let detail_view: Box<dyn View<CatalogMessage>> = if let Some(sid) = selected_id {
-            // Manual dispatch for interactive items
+            // Manual dispatch for interactive items that need specific STATE
             let content: Box<dyn View<CatalogMessage>> = match sid {
-                "typography" => render_typography(context),
-                "colors" => render_colors(context),
                 "controls" => render_controls(
                     context,
                     toggle_val,
@@ -231,7 +388,8 @@ impl View<CatalogMessage> for Catalog {
                     stepper_val,
                     self.picker_value,
                 ),
-                "inputs" => Box::new(
+                "themes" => render_themes(context, self.theme, self.tone),
+                "text_field" | "inputs" => Box::new(
                     VStack::new()
                         .spacing(24.0)
                         .padding(32.0)
@@ -252,14 +410,9 @@ impl View<CatalogMessage> for Catalog {
                                 .width(Length::Fixed(300.0)),
                         ),
                 ),
-                "content" => render_content(context),
-                "stacks" => render_stacks(context),
-                "grid" => render_grid(context),
-                "scroll" => render_scroll(context),
-                "navigation" => render_navigation(context),
-                "view" => render_views(context),
+                // For other items, we use the function pointer from the item itself
+                // This reduces the big match statement
                 _ => {
-                    // Fallback for static items
                     if let Some(item) = items.iter().find(|i| i.id == sid) {
                         (item.render)(context)
                     } else {
@@ -361,7 +514,18 @@ fn render_category(
         .push(list)
 }
 
-// Static Renderers
+// --- Render Functions ---
+
+fn render_coming_soon(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
+    Box::new(
+        VStack::new()
+            .spacing(16.0)
+            .padding(32.0)
+            .push(crate::atoms::Text::new("Coming Soon").title1())
+            .push(crate::atoms::Text::new("This component is not yet implemented.").secondary()),
+    )
+}
+
 fn render_typography(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
@@ -392,8 +556,14 @@ fn render_colors(ctx: &Context) -> Box<dyn View<CatalogMessage>> {
                 ResponsiveGrid::new()
                     .spacing(12.0)
                     .push(color_swatch("Primary", colors.primary))
+                    .push(color_swatch("Secondary", colors.secondary))
+                    .push(color_swatch("Accent", colors.accent))
+                    .push(color_swatch("Success", colors.success))
+                    .push(color_swatch("Warning", colors.warning))
+                    .push(color_swatch("Danger", colors.danger))
                     .push(color_swatch("Background", colors.background))
                     .push(color_swatch("Surface", colors.surface))
+                    .push(color_swatch("Border", colors.border))
                     .push(color_swatch("Text Primary", colors.text_primary)),
             ),
     )
@@ -410,21 +580,10 @@ fn color_swatch(name: &str, color: iced::Color) -> impl View<CatalogMessage> {
         .push(Text::new(name).caption1().center())
 }
 
-// Placeholder renderers for items that need state (handled in Catalog::view view dispatch for now)
-fn render_controls_placeholder(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
-    Box::new(Text::new("Controls").body())
-}
-fn render_inputs_placeholder(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
-    Box::new(Text::new("Inputs").body())
-}
-fn render_content_placeholder(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
-    Box::new(Text::new("Content").body())
-}
-
-fn render_content(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
+fn render_icons(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(24.0)
+            .spacing(16.0)
             .padding(32.0)
             .push(Text::new("Icons").title2())
             .push(
@@ -435,21 +594,99 @@ fn render_content(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
                     .push(
                         Icon::new("home")
                             .size(32.0)
-                            .color(iced::Color::from_rgb(1.0, 0.0, 0.5)),
+                            .color(iced::Color::from_rgb(0.0, 0.5, 1.0)),
                     ),
+            ),
+    )
+}
+
+fn render_controls_stub(_: &Context) -> Box<dyn View<CatalogMessage>> {
+    Box::new(crate::atoms::Space::new(Length::Shrink, Length::Shrink))
+}
+
+fn render_controls(
+    _ctx: &Context,
+    toggle_val: bool,
+    slider_val: f32,
+    stepper_val: i32,
+    picker_val: usize,
+) -> Box<dyn View<CatalogMessage>> {
+    Box::new(
+        VStack::new()
+            .spacing(24.0)
+            .padding(32.0)
+            .push(Text::new("Toggles").title2())
+            .push(Toggle::new(
+                "Airplane Mode",
+                toggle_val,
+                CatalogMessage::ToggleChanged,
+            ))
+            .push(Text::new("Sliders").title2())
+            .push(
+                Slider::new(0.0..=100.0, slider_val, CatalogMessage::SliderChanged)
+                    .width(Length::Fixed(200.0)),
             )
+            .push(Text::new("Steppers").title2())
+            .push(Stepper::new(
+                "Quantity",
+                stepper_val,
+                CatalogMessage::StepperChanged,
+            ))
+            .push(Text::new("Segmented Picker").title2())
+            .push(
+                crate::segmented_picker::SegmentedPicker::<CatalogMessage, iced::Theme>::new(
+                    vec![
+                        ("Daily", CatalogMessage::PickerChanged(0)),
+                        ("Weekly", CatalogMessage::PickerChanged(1)),
+                        ("Monthly", CatalogMessage::PickerChanged(2)),
+                        ("Yearly", CatalogMessage::PickerChanged(3)),
+                    ],
+                    picker_val,
+                )
+                .width(Length::Fixed(400.0)),
+            ),
+    )
+}
+
+fn render_inputs_placeholder(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
+    // This is actually stubbed in the Catalog::view manual match for now to pass state
+    Box::new(Text::new("Inputs").body())
+}
+
+fn render_content(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
+    Box::new(
+        VStack::new()
+            .spacing(24.0)
+            .padding(32.0)
+            .push(Text::new("Layout & Separators").title2())
+            .push(Text::new("Below is a divider").body())
             .push(Divider::new())
-            .push(Text::new("Images").title2())
+            .push(Text::new("Above is a divider").body())
+            .push(Text::new("Multimedia").title2())
             .push(
-                Image::new(std::path::PathBuf::from("assets/images/placeholder.png"))
-                    .width(Length::Fixed(200.0))
-                    .height(Length::Fixed(150.0))
-                    .corner_radius(12.0),
-            )
-            .push(
-                Text::new("Note: Image requires valid asset path")
-                    .caption1()
-                    .secondary(),
+                HStack::new()
+                    .spacing(16.0)
+                    .push(
+                        VStack::new()
+                            .spacing(8.0)
+                            .push(Text::new("Image Asset").headline())
+                            .push(
+                                Image::new(std::path::PathBuf::from("assets/logo.png"))
+                                    .width(Length::Fixed(100.0))
+                                    .height(Length::Fixed(100.0))
+                                    .corner_radius(12.0),
+                            ),
+                    )
+                    .push(
+                        VStack::new()
+                            .spacing(8.0)
+                            .push(Text::new("Placeholder").headline())
+                            .push(
+                                Rectangle::new(Length::Fixed(100.0), Length::Fixed(100.0))
+                                    .color(iced::Color::from_rgb(0.8, 0.8, 0.8))
+                                    .corner_radius(12.0),
+                            ),
+                    ),
             ),
     )
 }
@@ -520,50 +757,26 @@ fn render_grid(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
     )
 }
 
-fn render_controls_stub(_: &Context) -> Box<dyn View<CatalogMessage>> {
-    Box::new(crate::atoms::Space::new(Length::Shrink, Length::Shrink))
-}
+fn render_scroll(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
+    // Generate enough content to force scrolling
+    let mut content = VStack::new().spacing(16.0);
+    for i in 1..=50 {
+        content = content.push(
+            HStack::new()
+                .spacing(16.0)
+                .push(Text::new(format!("{:02}", i)).secondary())
+                .push(Text::new(format!("Scrollable Item Row {}", i)).body()),
+        );
+    }
 
-fn render_controls(
-    _ctx: &Context,
-    toggle_val: bool,
-    slider_val: f32,
-    stepper_val: i32,
-    picker_val: usize,
-) -> Box<dyn View<CatalogMessage>> {
     Box::new(
         VStack::new()
-            .spacing(24.0)
             .padding(32.0)
-            .push(Text::new("Toggles").title2())
-            .push(Toggle::new(
-                "Airplane Mode",
-                toggle_val,
-                CatalogMessage::ToggleChanged,
-            ))
-            .push(Text::new("Sliders").title2())
+            .spacing(24.0)
+            .height(Length::Fill) // Important for ScrollView to work within
+            .push(Text::new("Vertical Scroll").title2())
             .push(
-                Slider::new(0.0..=100.0, slider_val, CatalogMessage::SliderChanged)
-                    .width(Length::Fixed(200.0)),
-            )
-            .push(Text::new("Steppers").title2())
-            .push(Stepper::new(
-                "Quantity",
-                stepper_val,
-                CatalogMessage::StepperChanged,
-            ))
-            .push(Text::new("Segmented Picker").title2())
-            .push(
-                crate::segmented_picker::SegmentedPicker::<CatalogMessage, iced::Theme>::new(
-                    vec![
-                        ("Daily", CatalogMessage::PickerChanged(0)),
-                        ("Weekly", CatalogMessage::PickerChanged(1)),
-                        ("Monthly", CatalogMessage::PickerChanged(2)),
-                        ("Yearly", CatalogMessage::PickerChanged(3)),
-                    ],
-                    picker_val,
-                )
-                .width(Length::Fixed(400.0)),
+                ScrollView::new(content).height(Length::Fixed(400.0)), // Constrain height to force scroll
             ),
     )
 }
@@ -601,26 +814,97 @@ fn render_views(_context: &Context) -> Box<dyn View<CatalogMessage>> {
     )
 }
 
-fn render_scroll(_ctx: &Context) -> Box<dyn View<CatalogMessage>> {
-    // Generate enough content to force scrolling
-    let mut content = VStack::new().spacing(16.0);
-    for i in 1..=50 {
-        content = content.push(
-            HStack::new()
-                .spacing(16.0)
-                .push(Text::new(format!("{:02}", i)).secondary())
-                .push(Text::new(format!("Scrollable Item Row {}", i)).body()),
+fn render_themes(
+    _ctx: &Context,
+    current_theme: peak_theme::PeakTheme,
+    current_tone: peak_theme::ThemeTone,
+) -> Box<dyn View<CatalogMessage>> {
+    let mut grid = ResponsiveGrid::new().spacing(16.0);
+
+    for theme in peak_theme::PeakTheme::all() {
+        let is_selected = *theme == current_theme;
+        let colors = theme.colors(current_tone);
+
+        grid = grid.push(
+            Card::new(
+                VStack::new()
+                    .spacing(12.0)
+                    .push(
+                        Rectangle::new(Length::Fill, Length::Fixed(40.0))
+                            .color(colors.primary)
+                            .corner_radius(8.0),
+                    )
+                    .push(
+                        HStack::new()
+                            .spacing(4.0)
+                            .push(
+                                Rectangle::new(Length::Fixed(20.0), Length::Fixed(20.0))
+                                    .color(colors.background)
+                                    .corner_radius(4.0),
+                            )
+                            .push(
+                                Rectangle::new(Length::Fixed(20.0), Length::Fixed(20.0))
+                                    .color(colors.surface)
+                                    .corner_radius(4.0),
+                            )
+                            .push(
+                                Rectangle::new(Length::Fixed(20.0), Length::Fixed(20.0))
+                                    .color(colors.secondary)
+                                    .corner_radius(4.0),
+                            ),
+                    )
+                    .push(
+                        Button::new(theme.display_name())
+                            .width(Length::Fill)
+                            .intent(if is_selected {
+                                Intent::Primary
+                            } else {
+                                Intent::Neutral
+                            })
+                            .variant(if is_selected {
+                                Variant::Solid
+                            } else {
+                                Variant::Outline
+                            })
+                            .on_press(CatalogMessage::ThemeChanged(*theme)),
+                    ),
+            )
+            .width(Length::Fill),
         );
     }
 
     Box::new(
         VStack::new()
-            .padding(32.0)
             .spacing(24.0)
-            .height(Length::Fill) // Important for ScrollView to work within
-            .push(Text::new("Vertical Scroll").title2())
+            .padding(32.0)
             .push(
-                ScrollView::new(content).height(Length::Fixed(400.0)), // Constrain height to force scroll
-            ),
+                HStack::new()
+                    .align_y(iced::Alignment::Center)
+                    .push(Text::new("Appearance").title2())
+                    .push(crate::atoms::Space::new(Length::Fill, Length::Shrink))
+                    .push(
+                        crate::segmented_picker::SegmentedPicker::<CatalogMessage, iced::Theme>::new(
+                            vec![
+                                (
+                                    "Light",
+                                    CatalogMessage::ToneChanged(peak_theme::ThemeTone::Light),
+                                ),
+                                (
+                                    "Dark",
+                                    CatalogMessage::ToneChanged(peak_theme::ThemeTone::Dark),
+                                ),
+                            ],
+                            match current_tone {
+                                peak_theme::ThemeTone::Light => 0,
+                                peak_theme::ThemeTone::Dark => 1,
+                            },
+                        )
+                        .width(Length::Fixed(200.0)),
+                    ),
+            )
+            .push(Divider::new())
+            .push(Text::new("Peak Themes").title2())
+            .push(Text::new("Choose a theme to transform the entire OS interface.").secondary())
+            .push(grid),
     )
 }
