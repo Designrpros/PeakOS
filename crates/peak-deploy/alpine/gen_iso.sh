@@ -6,7 +6,9 @@ export PATH="/root/.cargo/bin:$PATH"
 
 echo "=== PeakOS Builder (Alpine) ==="
 ARCH=$(uname -m)
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 echo "Architecture: $ARCH"
+echo "Timestamp: $TIMESTAMP"
 
 if [ "$ARCH" = "aarch64" ]; then
     GRUB_TARGET="arm64-efi"
@@ -111,24 +113,26 @@ fi
 echo "   Updating crates.io index"
 
 # Install Base System + Kernel + Input Devices
-# wireless-tools/wpa_supplicant needed for wifi?
+# include radeon, intel, amdgpu, and nvidia firmware for hardware support
 apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untrusted \
-    alpine-base linux-lts linux-firmware-none \
+    alpine-base linux-lts \
+    linux-firmware-radeon linux-firmware-intel \
+    linux-firmware-amdgpu linux-firmware-nvidia \
     udev eudev libinput libinput-dev \
     alsa-lib wayland mesa-dri-gallium \
     labwc seatd \
-    webkit2gtk-4.1 \
     adwaita-icon-theme \
     ttf-dejavu font-noto font-noto-cjk \
     dbus networkmanager networkmanager-cli networkmanager-wifi wpa_supplicant \
     firefox ca-certificates fbida-fbi \
     bluez bluez-tools bluez-deprecated \
-    alsa-utils \
+    alsa-utils pipewire wireplumber \
+    flatpak \
     glib openssl fontconfig libxcb vulkan-loader \
     libxml2 libxslt shared-mime-info gsettings-desktop-schemas \
-    mesa-gl
+    mesa-gl \
+    tzdata libxkbcommon
 
-# Configure doas and sudo compatibility
 # Configure doas and sudo compatibility
 mkdir -p /build/rootfs/etc/doas.d
 echo "permit nopass keepenv root" > /build/rootfs/etc/doas.d/doas.conf
@@ -138,9 +142,19 @@ mkdir -p /build/rootfs/etc/runlevels/default
 ln -sf /etc/init.d/dbus /build/rootfs/etc/runlevels/default/dbus
 ln -sf /etc/init.d/seatd /build/rootfs/etc/runlevels/default/seatd
 ln -sf /etc/init.d/networkmanager /build/rootfs/etc/runlevels/default/networkmanager
+ln -sf /etc/init.d/bluetooth /build/rootfs/etc/runlevels/default/bluetooth
 
-
-
+# Pre-configure Flathub
+mkdir -p /build/rootfs/var/lib/flatpak/repo
+mkdir -p /etc/flatpak/installations.d
+cat > /etc/flatpak/installations.d/peak.conf <<EOF
+[Installation "peak"]
+Path=/build/rootfs/var/lib/flatpak
+DisplayName=PeakOS
+StorageType=harddisk
+EOF
+flatpak --installation=peak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+rm /etc/flatpak/installations.d/peak.conf
 
 # --- Configuration Phase ---
 echo "--- Configuring Startup ---"
@@ -159,6 +173,7 @@ cat > /build/rootfs/etc/xdg/labwc/rc.xml <<EOF
 <labwc_config>
   <core>
     <decoration>server</decoration>
+    <gap>4</gap>
   </core>
   <theme>
     <name>Arc-Dark</name>
@@ -168,15 +183,32 @@ cat > /build/rootfs/etc/xdg/labwc/rc.xml <<EOF
     <followMouse>no</followMouse>
   </focus>
   <keyboard>
+    <repeat delay="250" rate="30"/>
     <keybind key="A-Tab">
       <action name="NextWindow"/>
     </keybind>
+    <keybind key="A-A">
+      <action name="ToggleMaximize"/>
+    </keybind>
   </keyboard>
+  <mouse>
+    <context name="Window">
+      <button name="A-Left" action="Press">
+        <action name="Raise"/>
+        <action name="BeginMove"/>
+      </button>
+      <button name="A-Right" action="Press">
+        <action name="Raise"/>
+        <action name="BeginResize"/>
+      </button>
+    </context>
+  </mouse>
   <windowRules>
-    <windowRule identifier="peak-desktop">
-        <action name="Maximize" />
-        <action name="Undecorate" />
-        <action name="Stick" />
+    <!-- Ensure peak-desktop components (Menubar, Dock) have no borders -->
+    <!-- 'PeakOS' is the namespace set in layer_app.rs -->
+    <windowRule identifier="PeakOS" serverDecoration="no">
+    </windowRule>
+    <windowRule identifier="peak-desktop" serverDecoration="no">
     </windowRule>
   </windowRules>
 </labwc_config>
@@ -185,17 +217,17 @@ EOF
 # labwc autostart (launches peak-desktop automatically)
 cat > /build/rootfs/etc/xdg/labwc/autostart <<EOF
 # Start the PeakOS Shell components
+# Use --style redmond for testing the layout application
+STYLE="redmond"
+
 # 1. Menubar (Top)
-/usr/bin/peak-desktop --layer --bar > /tmp/peak-bar.log 2>&1 &
+/usr/bin/peak-desktop --layer --bar --style \$STYLE > /tmp/peak-bar.log 2>&1 &
 
 # 2. Dock (Bottom)
-/usr/bin/peak-desktop --layer --dock > /tmp/peak-dock.log 2>&1 &
+/usr/bin/peak-desktop --layer --dock --style \$STYLE > /tmp/peak-dock.log 2>&1 &
 
 # 3. Wallpaper (Background)
-/usr/bin/peak-desktop --layer > /tmp/peak-bg.log 2>&1 &
-
-# Start the Intelligence Agent (Background) in daemon mode
-# peak-intelligence --daemon &
+/usr/bin/peak-desktop --layer --style \$STYLE > /tmp/peak-bg.log 2>&1 &
 EOF
 chmod +x /build/rootfs/etc/xdg/labwc/autostart
 
@@ -385,23 +417,35 @@ find . | cpio -H newc -o | gzip > /build/iso/boot/initrd
 cp /build/rootfs/boot/vmlinuz-lts /build/iso/boot/vmlinuz
 
 # 7. Create GRUB Config
-# Note: rdinit=/init tells kernel to execute our script.
+# Early config for embedding (searches for the real config)
+# We try multiple strategies sequentially
+cat > /tmp/grub-early.cfg <<EOF
+search --no-floppy --set=root --label PeakOS
+search --no-floppy --set=root --file /boot/grub/grub.cfg
+set prefix=(\$root)/boot/grub
+configfile /boot/grub/grub.cfg
+EOF
+
+# Main config: rdinit=/init tells kernel to execute our script.
 cat > /build/iso/boot/grub/grub.cfg <<EOF
 set timeout=3
 set gfxmode=1920x1080
 set gfxpayload=keep
 menuentry "PeakOS ($ARCH)" {
+    # Sequential search: last one found wins
     search --no-floppy --set=root --label PeakOS
-    linux /boot/vmlinuz root=/dev/ram0 rdinit=/init console=$SERIAL_CONSOLE console=tty0 $EARLYCON debug keep_bootcon video=1920x1080
+    search --no-floppy --set=root --file /boot/vmlinuz
+    linux /boot/vmlinuz root=/dev/ram0 rdinit=/init console=tty0 $SERIAL_CONSOLE $EARLYCON debug keep_bootcon video=1920x1080
     initrd /boot/initrd
 }
 EOF
 
-# Generate BOOTAA64.EFI
+# Generate BOOTAA64.EFI / BOOTX64.EFI
 mkdir -p /build/iso/EFI/BOOT
 echo "--- Generarting EFI Image ---"
 grub-mkimage \
     -p /boot/grub \
+    -c /tmp/grub-early.cfg \
     -o /build/iso/EFI/BOOT/$EFI_NAME \
     -O $GRUB_TARGET \
     -d /usr/lib/grub/$GRUB_TARGET \

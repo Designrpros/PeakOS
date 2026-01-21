@@ -35,6 +35,7 @@ pub enum LaunchMode {
 pub struct PeakNativeFlags {
     pub mode: String,
     pub launch_mode: LaunchMode,
+    pub style: Option<String>,
 }
 
 // Main application struct

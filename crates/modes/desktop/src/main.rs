@@ -29,9 +29,16 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         launch_mode = app::LaunchMode::Dock;
     }
 
+    let style_arg = args
+        .iter()
+        .position(|r| r == "--style")
+        .and_then(|i| args.get(i + 1))
+        .cloned();
+
     let flags = app::PeakNativeFlags {
         mode: mode_arg.clone(),
         launch_mode,
+        style: style_arg.clone(),
     };
 
     // Process spawning (Only for Desktop mode/Launcher)

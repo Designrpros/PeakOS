@@ -184,9 +184,14 @@ impl PeakNative {
 
                                     if rect.contains(self.cursor_position) {
                                         focused_app = Some(app_id);
+                                        let mut win_y = state.y;
+                                        if win_y < 40.0 {
+                                            win_y = 40.0;
+                                        }
+
                                         let title_bar_rect = iced::Rectangle {
                                             x: state.x,
-                                            y: state.y,
+                                            y: win_y,
                                             width: state.width,
                                             height: 40.0,
                                         };
@@ -195,7 +200,7 @@ impl PeakNative {
                                                 app_id,
                                                 iced::Point::new(
                                                     self.cursor_position.x - state.x,
-                                                    self.cursor_position.y - state.y,
+                                                    self.cursor_position.y - win_y,
                                                 ),
                                             ));
                                         }
@@ -331,8 +336,8 @@ impl PeakNative {
                         }
                     }
 
-                    // Magnet Snapping (Option + Arrows)
-                    if modifiers.alt() {
+                    // Magnet Snapping (Option/Command/Alt/Super + Arrows)
+                    if modifiers.alt() || modifiers.command() || modifiers.control() {
                         let top_app = self.window_manager.z_order.last().cloned();
                         if let Some(app_id) = top_app {
                             self.handle_snapping(app_id, key.clone());
@@ -448,19 +453,25 @@ impl PeakNative {
                 // We now rely on iced::window::Event::Moved for passive sync
                 // to avoid freezing the main thread with osascript.
 
-                if self.last_monitor_update.elapsed() > std::time::Duration::from_millis(500) {
-                    // Diagnostic: Disable sysinfo refresh to see if it fixes the freeze
-                    // self.system.refresh_cpu();
-                    // self.system.refresh_memory();
+                if self.last_monitor_update.elapsed() > std::time::Duration::from_secs(5) {
+                    self.last_monitor_update = std::time::Instant::now();
+                    self.system.refresh_all();
 
                     let cpu = self.system.global_cpu_info().cpu_usage();
                     let mem_used =
                         self.system.used_memory() as f32 / self.system.total_memory() as f32;
 
                     self.cortex_state.push_data(cpu, mem_used);
-                    self.last_monitor_update = std::time::Instant::now();
+
+                    // Periodic app scanning
+                    self.scanned_apps = {
+                        let mut apps = peak_core::registry::AppInfo::all_as_media();
+                        apps.extend(peak_core::models::MediaItem::scan_system());
+                        apps
+                    };
                 }
-                Task::none()
+
+                iced::Task::none()
             }
             Message::Exit => Task::none(),
             Message::LaunchBrowser(url) => {

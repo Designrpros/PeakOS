@@ -73,7 +73,7 @@ pub fn get_menubar_settings() -> LayerShellSettings {
 pub fn get_dock_settings() -> LayerShellSettings {
     LayerShellSettings {
         anchor: Anchor::Bottom,
-        layer: Layer::Bottom,
+        layer: Layer::Overlay,
         exclusive_zone: 60,
         keyboard_interactivity: KeyboardInteractivity::None,
         ..Default::default()

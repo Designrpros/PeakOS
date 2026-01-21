@@ -100,7 +100,19 @@ impl PeakNative {
                 "tv" => ShellMode::TV,
                 _ => ShellMode::Desktop,
             },
-            shell_style: peak_core::registry::ShellStyle::default(), // Cupertino (macOS) by default
+            shell_style: if let Some(ref s) = flags.style {
+                use peak_core::registry::ShellStyle;
+                match s.to_lowercase().as_str() {
+                    "cupertino" => ShellStyle::Cupertino,
+                    "redmond" => ShellStyle::Redmond,
+                    "ai" => ShellStyle::AI,
+                    "console" => ShellStyle::Console,
+                    "tv" => ShellStyle::TV,
+                    _ => ShellStyle::Cupertino,
+                }
+            } else {
+                peak_core::registry::ShellStyle::default() // Cupertino (macOS) by default
+            },
             launch_mode,
             custom_wallpaper: None,
             inspector: Inspector::new(),

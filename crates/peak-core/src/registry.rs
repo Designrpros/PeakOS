@@ -275,7 +275,7 @@ impl AppId {
             },
             AppId::AppGrid => AppMetadata {
                 id: *self,
-                name: "Launchpad",
+                name: "Apps",
                 description: "Quickly browse and search your apps.",
                 category: AppCategoryPrimary::Utilities,
                 source: InstallSource::System,
@@ -388,7 +388,7 @@ impl AppInfo {
             AppId::Settings => "Settings",
             AppId::FileManager => "Files",
             AppId::Store => "Store",
-            AppId::AppGrid => "Launchpad",
+            AppId::AppGrid => "Apps",
             AppId::Editor => "Text Editor",
             AppId::Desktop => "Desktop",
             AppId::Spotify => "Spotify",

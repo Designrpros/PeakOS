@@ -138,9 +138,16 @@ impl PeakNative {
         let mut workspace_stack =
             Stack::new().push(self.desktop.view(self.tokens).map(Message::Desktop));
 
-        // Integrated Desktop UI for non-Linux (macOS/Windows)
-        #[cfg(not(target_os = "linux"))]
-        {
+        // Integrated Desktop UI
+        // For Linux, we only do this in Desktop mode (to show the frame/rail over the wallpaper)
+        // because Bar/Dock are separate processes.
+        let should_render_integrated = if cfg!(target_os = "linux") {
+            self.launch_mode == crate::app::LaunchMode::Desktop
+        } else {
+            true
+        };
+
+        if should_render_integrated {
             match self.shell_style {
                 peak_core::registry::ShellStyle::Cupertino => {
                     // --- CUPERTINO: Menubar (Top) + Dock (Bottom) ---

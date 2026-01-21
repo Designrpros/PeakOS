@@ -136,15 +136,18 @@ impl StoreApp {
                 Task::none()
             }
             StoreMessage::InstallApp(name) => {
-                let pkg_name = name.to_lowercase();
+                let pkg_name = name.clone();
 
                 // Add to installing list
                 if !self.installing_apps.contains(&name) {
                     self.installing_apps.push(name.clone());
                 }
 
+                // Check if it's a flatpak (usually has dots, e.g. org.gimp.GIMP)
+                let is_flatpak = name.contains('.');
+
                 // Spawn async installation task
-                Task::perform(install_package(pkg_name), move |success| {
+                Task::perform(install_package(pkg_name, is_flatpak), move |success| {
                     StoreMessage::InstallationComplete(name.clone(), success)
                 })
             }
@@ -532,174 +535,94 @@ fn check_installed(name: &str) -> bool {
 
 pub fn get_initial_apps() -> Vec<AppPackage> {
     vec![
-        // FIRST: Antigravity
         AppPackage {
             name: "Antigravity".into(),
-            description: "Google Agentic IDE.".into(),
-            category: AppCategory::Utility, // Or Development
+            description: "Advanced Agentic Coding Assistant.".into(),
+            category: AppCategory::Development,
             version: "1.0.0".into(),
-            is_installed: check_installed("Antigravity"),
+            is_installed: true,
         },
         // WEB
         AppPackage {
-            name: "Firefox".into(),
-            description: "Fast, private browser.".into(),
+            name: "org.mozilla.firefox".into(),
+            description: "Firefox Web Browser (Flatpak)".into(),
             category: AppCategory::Web,
-            version: "120.0".into(),
+            version: "Latest".into(),
             is_installed: check_installed("firefox"),
         },
         AppPackage {
-            name: "Chromium".into(),
-            description: "Open source web browser.".into(),
+            name: "org.chromium.Chromium".into(),
+            description: "Chromium Web Browser (Flatpak)".into(),
             category: AppCategory::Web,
-            version: "119.0".into(),
+            version: "Latest".into(),
             is_installed: check_installed("chromium"),
-        },
-        AppPackage {
-            name: "Brave".into(),
-            description: "Privacy-focused browser.".into(),
-            category: AppCategory::Web,
-            version: "1.60".into(),
-            is_installed: check_installed("brave"),
         },
         // CREATIVE
         AppPackage {
-            name: "GIMP".into(),
-            description: "GNU Image Manipulation Program.".into(),
+            name: "org.gimp.GIMP".into(),
+            description: "GNU Image Manipulation Program (Flatpak)".into(),
             category: AppCategory::Creative,
-            version: "2.10".into(),
+            version: "Latest".into(),
             is_installed: check_installed("gimp"),
         },
         AppPackage {
-            name: "Inkscape".into(),
-            description: "Vector Graphics Editor.".into(),
+            name: "org.inkscape.Inkscape".into(),
+            description: "Vector Graphics Editor (Flatpak)".into(),
             category: AppCategory::Creative,
-            version: "1.3".into(),
+            version: "Latest".into(),
             is_installed: check_installed("inkscape"),
         },
         AppPackage {
-            name: "Krita".into(),
-            description: "Digital Painting.".into(),
+            name: "org.kde.krita".into(),
+            description: "Digital Painting & Illustration (Flatpak)".into(),
             category: AppCategory::Creative,
-            version: "5.2".into(),
+            version: "Latest".into(),
             is_installed: check_installed("krita"),
-        },
-        AppPackage {
-            name: "Audacity".into(),
-            description: "Audio Editor.".into(),
-            category: AppCategory::Creative,
-            version: "3.4".into(),
-            is_installed: check_installed("audacity"),
         },
         // DEV
         AppPackage {
-            name: "VS Code".into(),
-            description: "Code Editor.".into(),
+            name: "com.visualstudio.code".into(),
+            description: "Visual Studio Code (Flatpak)".into(),
             category: AppCategory::Development,
-            version: "1.85".into(),
+            version: "Latest".into(),
             is_installed: check_installed("code"),
-        },
-        AppPackage {
-            name: "Docker".into(),
-            description: "Container Platform.".into(),
-            category: AppCategory::Development,
-            version: "24.0".into(),
-            is_installed: check_installed("docker"),
         },
         // MEDIA
         AppPackage {
-            name: "VLC".into(),
-            description: "Media Player.".into(),
+            name: "org.videolan.Vlc".into(),
+            description: "VLC Media Player (Flatpak)".into(),
             category: AppCategory::Media,
-            version: "3.0.20".into(),
+            version: "Latest".into(),
             is_installed: check_installed("vlc"),
         },
         AppPackage {
-            name: "Spotify".into(),
-            description: "Music Streaming.".into(),
+            name: "com.spotify.Client".into(),
+            description: "Spotify Music Streaming (Flatpak)".into(),
             category: AppCategory::Media,
-            version: "1.2".into(),
-            is_installed: check_installed("Spotify"),
+            version: "Latest".into(),
+            is_installed: check_installed("spotify"),
         },
         AppPackage {
-            name: "OBS Studio".into(),
-            description: "Live Streaming software.".into(),
+            name: "com.obsproject.Studio".into(),
+            description: "OBS Studio - Screen Recording (Flatpak)".into(),
             category: AppCategory::Media,
-            version: "30.0".into(),
+            version: "Latest".into(),
             is_installed: check_installed("obs"),
         },
         AppPackage {
-            name: "Discord".into(),
-            description: "Chat & VoIP.".into(),
+            name: "com.discordapp.Discord".into(),
+            description: "Discord - Chat & VoIP (Flatpak)".into(),
             category: AppCategory::Media,
-            version: "0.0.30".into(),
+            version: "Latest".into(),
             is_installed: check_installed("discord"),
-        },
-        AppPackage {
-            name: "Stremio".into(),
-            description: "Media Center.".into(),
-            category: AppCategory::Media,
-            version: "4.4".into(),
-            is_installed: check_installed("stremio"),
-        },
-        // UTILITY
-        AppPackage {
-            name: "System Tuner".into(),
-            description: "Optimization Tool.".into(),
-            category: AppCategory::Utility,
-            version: "1.0".into(),
-            is_installed: true,
-        }, // Built-in?
-        AppPackage {
-            name: "Bitwarden".into(),
-            description: "Password Manager.".into(),
-            category: AppCategory::Utility,
-            version: "2023.12".into(),
-            is_installed: check_installed("bitwarden"),
-        },
-        AppPackage {
-            name: "Etcher".into(),
-            description: "Flash OS images to SD cards.".into(),
-            category: AppCategory::Utility,
-            version: "1.18".into(),
-            is_installed: check_installed("balenaetcher"),
         },
         // GAMES
         AppPackage {
-            name: "Steam".into(),
-            description: "Gaming Platform.".into(),
+            name: "com.valvesoftware.Steam".into(),
+            description: "Steam Gaming Platform (Flatpak)".into(),
             category: AppCategory::Games,
-            version: "1.0".into(),
+            version: "Latest".into(),
             is_installed: check_installed("steam"),
-        },
-        AppPackage {
-            name: "Lutris".into(),
-            description: "Open Source Gaming Platform.".into(),
-            category: AppCategory::Games,
-            version: "0.5.14".into(),
-            is_installed: check_installed("lutris"),
-        },
-        AppPackage {
-            name: "Minecraft".into(),
-            description: "Block building game.".into(),
-            category: AppCategory::Games,
-            version: "1.20".into(),
-            is_installed: check_installed("minecraft-launcher"),
-        },
-        // SYSTEM
-        AppPackage {
-            name: "Nvidia Drivers".into(),
-            description: "Graphics Drivers.".into(),
-            category: AppCategory::System,
-            version: "550.0".into(),
-            is_installed: true,
-        },
-        AppPackage {
-            name: "Linux Kernel".into(),
-            description: "Core System.".into(),
-            category: AppCategory::System,
-            version: "6.6.7".into(),
-            is_installed: true,
         },
     ]
 }
@@ -751,28 +674,30 @@ async fn search_apk(query: String) -> Vec<AppPackage> {
         .collect()
 }
 
-async fn install_package(name: String) -> bool {
-    // Check if apk command exists (Alpine Linux)
-    let apk_exists = tokio::process::Command::new("which")
-        .arg("apk")
+async fn install_package(name: String, is_flatpak: bool) -> bool {
+    let cmd_name = if is_flatpak { "flatpak" } else { "apk" };
+
+    // Check if command exists
+    let cmd_exists = tokio::process::Command::new("which")
+        .arg(cmd_name)
         .output()
         .await
         .map(|output| output.status.success())
         .unwrap_or(false);
 
-    if !apk_exists {
-        eprintln!("⚠️  Package installation not available (apk not found)");
-        eprintln!("   Note: Installation only works on Alpine Linux");
-        eprintln!("   Current system: Development environment (macOS)");
+    if !cmd_exists {
+        eprintln!("⚠️  {} installation not available", cmd_name);
         return false;
     }
 
-    match tokio::process::Command::new("apk")
-        .arg("add")
-        .arg(&name)
-        .status()
-        .await
-    {
+    let mut cmd = tokio::process::Command::new(cmd_name);
+    if is_flatpak {
+        cmd.arg("install").arg("-y").arg("flathub").arg(&name);
+    } else {
+        cmd.arg("add").arg(&name.to_lowercase());
+    }
+
+    match cmd.status().await {
         Ok(status) => {
             if status.success() {
                 println!("✓ Successfully installed {}", name);
@@ -783,7 +708,7 @@ async fn install_package(name: String) -> bool {
             }
         }
         Err(e) => {
-            eprintln!("✗ Failed to run apk: {}", e);
+            eprintln!("✗ Failed to run {}: {}", cmd_name, e);
             false
         }
     }

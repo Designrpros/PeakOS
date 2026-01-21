@@ -57,28 +57,84 @@ impl AppScanner {
     fn scan_system_binaries() -> Vec<MediaItem> {
         let mut apps = Vec::new();
 
-        // List of known apps to detect
-        let known_apps = [
-            ("chromium", "Chromium", "Open source web browser."),
-            ("brave", "Brave", "Privacy-focused browser."),
-            ("gimp", "GIMP", "GNU Image Manipulation Program."),
-            ("inkscape", "Inkscape", "Vector graphics editor."),
-            ("vlc", "VLC", "Media player."),
-            ("code", "VS Code", "Code editor."),
-            ("blender", "Blender", "3D creation suite."),
+        // 1. Scan for standard Linux .desktop files
+        let desktop_paths = [
+            "/usr/share/applications",
+            "/usr/local/share/applications",
+            "/var/lib/flatpak/exports/share/applications", // Flatpak system
         ];
 
-        for (binary, name, _description) in known_apps {
-            if Self::check_binary_installed(binary) {
-                apps.push(MediaItem {
-                    id: binary.to_string(),
-                    title: name.to_string(),
-                    cover_image: format!("{}_icon.png", binary),
-                    launch_command: binary.to_string(),
-                    kind: MediaKind::App,
-                    status: MediaStatus::Ready,
-                    image_handle: None,
-                });
+        for dir in desktop_paths {
+            let path = Path::new(dir);
+            if !path.exists() {
+                continue;
+            }
+
+            if let Ok(entries) = std::fs::read_dir(path) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if path.extension().map_or(false, |ext| ext == "desktop") {
+                        if let Ok(content) = std::fs::read_to_string(&path) {
+                            let mut name = None;
+                            let mut exec = None;
+                            let mut icon = None;
+                            let mut no_display = false;
+
+                            for line in content.lines() {
+                                if line.starts_with("Name=") && name.is_none() {
+                                    name = Some(line.trim_start_matches("Name=").to_string());
+                                } else if line.starts_with("Exec=") && exec.is_none() {
+                                    // Remove special params like %u, %f
+                                    let full_exec = line.trim_start_matches("Exec=");
+                                    let clean_exec =
+                                        full_exec.split(' ').next().unwrap_or(full_exec);
+                                    exec = Some(clean_exec.to_string());
+                                } else if line.starts_with("Icon=") && icon.is_none() {
+                                    icon = Some(line.trim_start_matches("Icon=").to_string());
+                                } else if line == "NoDisplay=true" {
+                                    no_display = true;
+                                }
+                            }
+
+                            if let (Some(n), Some(e)) = (name, exec) {
+                                if !no_display {
+                                    apps.push(MediaItem {
+                                        id: e.clone(),
+                                        title: n,
+                                        cover_image: icon.unwrap_or_else(|| "app_icon".to_string()),
+                                        launch_command: e,
+                                        kind: MediaKind::App,
+                                        status: MediaStatus::Ready,
+                                        image_handle: None,
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Fallback to known apps if grid is still very sparse (debug/mock)
+        if apps.is_empty() {
+            let known_apps = [
+                ("chromium", "Chromium", "Open source web browser."),
+                ("firefox", "Firefox", "Privacy-focused browser."),
+                ("gimp", "GIMP", "GNU Image Manipulation Program."),
+            ];
+
+            for (binary, name, _description) in known_apps {
+                if Self::check_binary_installed(binary) {
+                    apps.push(MediaItem {
+                        id: binary.to_string(),
+                        title: name.to_string(),
+                        cover_image: format!("{}_icon.png", binary),
+                        launch_command: binary.to_string(),
+                        kind: MediaKind::App,
+                        status: MediaStatus::Ready,
+                        image_handle: None,
+                    });
+                }
             }
         }
 
