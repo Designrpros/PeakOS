@@ -1,0 +1,67 @@
+rodio v0.17.3
+├── rodio feature "claxon"
+│   └── rodio feature "flac"
+│       └── rodio feature "default"
+│           ├── peak-apps v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-apps)
+│           │   └── peak-desktop v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/desktop)
+│           │       ├── peak-desktop feature "cpal"
+│           │       │   └── peak-desktop feature "native"
+│           │       │       └── peak-desktop feature "default" (command-line)
+│           │       ├── peak-desktop feature "default" (command-line)
+│           │       ├── peak-desktop feature "directories"
+│           │       │   └── peak-desktop feature "native" (*)
+│           │       ├── peak-desktop feature "dirs"
+│           │       │   └── peak-desktop feature "native" (*)
+│           │       ├── peak-desktop feature "native" (*)
+│           │       ├── peak-desktop feature "open"
+│           │       │   └── peak-desktop feature "native" (*)
+│           │       ├── peak-desktop feature "opener"
+│           │       │   └── peak-desktop feature "native" (*)
+│           │       ├── peak-desktop feature "portable-pty"
+│           │       │   └── peak-desktop feature "native" (*)
+│           │       ├── peak-desktop feature "rodio"
+│           │       │   └── peak-desktop feature "native" (*)
+│           │       ├── peak-desktop feature "sysinfo"
+│           │       │   └── peak-desktop feature "native" (*)
+│           │       ├── peak-desktop feature "tokio"
+│           │       │   └── peak-desktop feature "native" (*)
+│           │       └── peak-desktop feature "wasm" (command-line)
+│           │   ├── peak-apps feature "directories"
+│           │   │   └── peak-apps feature "native"
+│           │   │       └── peak-desktop feature "native" (*)
+│           │   ├── peak-apps feature "dirs"
+│           │   │   └── peak-apps feature "native" (*)
+│           │   ├── peak-apps feature "native" (*)
+│           │   ├── peak-apps feature "open"
+│           │   │   └── peak-apps feature "native" (*)
+│           │   ├── peak-apps feature "opener"
+│           │   │   └── peak-apps feature "native" (*)
+│           │   ├── peak-apps feature "portable-pty"
+│           │   │   └── peak-apps feature "native" (*)
+│           │   ├── peak-apps feature "rfd"
+│           │   │   └── peak-apps feature "native" (*)
+│           │   ├── peak-apps feature "rodio"
+│           │   │   └── peak-apps feature "native" (*)
+│           │   ├── peak-apps feature "sysinfo"
+│           │   │   └── peak-apps feature "native" (*)
+│           │   ├── peak-apps feature "tokio"
+│           │   │   └── peak-apps feature "native" (*)
+│           │   └── peak-apps feature "wasm"
+│           │       └── peak-desktop feature "wasm" (command-line)
+│           └── peak-desktop v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/desktop) (*)
+├── rodio feature "default" (*)
+├── rodio feature "flac" (*)
+├── rodio feature "hound"
+│   └── rodio feature "wav"
+│       └── rodio feature "default" (*)
+├── rodio feature "lewton"
+│   └── rodio feature "vorbis"
+│       └── rodio feature "default" (*)
+├── rodio feature "mp3"
+│   └── rodio feature "default" (*)
+├── rodio feature "symphonia"
+│   └── rodio feature "symphonia-mp3"
+│       └── rodio feature "mp3" (*)
+├── rodio feature "symphonia-mp3" (*)
+├── rodio feature "vorbis" (*)
+└── rodio feature "wav" (*)

@@ -1,0 +1,2785 @@
+peak-desktop v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/modes/desktop)
+├── peak-apps v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-apps)
+│   ├── peak-core v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-core)
+│   │   ├── peak-intelligence v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-intelligence)
+│   │   │   ├── anyhow feature "default"
+│   │   │   │   ├── anyhow v1.0.100
+│   │   │   │   └── anyhow feature "std"
+│   │   │   │       └── anyhow v1.0.100
+│   │   │   ├── chrono feature "default"
+│   │   │   │   ├── chrono v0.4.43
+│   │   │   │   │   ├── num-traits v0.2.19
+│   │   │   │   │   │   └── libm feature "default"
+│   │   │   │   │   │       ├── libm v0.2.15
+│   │   │   │   │   │       └── libm feature "arch"
+│   │   │   │   │   │           └── libm v0.2.15
+│   │   │   │   │   │   [build-dependencies]
+│   │   │   │   │   │   └── autocfg feature "default"
+│   │   │   │   │   │       └── autocfg v1.5.0
+│   │   │   │   │   ├── serde v1.0.228
+│   │   │   │   │   │   ├── serde_core feature "result"
+│   │   │   │   │   │   │   └── serde_core v1.0.228
+│   │   │   │   │   │   └── serde_derive feature "default"
+│   │   │   │   │   │       └── serde_derive v1.0.228 (proc-macro)
+│   │   │   │   │   │           ├── quote feature "proc-macro"
+│   │   │   │   │   │           │   ├── quote v1.0.43
+│   │   │   │   │   │           │   │   └── proc-macro2 v1.0.105
+│   │   │   │   │   │           │   │       └── unicode-ident feature "default"
+│   │   │   │   │   │           │   │           └── unicode-ident v1.0.22
+│   │   │   │   │   │           │   └── proc-macro2 feature "proc-macro"
+│   │   │   │   │   │           │       └── proc-macro2 v1.0.105 (*)
+│   │   │   │   │   │           ├── proc-macro2 feature "proc-macro" (*)
+│   │   │   │   │   │           ├── syn feature "clone-impls"
+│   │   │   │   │   │           │   └── syn v2.0.114
+│   │   │   │   │   │           │       ├── proc-macro2 v1.0.105 (*)
+│   │   │   │   │   │           │       ├── quote v1.0.43 (*)
+│   │   │   │   │   │           │       └── unicode-ident feature "default" (*)
+│   │   │   │   │   │           ├── syn feature "derive"
+│   │   │   │   │   │           │   └── syn v2.0.114 (*)
+│   │   │   │   │   │           ├── syn feature "parsing"
+│   │   │   │   │   │           │   └── syn v2.0.114 (*)
+│   │   │   │   │   │           ├── syn feature "printing"
+│   │   │   │   │   │           │   └── syn v2.0.114 (*)
+│   │   │   │   │   │           └── syn feature "proc-macro"
+│   │   │   │   │   │               ├── syn v2.0.114 (*)
+│   │   │   │   │   │               ├── quote feature "proc-macro" (*)
+│   │   │   │   │   │               └── proc-macro2 feature "proc-macro" (*)
+│   │   │   │   │   ├── js-sys feature "default"
+│   │   │   │   │   │   ├── js-sys v0.3.85
+│   │   │   │   │   │   │   ├── once_cell v1.21.3
+│   │   │   │   │   │   │   └── wasm-bindgen v0.2.108
+│   │   │   │   │   │   │       ├── once_cell v1.21.3
+│   │   │   │   │   │   │       ├── cfg-if feature "default"
+│   │   │   │   │   │   │       │   └── cfg-if v1.0.4
+│   │   │   │   │   │   │       ├── wasm-bindgen-macro feature "default"
+│   │   │   │   │   │   │       │   └── wasm-bindgen-macro v0.2.108 (proc-macro)
+│   │   │   │   │   │   │       │       ├── quote feature "default"
+│   │   │   │   │   │   │       │       │   ├── quote v1.0.43 (*)
+│   │   │   │   │   │   │       │       │   └── quote feature "proc-macro" (*)
+│   │   │   │   │   │   │       │       └── wasm-bindgen-macro-support feature "default"
+│   │   │   │   │   │   │       │           └── wasm-bindgen-macro-support v0.2.108
+│   │   │   │   │   │   │       │               ├── quote feature "default" (*)
+│   │   │   │   │   │   │       │               ├── proc-macro2 feature "default"
+│   │   │   │   │   │   │       │               │   ├── proc-macro2 v1.0.105 (*)
+│   │   │   │   │   │   │       │               │   └── proc-macro2 feature "proc-macro" (*)
+│   │   │   │   │   │   │       │               ├── bumpalo feature "default"
+│   │   │   │   │   │   │       │               │   └── bumpalo v3.19.1
+│   │   │   │   │   │   │       │               ├── syn feature "default"
+│   │   │   │   │   │   │       │               │   ├── syn v2.0.114 (*)
+│   │   │   │   │   │   │       │               │   ├── syn feature "clone-impls" (*)
+│   │   │   │   │   │   │       │               │   ├── syn feature "derive" (*)
+│   │   │   │   │   │   │       │               │   ├── syn feature "parsing" (*)
+│   │   │   │   │   │   │       │               │   ├── syn feature "printing" (*)
+│   │   │   │   │   │   │       │               │   └── syn feature "proc-macro" (*)
+│   │   │   │   │   │   │       │               ├── syn feature "full"
+│   │   │   │   │   │   │       │               │   └── syn v2.0.114 (*)
+│   │   │   │   │   │   │       │               ├── syn feature "visit"
+│   │   │   │   │   │   │       │               │   └── syn v2.0.114 (*)
+│   │   │   │   │   │   │       │               ├── syn feature "visit-mut"
+│   │   │   │   │   │   │       │               │   └── syn v2.0.114 (*)
+│   │   │   │   │   │   │       │               └── wasm-bindgen-shared feature "default"
+│   │   │   │   │   │   │       │                   └── wasm-bindgen-shared v0.2.108
+│   │   │   │   │   │   │       │                       └── unicode-ident feature "default" (*)
+│   │   │   │   │   │   │       └── wasm-bindgen-shared feature "default"
+│   │   │   │   │   │   │           └── wasm-bindgen-shared v0.2.108
+│   │   │   │   │   │   │               └── unicode-ident feature "default"
+│   │   │   │   │   │   │                   └── unicode-ident v1.0.22
+│   │   │   │   │   │   │       [build-dependencies]
+│   │   │   │   │   │   │       └── rustversion feature "default"
+│   │   │   │   │   │   │           └── rustversion v1.0.22 (proc-macro)
+│   │   │   │   │   │   └── js-sys feature "std"
+│   │   │   │   │   │       ├── js-sys v0.3.85 (*)
+│   │   │   │   │   │       └── wasm-bindgen feature "std"
+│   │   │   │   │   │           └── wasm-bindgen v0.2.108 (*)
+│   │   │   │   │   └── wasm-bindgen feature "default"
+│   │   │   │   │       ├── wasm-bindgen v0.2.108 (*)
+│   │   │   │   │       └── wasm-bindgen feature "std" (*)
+│   │   │   │   ├── chrono feature "clock"
+│   │   │   │   │   ├── chrono v0.4.43 (*)
+│   │   │   │   │   ├── chrono feature "iana-time-zone"
+│   │   │   │   │   │   └── chrono v0.4.43 (*)
+│   │   │   │   │   ├── chrono feature "now"
+│   │   │   │   │   │   ├── chrono v0.4.43 (*)
+│   │   │   │   │   │   └── chrono feature "std"
+│   │   │   │   │   │       ├── chrono v0.4.43 (*)
+│   │   │   │   │   │       └── chrono feature "alloc"
+│   │   │   │   │   │           └── chrono v0.4.43 (*)
+│   │   │   │   │   └── chrono feature "winapi"
+│   │   │   │   │       ├── chrono v0.4.43 (*)
+│   │   │   │   │       └── chrono feature "windows-link"
+│   │   │   │   │           └── chrono v0.4.43 (*)
+│   │   │   │   ├── chrono feature "oldtime"
+│   │   │   │   │   └── chrono v0.4.43 (*)
+│   │   │   │   ├── chrono feature "std" (*)
+│   │   │   │   └── chrono feature "wasmbind"
+│   │   │   │       ├── chrono v0.4.43 (*)
+│   │   │   │       ├── chrono feature "js-sys"
+│   │   │   │       │   └── chrono v0.4.43 (*)
+│   │   │   │       └── chrono feature "wasm-bindgen"
+│   │   │   │           └── chrono v0.4.43 (*)
+│   │   │   ├── chrono feature "serde"
+│   │   │   │   └── chrono v0.4.43 (*)
+│   │   │   ├── js-sys feature "default" (*)
+│   │   │   ├── once_cell feature "default"
+│   │   │   │   ├── once_cell v1.21.3
+│   │   │   │   └── once_cell feature "std"
+│   │   │   │       ├── once_cell v1.21.3
+│   │   │   │       └── once_cell feature "alloc"
+│   │   │   │           ├── once_cell v1.21.3
+│   │   │   │           └── once_cell feature "race"
+│   │   │   │               └── once_cell v1.21.3
+│   │   │   ├── wasm-bindgen feature "default" (*)
+│   │   │   ├── serde feature "default"
+│   │   │   │   ├── serde v1.0.228 (*)
+│   │   │   │   └── serde feature "std"
+│   │   │   │       ├── serde v1.0.228 (*)
+│   │   │   │       └── serde_core feature "std"
+│   │   │   │           └── serde_core v1.0.228
+│   │   │   ├── serde feature "derive"
+│   │   │   │   ├── serde v1.0.228 (*)
+│   │   │   │   └── serde feature "serde_derive"
+│   │   │   │       └── serde v1.0.228 (*)
+│   │   │   ├── log feature "default"
+│   │   │   │   └── log v0.4.29
+│   │   │   ├── web-sys feature "Headers"
+│   │   │   │   └── web-sys v0.3.85
+│   │   │   │       ├── js-sys v0.3.85 (*)
+│   │   │   │       └── wasm-bindgen v0.2.108 (*)
+│   │   │   ├── web-sys feature "Request"
+│   │   │   │   └── web-sys v0.3.85 (*)
+│   │   │   ├── web-sys feature "RequestInit"
+│   │   │   │   └── web-sys v0.3.85 (*)
+│   │   │   ├── web-sys feature "RequestMode"
+│   │   │   │   └── web-sys v0.3.85 (*)
+│   │   │   ├── web-sys feature "Response"
+│   │   │   │   └── web-sys v0.3.85 (*)
+│   │   │   ├── web-sys feature "Window"
+│   │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   └── web-sys feature "EventTarget"
+│   │   │   │       └── web-sys v0.3.85 (*)
+│   │   │   ├── web-sys feature "default"
+│   │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   └── web-sys feature "std"
+│   │   │   │       ├── web-sys v0.3.85 (*)
+│   │   │   │       ├── js-sys feature "std" (*)
+│   │   │   │       └── wasm-bindgen feature "std" (*)
+│   │   │   ├── getrandom feature "default"
+│   │   │   │   └── getrandom v0.2.17
+│   │   │   │       ├── wasm-bindgen v0.2.108 (*)
+│   │   │   │       ├── js-sys feature "default" (*)
+│   │   │   │       └── cfg-if feature "default" (*)
+│   │   │   ├── getrandom feature "js"
+│   │   │   │   ├── getrandom v0.2.17 (*)
+│   │   │   │   ├── getrandom feature "js-sys"
+│   │   │   │   │   └── getrandom v0.2.17 (*)
+│   │   │   │   └── getrandom feature "wasm-bindgen"
+│   │   │   │       └── getrandom v0.2.17 (*)
+│   │   │   ├── thiserror feature "default"
+│   │   │   │   └── thiserror v1.0.69
+│   │   │   │       └── thiserror-impl feature "default"
+│   │   │   │           └── thiserror-impl v1.0.69 (proc-macro)
+│   │   │   │               ├── quote feature "default" (*)
+│   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │               └── syn feature "default" (*)
+│   │   │   ├── futures feature "default"
+│   │   │   │   ├── futures v0.3.31
+│   │   │   │   │   ├── futures-core v0.3.31
+│   │   │   │   │   ├── futures-executor v0.3.31
+│   │   │   │   │   │   ├── futures-core v0.3.31
+│   │   │   │   │   │   ├── futures-task v0.3.31
+│   │   │   │   │   │   ├── futures-util v0.3.31
+│   │   │   │   │   │   │   ├── futures-core v0.3.31
+│   │   │   │   │   │   │   ├── futures-macro v0.3.31 (proc-macro)
+│   │   │   │   │   │   │   │   ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │   ├── syn feature "default" (*)
+│   │   │   │   │   │   │   │   └── syn feature "full" (*)
+│   │   │   │   │   │   │   ├── futures-sink v0.3.31
+│   │   │   │   │   │   │   ├── futures-task v0.3.31
+│   │   │   │   │   │   │   ├── futures-channel feature "std"
+│   │   │   │   │   │   │   │   ├── futures-channel v0.3.31
+│   │   │   │   │   │   │   │   │   ├── futures-core v0.3.31
+│   │   │   │   │   │   │   │   │   └── futures-sink v0.3.31
+│   │   │   │   │   │   │   │   ├── futures-channel feature "alloc"
+│   │   │   │   │   │   │   │   │   ├── futures-channel v0.3.31 (*)
+│   │   │   │   │   │   │   │   │   └── futures-core feature "alloc"
+│   │   │   │   │   │   │   │   │       └── futures-core v0.3.31
+│   │   │   │   │   │   │   │   └── futures-core feature "std"
+│   │   │   │   │   │   │   │       ├── futures-core v0.3.31
+│   │   │   │   │   │   │   │       └── futures-core feature "alloc" (*)
+│   │   │   │   │   │   │   ├── futures-io feature "std"
+│   │   │   │   │   │   │   │   └── futures-io v0.3.31
+│   │   │   │   │   │   │   ├── memchr feature "default"
+│   │   │   │   │   │   │   │   ├── memchr v2.7.6
+│   │   │   │   │   │   │   │   └── memchr feature "std"
+│   │   │   │   │   │   │   │       ├── memchr v2.7.6
+│   │   │   │   │   │   │   │       └── memchr feature "alloc"
+│   │   │   │   │   │   │   │           └── memchr v2.7.6
+│   │   │   │   │   │   │   ├── pin-project-lite feature "default"
+│   │   │   │   │   │   │   │   └── pin-project-lite v0.2.16
+│   │   │   │   │   │   │   ├── pin-utils feature "default"
+│   │   │   │   │   │   │   │   └── pin-utils v0.1.0
+│   │   │   │   │   │   │   └── slab feature "default"
+│   │   │   │   │   │   │       ├── slab v0.4.11
+│   │   │   │   │   │   │       └── slab feature "std"
+│   │   │   │   │   │   │           └── slab v0.4.11
+│   │   │   │   │   │   └── num_cpus feature "default"
+│   │   │   │   │   │       └── num_cpus v1.17.0
+│   │   │   │   │   │           └── libc feature "default"
+│   │   │   │   │   │               ├── libc v0.2.180
+│   │   │   │   │   │               └── libc feature "std"
+│   │   │   │   │   │                   └── libc v0.2.180
+│   │   │   │   │   ├── futures-io v0.3.31
+│   │   │   │   │   ├── futures-sink v0.3.31
+│   │   │   │   │   ├── futures-task v0.3.31
+│   │   │   │   │   ├── futures-channel feature "sink"
+│   │   │   │   │   │   ├── futures-channel v0.3.31 (*)
+│   │   │   │   │   │   └── futures-channel feature "futures-sink"
+│   │   │   │   │   │       └── futures-channel v0.3.31 (*)
+│   │   │   │   │   └── futures-util feature "sink"
+│   │   │   │   │       ├── futures-util v0.3.31 (*)
+│   │   │   │   │       └── futures-util feature "futures-sink"
+│   │   │   │   │           └── futures-util v0.3.31 (*)
+│   │   │   │   ├── futures feature "async-await"
+│   │   │   │   │   ├── futures v0.3.31 (*)
+│   │   │   │   │   ├── futures-util feature "async-await"
+│   │   │   │   │   │   └── futures-util v0.3.31 (*)
+│   │   │   │   │   └── futures-util feature "async-await-macro"
+│   │   │   │   │       ├── futures-util v0.3.31 (*)
+│   │   │   │   │       ├── futures-util feature "async-await" (*)
+│   │   │   │   │       └── futures-util feature "futures-macro"
+│   │   │   │   │           └── futures-util v0.3.31 (*)
+│   │   │   │   ├── futures feature "executor"
+│   │   │   │   │   ├── futures v0.3.31 (*)
+│   │   │   │   │   ├── futures feature "futures-executor"
+│   │   │   │   │   │   └── futures v0.3.31 (*)
+│   │   │   │   │   ├── futures feature "std"
+│   │   │   │   │   │   ├── futures v0.3.31 (*)
+│   │   │   │   │   │   ├── futures feature "alloc"
+│   │   │   │   │   │   │   ├── futures v0.3.31 (*)
+│   │   │   │   │   │   │   ├── futures-channel feature "alloc" (*)
+│   │   │   │   │   │   │   ├── futures-core feature "alloc" (*)
+│   │   │   │   │   │   │   ├── futures-sink feature "alloc"
+│   │   │   │   │   │   │   │   └── futures-sink v0.3.31
+│   │   │   │   │   │   │   ├── futures-task feature "alloc"
+│   │   │   │   │   │   │   │   └── futures-task v0.3.31
+│   │   │   │   │   │   │   └── futures-util feature "alloc"
+│   │   │   │   │   │   │       ├── futures-util v0.3.31 (*)
+│   │   │   │   │   │   │       ├── futures-core feature "alloc" (*)
+│   │   │   │   │   │   │       └── futures-task feature "alloc" (*)
+│   │   │   │   │   │   ├── futures-core feature "std" (*)
+│   │   │   │   │   │   ├── futures-sink feature "std"
+│   │   │   │   │   │   │   ├── futures-sink v0.3.31
+│   │   │   │   │   │   │   └── futures-sink feature "alloc" (*)
+│   │   │   │   │   │   ├── futures-task feature "std"
+│   │   │   │   │   │   │   ├── futures-task v0.3.31
+│   │   │   │   │   │   │   └── futures-task feature "alloc" (*)
+│   │   │   │   │   │   ├── futures-util feature "channel"
+│   │   │   │   │   │   │   ├── futures-util v0.3.31 (*)
+│   │   │   │   │   │   │   ├── futures-util feature "futures-channel"
+│   │   │   │   │   │   │   │   └── futures-util v0.3.31 (*)
+│   │   │   │   │   │   │   └── futures-util feature "std"
+│   │   │   │   │   │   │       ├── futures-util v0.3.31 (*)
+│   │   │   │   │   │   │       ├── futures-core feature "std" (*)
+│   │   │   │   │   │   │       ├── futures-task feature "std" (*)
+│   │   │   │   │   │   │       ├── futures-util feature "alloc" (*)
+│   │   │   │   │   │   │       └── futures-util feature "slab"
+│   │   │   │   │   │   │           └── futures-util v0.3.31 (*)
+│   │   │   │   │   │   ├── futures-util feature "io"
+│   │   │   │   │   │   │   ├── futures-util v0.3.31 (*)
+│   │   │   │   │   │   │   ├── futures-util feature "futures-io"
+│   │   │   │   │   │   │   │   └── futures-util v0.3.31 (*)
+│   │   │   │   │   │   │   ├── futures-util feature "memchr"
+│   │   │   │   │   │   │   │   └── futures-util v0.3.31 (*)
+│   │   │   │   │   │   │   └── futures-util feature "std" (*)
+│   │   │   │   │   │   ├── futures-util feature "std" (*)
+│   │   │   │   │   │   └── futures-io feature "std" (*)
+│   │   │   │   │   └── futures-executor feature "std"
+│   │   │   │   │       ├── futures-executor v0.3.31 (*)
+│   │   │   │   │       ├── futures-core feature "std" (*)
+│   │   │   │   │       ├── futures-task feature "std" (*)
+│   │   │   │   │       └── futures-util feature "std" (*)
+│   │   │   │   └── futures feature "std" (*)
+│   │   │   ├── wasm-bindgen-futures feature "default"
+│   │   │   │   ├── wasm-bindgen-futures v0.4.58
+│   │   │   │   │   ├── js-sys v0.3.85 (*)
+│   │   │   │   │   ├── once_cell v1.21.3
+│   │   │   │   │   ├── wasm-bindgen v0.2.108 (*)
+│   │   │   │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   └── futures-util feature "std" (*)
+│   │   │   │   └── wasm-bindgen-futures feature "std"
+│   │   │   │       ├── wasm-bindgen-futures v0.4.58 (*)
+│   │   │   │       ├── js-sys feature "std" (*)
+│   │   │   │       ├── wasm-bindgen feature "std" (*)
+│   │   │   │       └── wasm-bindgen-futures feature "futures-util"
+│   │   │   │           └── wasm-bindgen-futures v0.4.58 (*)
+│   │   │   ├── tracing feature "default"
+│   │   │   │   ├── tracing v0.1.44
+│   │   │   │   │   ├── tracing-core v0.1.36
+│   │   │   │   │   │   └── once_cell feature "default" (*)
+│   │   │   │   │   ├── pin-project-lite feature "default" (*)
+│   │   │   │   │   └── tracing-attributes feature "default"
+│   │   │   │   │       └── tracing-attributes v0.1.31 (proc-macro)
+│   │   │   │   │           ├── quote feature "default" (*)
+│   │   │   │   │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │           ├── syn feature "clone-impls" (*)
+│   │   │   │   │           ├── syn feature "extra-traits"
+│   │   │   │   │           │   └── syn v2.0.114 (*)
+│   │   │   │   │           ├── syn feature "full" (*)
+│   │   │   │   │           ├── syn feature "parsing" (*)
+│   │   │   │   │           ├── syn feature "printing" (*)
+│   │   │   │   │           ├── syn feature "proc-macro" (*)
+│   │   │   │   │           └── syn feature "visit-mut" (*)
+│   │   │   │   ├── tracing feature "attributes"
+│   │   │   │   │   ├── tracing v0.1.44 (*)
+│   │   │   │   │   └── tracing feature "tracing-attributes"
+│   │   │   │   │       └── tracing v0.1.44 (*)
+│   │   │   │   └── tracing feature "std"
+│   │   │   │       ├── tracing v0.1.44 (*)
+│   │   │   │       └── tracing-core feature "std"
+│   │   │   │           ├── tracing-core v0.1.36 (*)
+│   │   │   │           └── tracing-core feature "once_cell"
+│   │   │   │               └── tracing-core v0.1.36 (*)
+│   │   │   ├── decoder feature "default"
+│   │   │   │   └── decoder v0.0.3
+│   │   │   │       ├── serde feature "default" (*)
+│   │   │   │       ├── thiserror feature "default" (*)
+│   │   │   │       ├── decoder_value feature "default"
+│   │   │   │       │   └── decoder_value v0.0.3
+│   │   │   │       │       ├── serde feature "default" (*)
+│   │   │   │       │       ├── indexmap feature "default"
+│   │   │   │       │       │   ├── indexmap v2.13.0
+│   │   │   │       │       │   │   ├── equivalent v1.0.2
+│   │   │   │       │       │   │   ├── hashbrown v0.16.1
+│   │   │   │       │       │   │   └── serde_core v1.0.228
+│   │   │   │       │       │   └── indexmap feature "std"
+│   │   │   │       │       │       └── indexmap v2.13.0 (*)
+│   │   │   │       │       ├── indexmap feature "serde"
+│   │   │   │       │       │   └── indexmap v2.13.0 (*)
+│   │   │   │       │       └── ordered-float feature "default"
+│   │   │   │       │           ├── ordered-float v4.6.0
+│   │   │   │       │           │   └── num-traits v0.2.19 (*)
+│   │   │   │       │           └── ordered-float feature "std"
+│   │   │   │       │               ├── ordered-float v4.6.0 (*)
+│   │   │   │       │               └── num-traits feature "std"
+│   │   │   │       │                   └── num-traits v0.2.19 (*)
+│   │   │   │       └── indexmap feature "default" (*)
+│   │   │   ├── directories feature "default"
+│   │   │   │   └── directories v6.0.0
+│   │   │   │       └── dirs-sys feature "default"
+│   │   │   │           └── dirs-sys v0.5.0
+│   │   │   │               └── option-ext feature "default"
+│   │   │   │                   └── option-ext v0.2.0
+│   │   │   ├── function feature "default"
+│   │   │   │   └── function v0.2.0
+│   │   │   ├── portable-pty feature "default"
+│   │   │   │   └── portable-pty v0.8.1
+│   │   │   │       ├── anyhow feature "default" (*)
+│   │   │   │       ├── log feature "default" (*)
+│   │   │   │       ├── libc feature "default" (*)
+│   │   │   │       ├── downcast-rs feature "default"
+│   │   │   │       │   ├── downcast-rs v1.2.1
+│   │   │   │       │   └── downcast-rs feature "std"
+│   │   │   │       │       └── downcast-rs v1.2.1
+│   │   │   │       ├── filedescriptor feature "default"
+│   │   │   │       │   └── filedescriptor v0.8.3
+│   │   │   │       │       ├── thiserror feature "default" (*)
+│   │   │   │       │       └── libc feature "default" (*)
+│   │   │   │       ├── nix feature "default"
+│   │   │   │       │   ├── nix v0.25.1
+│   │   │   │       │   │   ├── cfg-if feature "default" (*)
+│   │   │   │       │   │   ├── pin-utils feature "default" (*)
+│   │   │   │       │   │   ├── libc feature "default" (*)
+│   │   │   │       │   │   ├── libc feature "extra_traits"
+│   │   │   │       │   │   │   └── libc v0.2.180
+│   │   │   │       │   │   ├── bitflags feature "default"
+│   │   │   │       │   │   │   └── bitflags v1.3.2
+│   │   │   │       │   │   └── memoffset feature "default"
+│   │   │   │       │   │       └── memoffset v0.6.5
+│   │   │   │       │   │           [build-dependencies]
+│   │   │   │       │   │           └── autocfg feature "default" (*)
+│   │   │   │       │   │   [build-dependencies]
+│   │   │   │       │   │   └── autocfg feature "default" (*)
+│   │   │   │       │   ├── nix feature "acct"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "aio"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "pin-utils"
+│   │   │   │       │   │       └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "dir"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "fs"
+│   │   │   │       │   │       └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "env"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "event"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "feature"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "fs" (*)
+│   │   │   │       │   ├── nix feature "hostname"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "inotify"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "ioctl"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "kmod"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "mman"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "mount"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "uio"
+│   │   │   │       │   │       └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "mqueue"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "fs" (*)
+│   │   │   │       │   ├── nix feature "net"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "socket"
+│   │   │   │       │   │       ├── nix v0.25.1 (*)
+│   │   │   │       │   │       └── nix feature "memoffset"
+│   │   │   │       │   │           └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "personality"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "poll"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "process"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "pthread"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "ptrace"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "process" (*)
+│   │   │   │       │   ├── nix feature "quota"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "reboot"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "resource"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "sched"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "process" (*)
+│   │   │   │       │   ├── nix feature "signal"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "process" (*)
+│   │   │   │       │   ├── nix feature "socket" (*)
+│   │   │   │       │   ├── nix feature "term"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "time"
+│   │   │   │       │   │   └── nix v0.25.1 (*)
+│   │   │   │       │   ├── nix feature "ucontext"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "signal" (*)
+│   │   │   │       │   ├── nix feature "uio" (*)
+│   │   │   │       │   ├── nix feature "user"
+│   │   │   │       │   │   ├── nix v0.25.1 (*)
+│   │   │   │       │   │   └── nix feature "feature" (*)
+│   │   │   │       │   └── nix feature "zerocopy"
+│   │   │   │       │       ├── nix v0.25.1 (*)
+│   │   │   │       │       ├── nix feature "fs" (*)
+│   │   │   │       │       └── nix feature "uio" (*)
+│   │   │   │       ├── nix feature "term" (*)
+│   │   │   │       ├── serial feature "default"
+│   │   │   │       │   └── serial v0.4.0
+│   │   │   │       │       └── serial-core feature "default"
+│   │   │   │       │           └── serial-core v0.4.0
+│   │   │   │       │               └── libc feature "default" (*)
+│   │   │   │       └── shell-words feature "default"
+│   │   │   │           ├── shell-words v1.1.1
+│   │   │   │           └── shell-words feature "std"
+│   │   │   │               └── shell-words v1.1.1
+│   │   │   ├── scraper feature "default"
+│   │   │   │   ├── scraper v0.22.0
+│   │   │   │   │   ├── cssparser feature "default"
+│   │   │   │   │   │   └── cssparser v0.34.0
+│   │   │   │   │   │       ├── phf feature "default"
+│   │   │   │   │   │       │   ├── phf v0.11.3
+│   │   │   │   │   │       │   │   ├── phf_shared v0.11.3
+│   │   │   │   │   │       │   │   │   └── siphasher feature "default"
+│   │   │   │   │   │       │   │   │       ├── siphasher v1.0.1
+│   │   │   │   │   │       │   │   │       └── siphasher feature "std"
+│   │   │   │   │   │       │   │   │           └── siphasher v1.0.1
+│   │   │   │   │   │       │   │   └── phf_macros feature "default"
+│   │   │   │   │   │       │   │       └── phf_macros v0.11.3 (proc-macro)
+│   │   │   │   │   │       │   │           ├── phf_shared v0.11.3
+│   │   │   │   │   │       │   │           │   └── siphasher feature "default"
+│   │   │   │   │   │       │   │           │       ├── siphasher v1.0.1
+│   │   │   │   │   │       │   │           │       └── siphasher feature "std"
+│   │   │   │   │   │       │   │           │           └── siphasher v1.0.1
+│   │   │   │   │   │       │   │           ├── quote feature "default" (*)
+│   │   │   │   │   │       │   │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │       │   │           ├── syn feature "default" (*)
+│   │   │   │   │   │       │   │           ├── syn feature "full" (*)
+│   │   │   │   │   │       │   │           └── phf_generator feature "default"
+│   │   │   │   │   │       │   │               └── phf_generator v0.11.3
+│   │   │   │   │   │       │   │                   ├── phf_shared v0.11.3 (*)
+│   │   │   │   │   │       │   │                   └── rand feature "small_rng"
+│   │   │   │   │   │       │   │                       └── rand v0.8.5
+│   │   │   │   │   │       │   │                           └── rand_core feature "default"
+│   │   │   │   │   │       │   │                               └── rand_core v0.6.4
+│   │   │   │   │   │       │   └── phf feature "std"
+│   │   │   │   │   │       │       ├── phf v0.11.3 (*)
+│   │   │   │   │   │       │       └── phf_shared feature "std"
+│   │   │   │   │   │       │           └── phf_shared v0.11.3 (*)
+│   │   │   │   │   │       ├── phf feature "macros"
+│   │   │   │   │   │       │   ├── phf v0.11.3 (*)
+│   │   │   │   │   │       │   └── phf feature "phf_macros"
+│   │   │   │   │   │       │       └── phf v0.11.3 (*)
+│   │   │   │   │   │       ├── smallvec feature "default"
+│   │   │   │   │   │       │   └── smallvec v1.15.1
+│   │   │   │   │   │       ├── cssparser-macros feature "default"
+│   │   │   │   │   │       │   └── cssparser-macros v0.6.1 (proc-macro)
+│   │   │   │   │   │       │       ├── quote feature "default" (*)
+│   │   │   │   │   │       │       ├── syn feature "default" (*)
+│   │   │   │   │   │       │       ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │       │       └── syn feature "full" (*)
+│   │   │   │   │   │       ├── dtoa-short feature "default"
+│   │   │   │   │   │       │   └── dtoa-short v0.3.5
+│   │   │   │   │   │       │       └── dtoa feature "default"
+│   │   │   │   │   │       │           └── dtoa v1.0.11
+│   │   │   │   │   │       └── itoa feature "default"
+│   │   │   │   │   │           └── itoa v1.0.17
+│   │   │   │   │   ├── ego-tree feature "default"
+│   │   │   │   │   │   └── ego-tree v0.10.0
+│   │   │   │   │   ├── getopts feature "default"
+│   │   │   │   │   │   ├── getopts v0.2.24
+│   │   │   │   │   │   │   └── unicode-width feature "default"
+│   │   │   │   │   │   │       ├── unicode-width v0.2.2
+│   │   │   │   │   │   │       └── unicode-width feature "cjk"
+│   │   │   │   │   │   │           └── unicode-width v0.2.2
+│   │   │   │   │   │   └── getopts feature "unicode"
+│   │   │   │   │   │       └── getopts v0.2.24 (*)
+│   │   │   │   │   ├── html5ever feature "default"
+│   │   │   │   │   │   └── html5ever v0.29.1
+│   │   │   │   │   │       ├── log feature "default" (*)
+│   │   │   │   │   │       ├── mac feature "default"
+│   │   │   │   │   │       │   └── mac v0.1.1
+│   │   │   │   │   │       ├── markup5ever feature "default"
+│   │   │   │   │   │       │   └── markup5ever v0.14.1
+│   │   │   │   │   │       │       ├── log feature "default" (*)
+│   │   │   │   │   │       │       ├── phf feature "default" (*)
+│   │   │   │   │   │       │       ├── string_cache feature "default"
+│   │   │   │   │   │       │       │   ├── string_cache v0.8.9
+│   │   │   │   │   │       │       │   │   ├── serde feature "default" (*)
+│   │   │   │   │   │       │       │   │   ├── phf_shared feature "default"
+│   │   │   │   │   │       │       │   │   │   ├── phf_shared v0.11.3 (*)
+│   │   │   │   │   │       │       │   │   │   └── phf_shared feature "std" (*)
+│   │   │   │   │   │       │       │   │   ├── parking_lot feature "default"
+│   │   │   │   │   │       │       │   │   │   └── parking_lot v0.12.5
+│   │   │   │   │   │       │       │   │   │       ├── lock_api feature "default"
+│   │   │   │   │   │       │       │   │   │       │   ├── lock_api v0.4.14
+│   │   │   │   │   │       │       │   │   │       │   │   └── scopeguard v1.2.0
+│   │   │   │   │   │       │       │   │   │       │   └── lock_api feature "atomic_usize"
+│   │   │   │   │   │       │       │   │   │       │       └── lock_api v0.4.14 (*)
+│   │   │   │   │   │       │       │   │   │       └── parking_lot_core feature "default"
+│   │   │   │   │   │       │       │   │   │           └── parking_lot_core v0.9.12
+│   │   │   │   │   │       │       │   │   │               ├── cfg-if feature "default" (*)
+│   │   │   │   │   │       │       │   │   │               └── smallvec feature "default" (*)
+│   │   │   │   │   │       │       │   │   ├── new_debug_unreachable feature "default"
+│   │   │   │   │   │       │       │   │   │   └── new_debug_unreachable v1.0.6
+│   │   │   │   │   │       │       │   │   └── precomputed-hash feature "default"
+│   │   │   │   │   │       │       │   │       └── precomputed-hash v0.1.1
+│   │   │   │   │   │       │       │   └── string_cache feature "serde_support"
+│   │   │   │   │   │       │       │       ├── string_cache v0.8.9 (*)
+│   │   │   │   │   │       │       │       └── string_cache feature "serde"
+│   │   │   │   │   │       │       │           └── string_cache v0.8.9 (*)
+│   │   │   │   │   │       │       └── tendril feature "default"
+│   │   │   │   │   │       │           └── tendril v0.4.3
+│   │   │   │   │   │       │               ├── mac feature "default" (*)
+│   │   │   │   │   │       │               ├── futf feature "default"
+│   │   │   │   │   │       │               │   └── futf v0.1.5
+│   │   │   │   │   │       │               │       ├── mac feature "default" (*)
+│   │   │   │   │   │       │               │       └── new_debug_unreachable feature "default" (*)
+│   │   │   │   │   │       │               └── utf-8 feature "default"
+│   │   │   │   │   │       │                   └── utf-8 v0.7.6
+│   │   │   │   │   │       │       [build-dependencies]
+│   │   │   │   │   │       │       ├── phf_codegen feature "default"
+│   │   │   │   │   │       │       │   └── phf_codegen v0.11.3
+│   │   │   │   │   │       │       │       ├── phf_generator feature "default" (*)
+│   │   │   │   │   │       │       │       └── phf_shared feature "default"
+│   │   │   │   │   │       │       │           ├── phf_shared v0.11.3 (*)
+│   │   │   │   │   │       │       │           └── phf_shared feature "std"
+│   │   │   │   │   │       │       │               └── phf_shared v0.11.3 (*)
+│   │   │   │   │   │       │       └── string_cache_codegen feature "default"
+│   │   │   │   │   │       │           └── string_cache_codegen v0.5.4
+│   │   │   │   │   │       │               ├── quote feature "default" (*)
+│   │   │   │   │   │       │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │       │               ├── phf_generator feature "default" (*)
+│   │   │   │   │   │       │               └── phf_shared feature "default" (*)
+│   │   │   │   │   │       └── match_token feature "default"
+│   │   │   │   │   │           └── match_token v0.1.0 (proc-macro)
+│   │   │   │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │               ├── syn feature "default" (*)
+│   │   │   │   │   │               └── syn feature "full" (*)
+│   │   │   │   │   ├── precomputed-hash feature "default" (*)
+│   │   │   │   │   ├── tendril feature "default" (*)
+│   │   │   │   │   └── selectors feature "default"
+│   │   │   │   │       └── selectors v0.26.0
+│   │   │   │   │           ├── log feature "default" (*)
+│   │   │   │   │           ├── bitflags feature "default"
+│   │   │   │   │           │   └── bitflags v2.10.0
+│   │   │   │   │           ├── phf feature "default" (*)
+│   │   │   │   │           ├── smallvec feature "default" (*)
+│   │   │   │   │           ├── cssparser feature "default" (*)
+│   │   │   │   │           ├── new_debug_unreachable feature "default" (*)
+│   │   │   │   │           ├── precomputed-hash feature "default" (*)
+│   │   │   │   │           ├── derive_more feature "add"
+│   │   │   │   │           │   └── derive_more v0.99.20 (proc-macro)
+│   │   │   │   │           │       ├── quote feature "default" (*)
+│   │   │   │   │           │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │           │       └── syn feature "default" (*)
+│   │   │   │   │           ├── derive_more feature "add_assign"
+│   │   │   │   │           │   └── derive_more v0.99.20 (proc-macro) (*)
+│   │   │   │   │           ├── fxhash feature "default"
+│   │   │   │   │           │   └── fxhash v0.2.1
+│   │   │   │   │           │       └── byteorder feature "default"
+│   │   │   │   │           │           ├── byteorder v1.5.0
+│   │   │   │   │           │           └── byteorder feature "std"
+│   │   │   │   │           │               └── byteorder v1.5.0
+│   │   │   │   │           └── servo_arc feature "default"
+│   │   │   │   │               ├── servo_arc v0.4.3
+│   │   │   │   │               │   └── stable_deref_trait feature "default"
+│   │   │   │   │               │       ├── stable_deref_trait v1.2.1
+│   │   │   │   │               │       └── stable_deref_trait feature "std"
+│   │   │   │   │               │           ├── stable_deref_trait v1.2.1
+│   │   │   │   │               │           └── stable_deref_trait feature "alloc"
+│   │   │   │   │               │               └── stable_deref_trait v1.2.1
+│   │   │   │   │               └── servo_arc feature "track_alloc_size"
+│   │   │   │   │                   └── servo_arc v0.4.3 (*)
+│   │   │   │   │           [build-dependencies]
+│   │   │   │   │           └── phf_codegen feature "default" (*)
+│   │   │   │   ├── scraper feature "errors"
+│   │   │   │   │   └── scraper v0.22.0 (*)
+│   │   │   │   └── scraper feature "main"
+│   │   │   │       ├── scraper v0.22.0 (*)
+│   │   │   │       └── scraper feature "getopts"
+│   │   │   │           └── scraper v0.22.0 (*)
+│   │   │   ├── serde_json feature "default"
+│   │   │   │   ├── serde_json v1.0.149
+│   │   │   │   │   ├── memchr v2.7.6
+│   │   │   │   │   ├── serde_core v1.0.228
+│   │   │   │   │   ├── itoa feature "default" (*)
+│   │   │   │   │   └── zmij feature "default"
+│   │   │   │   │       └── zmij v1.0.16
+│   │   │   │   └── serde_json feature "std"
+│   │   │   │       ├── serde_json v1.0.149 (*)
+│   │   │   │       ├── serde_core feature "std" (*)
+│   │   │   │       └── memchr feature "std" (*)
+│   │   │   ├── sipper feature "default"
+│   │   │   │   └── sipper v0.1.0
+│   │   │   │       ├── futures feature "default" (*)
+│   │   │   │       └── pin-project-lite feature "default" (*)
+│   │   │   ├── sysinfo feature "default"
+│   │   │   │   ├── sysinfo v0.30.13
+│   │   │   │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   └── rayon feature "default"
+│   │   │   │   │       └── rayon v1.11.0
+│   │   │   │   │           ├── either v1.15.0
+│   │   │   │   │           └── rayon-core feature "default"
+│   │   │   │   │               └── rayon-core v1.13.0
+│   │   │   │   │                   ├── crossbeam-deque feature "default"
+│   │   │   │   │                   │   ├── crossbeam-deque v0.8.6
+│   │   │   │   │                   │   │   ├── crossbeam-epoch v0.9.18
+│   │   │   │   │                   │   │   │   └── crossbeam-utils v0.8.21
+│   │   │   │   │                   │   │   └── crossbeam-utils v0.8.21
+│   │   │   │   │                   │   └── crossbeam-deque feature "std"
+│   │   │   │   │                   │       ├── crossbeam-deque v0.8.6 (*)
+│   │   │   │   │                   │       ├── crossbeam-epoch feature "std"
+│   │   │   │   │                   │       │   ├── crossbeam-epoch v0.9.18 (*)
+│   │   │   │   │                   │       │   ├── crossbeam-epoch feature "alloc"
+│   │   │   │   │                   │       │   │   └── crossbeam-epoch v0.9.18 (*)
+│   │   │   │   │                   │       │   └── crossbeam-utils feature "std"
+│   │   │   │   │                   │       │       └── crossbeam-utils v0.8.21
+│   │   │   │   │                   │       └── crossbeam-utils feature "std" (*)
+│   │   │   │   │                   └── crossbeam-utils feature "default"
+│   │   │   │   │                       ├── crossbeam-utils v0.8.21
+│   │   │   │   │                       └── crossbeam-utils feature "std" (*)
+│   │   │   │   └── sysinfo feature "multithread"
+│   │   │   │       ├── sysinfo v0.30.13 (*)
+│   │   │   │       └── sysinfo feature "rayon"
+│   │   │   │           └── sysinfo v0.30.13 (*)
+│   │   │   ├── tokio feature "default"
+│   │   │   │   └── tokio v1.49.0
+│   │   │   │       ├── mio v1.1.1
+│   │   │   │       ├── bytes feature "default"
+│   │   │   │       │   ├── bytes v1.11.0
+│   │   │   │       │   └── bytes feature "std"
+│   │   │   │       │       └── bytes v1.11.0
+│   │   │   │       ├── pin-project-lite feature "default" (*)
+│   │   │   │       ├── parking_lot feature "default" (*)
+│   │   │   │       └── tokio-macros feature "default"
+│   │   │   │           └── tokio-macros v2.6.0 (proc-macro)
+│   │   │   │               ├── quote feature "default" (*)
+│   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │               ├── syn feature "default" (*)
+│   │   │   │               └── syn feature "full" (*)
+│   │   │   ├── tokio feature "fs"
+│   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   ├── tokio feature "full"
+│   │   │   │   ├── tokio v1.49.0 (*)
+│   │   │   │   ├── tokio feature "fs" (*)
+│   │   │   │   ├── tokio feature "io-std"
+│   │   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   │   ├── tokio feature "io-util"
+│   │   │   │   │   ├── tokio v1.49.0 (*)
+│   │   │   │   │   └── tokio feature "bytes"
+│   │   │   │   │       └── tokio v1.49.0 (*)
+│   │   │   │   ├── tokio feature "macros"
+│   │   │   │   │   ├── tokio v1.49.0 (*)
+│   │   │   │   │   └── tokio feature "tokio-macros"
+│   │   │   │   │       └── tokio v1.49.0 (*)
+│   │   │   │   ├── tokio feature "net"
+│   │   │   │   │   ├── tokio v1.49.0 (*)
+│   │   │   │   │   ├── tokio feature "libc"
+│   │   │   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   │   │   ├── tokio feature "mio"
+│   │   │   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   │   │   ├── tokio feature "socket2"
+│   │   │   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   │   │   ├── mio feature "net"
+│   │   │   │   │   │   └── mio v1.1.1
+│   │   │   │   │   ├── mio feature "os-ext"
+│   │   │   │   │   │   ├── mio v1.1.1
+│   │   │   │   │   │   └── mio feature "os-poll"
+│   │   │   │   │   │       └── mio v1.1.1
+│   │   │   │   │   └── mio feature "os-poll" (*)
+│   │   │   │   ├── tokio feature "parking_lot"
+│   │   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   │   ├── tokio feature "process"
+│   │   │   │   │   ├── tokio v1.49.0 (*)
+│   │   │   │   │   ├── tokio feature "bytes" (*)
+│   │   │   │   │   ├── tokio feature "libc" (*)
+│   │   │   │   │   ├── tokio feature "mio" (*)
+│   │   │   │   │   ├── tokio feature "signal-hook-registry"
+│   │   │   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   │   │   ├── mio feature "net" (*)
+│   │   │   │   │   ├── mio feature "os-ext" (*)
+│   │   │   │   │   └── mio feature "os-poll" (*)
+│   │   │   │   ├── tokio feature "rt"
+│   │   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   │   ├── tokio feature "rt-multi-thread"
+│   │   │   │   │   ├── tokio v1.49.0 (*)
+│   │   │   │   │   └── tokio feature "rt" (*)
+│   │   │   │   ├── tokio feature "signal"
+│   │   │   │   │   ├── tokio v1.49.0 (*)
+│   │   │   │   │   ├── tokio feature "libc" (*)
+│   │   │   │   │   ├── tokio feature "mio" (*)
+│   │   │   │   │   ├── tokio feature "signal-hook-registry" (*)
+│   │   │   │   │   ├── mio feature "net" (*)
+│   │   │   │   │   ├── mio feature "os-ext" (*)
+│   │   │   │   │   └── mio feature "os-poll" (*)
+│   │   │   │   ├── tokio feature "sync"
+│   │   │   │   │   └── tokio v1.49.0 (*)
+│   │   │   │   └── tokio feature "time"
+│   │   │   │       └── tokio v1.49.0 (*)
+│   │   │   ├── tokio feature "io-util" (*)
+│   │   │   ├── tokio feature "process" (*)
+│   │   │   ├── tokio feature "time" (*)
+│   │   │   ├── tokio-stream feature "default"
+│   │   │   │   ├── tokio-stream v0.1.18
+│   │   │   │   │   ├── futures-core feature "default"
+│   │   │   │   │   │   ├── futures-core v0.3.31
+│   │   │   │   │   │   └── futures-core feature "std" (*)
+│   │   │   │   │   ├── pin-project-lite feature "default" (*)
+│   │   │   │   │   ├── tokio feature "default" (*)
+│   │   │   │   │   └── tokio feature "sync" (*)
+│   │   │   │   └── tokio-stream feature "time"
+│   │   │   │       ├── tokio-stream v0.1.18 (*)
+│   │   │   │       └── tokio feature "time" (*)
+│   │   │   ├── tokio-stream feature "io-util"
+│   │   │   │   ├── tokio-stream v0.1.18 (*)
+│   │   │   │   └── tokio feature "io-util" (*)
+│   │   │   ├── toml feature "default"
+│   │   │   │   ├── toml v0.9.11+spec-1.1.0
+│   │   │   │   │   ├── winnow v0.7.14
+│   │   │   │   │   ├── serde_core feature "alloc"
+│   │   │   │   │   │   └── serde_core v1.0.228
+│   │   │   │   │   ├── serde_spanned feature "alloc"
+│   │   │   │   │   │   ├── serde_spanned v1.0.4
+│   │   │   │   │   │   │   └── serde_core v1.0.228
+│   │   │   │   │   │   └── serde_core feature "alloc" (*)
+│   │   │   │   │   ├── toml_datetime feature "alloc"
+│   │   │   │   │   │   ├── toml_datetime v0.7.5+spec-1.1.0
+│   │   │   │   │   │   │   └── serde_core v1.0.228
+│   │   │   │   │   │   └── serde_core feature "alloc" (*)
+│   │   │   │   │   ├── toml_parser feature "alloc"
+│   │   │   │   │   │   └── toml_parser v1.0.6+spec-1.1.0
+│   │   │   │   │   │       └── winnow v0.7.14
+│   │   │   │   │   └── toml_writer feature "alloc"
+│   │   │   │   │       └── toml_writer v1.0.6+spec-1.1.0
+│   │   │   │   ├── toml feature "display"
+│   │   │   │   │   └── toml v0.9.11+spec-1.1.0 (*)
+│   │   │   │   ├── toml feature "parse"
+│   │   │   │   │   └── toml v0.9.11+spec-1.1.0 (*)
+│   │   │   │   ├── toml feature "serde"
+│   │   │   │   │   ├── toml v0.9.11+spec-1.1.0 (*)
+│   │   │   │   │   ├── serde_spanned feature "serde"
+│   │   │   │   │   │   └── serde_spanned v1.0.4 (*)
+│   │   │   │   │   └── toml_datetime feature "serde"
+│   │   │   │   │       └── toml_datetime v0.7.5+spec-1.1.0 (*)
+│   │   │   │   └── toml feature "std"
+│   │   │   │       ├── toml v0.9.11+spec-1.1.0 (*)
+│   │   │   │       ├── serde_core feature "std" (*)
+│   │   │   │       ├── serde_spanned feature "std"
+│   │   │   │       │   ├── serde_spanned v1.0.4 (*)
+│   │   │   │       │   ├── serde_core feature "std" (*)
+│   │   │   │       │   └── serde_spanned feature "alloc" (*)
+│   │   │   │       ├── toml_datetime feature "std"
+│   │   │   │       │   ├── toml_datetime v0.7.5+spec-1.1.0 (*)
+│   │   │   │       │   ├── serde_core feature "std" (*)
+│   │   │   │       │   └── toml_datetime feature "alloc" (*)
+│   │   │   │       ├── toml_parser feature "std"
+│   │   │   │       │   ├── toml_parser v1.0.6+spec-1.1.0 (*)
+│   │   │   │       │   └── toml_parser feature "alloc" (*)
+│   │   │   │       └── toml_writer feature "std"
+│   │   │   │           ├── toml_writer v1.0.6+spec-1.1.0
+│   │   │   │           └── toml_writer feature "alloc" (*)
+│   │   │   ├── tracing-subscriber feature "default"
+│   │   │   │   ├── tracing-subscriber v0.3.22
+│   │   │   │   │   ├── tracing-core v0.1.36 (*)
+│   │   │   │   │   ├── smallvec feature "default" (*)
+│   │   │   │   │   ├── nu-ansi-term feature "default"
+│   │   │   │   │   │   ├── nu-ansi-term v0.50.3
+│   │   │   │   │   │   └── nu-ansi-term feature "std"
+│   │   │   │   │   │       └── nu-ansi-term v0.50.3
+│   │   │   │   │   ├── sharded-slab feature "default"
+│   │   │   │   │   │   └── sharded-slab v0.1.7
+│   │   │   │   │   │       └── lazy_static feature "default"
+│   │   │   │   │   │           └── lazy_static v1.5.0
+│   │   │   │   │   ├── thread_local feature "default"
+│   │   │   │   │   │   └── thread_local v1.1.9
+│   │   │   │   │   │       └── cfg-if feature "default" (*)
+│   │   │   │   │   ├── tracing-log feature "log-tracer"
+│   │   │   │   │   │   └── tracing-log v0.2.0
+│   │   │   │   │   │       ├── once_cell feature "default" (*)
+│   │   │   │   │   │       ├── log feature "default" (*)
+│   │   │   │   │   │       └── tracing-core feature "default"
+│   │   │   │   │   │           ├── tracing-core v0.1.36 (*)
+│   │   │   │   │   │           └── tracing-core feature "std" (*)
+│   │   │   │   │   └── tracing-log feature "std"
+│   │   │   │   │       ├── tracing-log v0.2.0 (*)
+│   │   │   │   │       └── log feature "std"
+│   │   │   │   │           └── log v0.4.29
+│   │   │   │   ├── tracing-subscriber feature "ansi"
+│   │   │   │   │   ├── tracing-subscriber v0.3.22 (*)
+│   │   │   │   │   ├── tracing-subscriber feature "fmt"
+│   │   │   │   │   │   ├── tracing-subscriber v0.3.22 (*)
+│   │   │   │   │   │   ├── tracing-subscriber feature "registry"
+│   │   │   │   │   │   │   ├── tracing-subscriber v0.3.22 (*)
+│   │   │   │   │   │   │   ├── tracing-subscriber feature "sharded-slab"
+│   │   │   │   │   │   │   │   └── tracing-subscriber v0.3.22 (*)
+│   │   │   │   │   │   │   ├── tracing-subscriber feature "std"
+│   │   │   │   │   │   │   │   ├── tracing-subscriber v0.3.22 (*)
+│   │   │   │   │   │   │   │   ├── tracing-core feature "std" (*)
+│   │   │   │   │   │   │   │   └── tracing-subscriber feature "alloc"
+│   │   │   │   │   │   │   │       └── tracing-subscriber v0.3.22 (*)
+│   │   │   │   │   │   │   └── tracing-subscriber feature "thread_local"
+│   │   │   │   │   │   │       └── tracing-subscriber v0.3.22 (*)
+│   │   │   │   │   │   └── tracing-subscriber feature "std" (*)
+│   │   │   │   │   └── tracing-subscriber feature "nu-ansi-term"
+│   │   │   │   │       └── tracing-subscriber v0.3.22 (*)
+│   │   │   │   ├── tracing-subscriber feature "fmt" (*)
+│   │   │   │   ├── tracing-subscriber feature "smallvec"
+│   │   │   │   │   └── tracing-subscriber v0.3.22 (*)
+│   │   │   │   ├── tracing-subscriber feature "std" (*)
+│   │   │   │   └── tracing-subscriber feature "tracing-log"
+│   │   │   │       └── tracing-subscriber v0.3.22 (*)
+│   │   │   ├── url feature "default"
+│   │   │   │   ├── url v2.5.8
+│   │   │   │   │   ├── serde v1.0.228 (*)
+│   │   │   │   │   ├── serde_derive v1.0.228 (proc-macro) (*)
+│   │   │   │   │   ├── form_urlencoded feature "alloc"
+│   │   │   │   │   │   ├── form_urlencoded v1.2.2
+│   │   │   │   │   │   │   └── percent-encoding v2.3.2
+│   │   │   │   │   │   └── percent-encoding feature "alloc"
+│   │   │   │   │   │       └── percent-encoding v2.3.2
+│   │   │   │   │   ├── percent-encoding feature "alloc" (*)
+│   │   │   │   │   ├── idna feature "alloc"
+│   │   │   │   │   │   └── idna v1.1.0
+│   │   │   │   │   │       ├── smallvec feature "const_generics"
+│   │   │   │   │   │       │   └── smallvec v1.15.1
+│   │   │   │   │   │       ├── smallvec feature "default" (*)
+│   │   │   │   │   │       ├── idna_adapter feature "default"
+│   │   │   │   │   │       │   └── idna_adapter v1.2.1
+│   │   │   │   │   │       │       ├── icu_normalizer v2.1.1
+│   │   │   │   │   │       │       │   ├── icu_collections v2.1.1
+│   │   │   │   │   │       │       │   │   ├── displaydoc v0.2.5 (proc-macro)
+│   │   │   │   │   │       │       │   │   │   ├── quote feature "default" (*)
+│   │   │   │   │   │       │       │   │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │       │       │   │   │   └── syn feature "default" (*)
+│   │   │   │   │   │       │       │   │   ├── potential_utf feature "zerovec"
+│   │   │   │   │   │       │       │   │   │   └── potential_utf v0.1.4
+│   │   │   │   │   │       │       │   │   │       └── zerovec v0.11.5
+│   │   │   │   │   │       │       │   │   │           ├── yoke v0.8.1
+│   │   │   │   │   │       │       │   │   │           │   ├── stable_deref_trait v1.2.1
+│   │   │   │   │   │       │       │   │   │           │   ├── yoke-derive v0.8.1 (proc-macro)
+│   │   │   │   │   │       │       │   │   │           │   │   ├── quote feature "default" (*)
+│   │   │   │   │   │       │       │   │   │           │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │       │       │   │   │           │   │   ├── syn feature "default" (*)
+│   │   │   │   │   │       │       │   │   │           │   │   ├── syn feature "fold"
+│   │   │   │   │   │       │       │   │   │           │   │   │   └── syn v2.0.114 (*)
+│   │   │   │   │   │       │       │   │   │           │   │   └── synstructure feature "default"
+│   │   │   │   │   │       │       │   │   │           │   │       ├── synstructure v0.13.2
+│   │   │   │   │   │       │       │   │   │           │   │       │   ├── proc-macro2 v1.0.105 (*)
+│   │   │   │   │   │       │       │   │   │           │   │       │   ├── quote v1.0.43 (*)
+│   │   │   │   │   │       │       │   │   │           │   │       │   ├── syn feature "clone-impls" (*)
+│   │   │   │   │   │       │       │   │   │           │   │       │   ├── syn feature "derive" (*)
+│   │   │   │   │   │       │       │   │   │           │   │       │   ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │       │       │   │   │           │   │       │   ├── syn feature "parsing" (*)
+│   │   │   │   │   │       │       │   │   │           │   │       │   ├── syn feature "printing" (*)
+│   │   │   │   │   │       │       │   │   │           │   │       │   └── syn feature "visit" (*)
+│   │   │   │   │   │       │       │   │   │           │   │       └── synstructure feature "proc-macro"
+│   │   │   │   │   │       │       │   │   │           │   │           ├── synstructure v0.13.2 (*)
+│   │   │   │   │   │       │       │   │   │           │   │           ├── quote feature "proc-macro" (*)
+│   │   │   │   │   │       │       │   │   │           │   │           ├── proc-macro2 feature "proc-macro" (*)
+│   │   │   │   │   │       │       │   │   │           │   │           └── syn feature "proc-macro" (*)
+│   │   │   │   │   │       │       │   │   │           │   └── zerofrom v0.1.6
+│   │   │   │   │   │       │       │   │   │           │       └── zerofrom-derive v0.1.6 (proc-macro)
+│   │   │   │   │   │       │       │   │   │           │           ├── quote feature "default" (*)
+│   │   │   │   │   │       │       │   │   │           │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │       │       │   │   │           │           ├── syn feature "default" (*)
+│   │   │   │   │   │       │       │   │   │           │           ├── syn feature "fold" (*)
+│   │   │   │   │   │       │       │   │   │           │           └── synstructure feature "default" (*)
+│   │   │   │   │   │       │       │   │   │           ├── zerofrom v0.1.6 (*)
+│   │   │   │   │   │       │       │   │   │           └── zerovec-derive v0.11.2 (proc-macro)
+│   │   │   │   │   │       │       │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │       │       │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │       │       │   │   │               ├── syn feature "default" (*)
+│   │   │   │   │   │       │       │   │   │               └── syn feature "extra-traits" (*)
+│   │   │   │   │   │       │       │   │   ├── zerovec feature "derive"
+│   │   │   │   │   │       │       │   │   │   └── zerovec v0.11.5 (*)
+│   │   │   │   │   │       │       │   │   ├── zerovec feature "yoke"
+│   │   │   │   │   │       │       │   │   │   └── zerovec v0.11.5 (*)
+│   │   │   │   │   │       │       │   │   ├── yoke feature "derive"
+│   │   │   │   │   │       │       │   │   │   ├── yoke v0.8.1 (*)
+│   │   │   │   │   │       │       │   │   │   ├── yoke feature "zerofrom"
+│   │   │   │   │   │       │       │   │   │   │   └── yoke v0.8.1 (*)
+│   │   │   │   │   │       │       │   │   │   └── zerofrom feature "derive"
+│   │   │   │   │   │       │       │   │   │       └── zerofrom v0.1.6 (*)
+│   │   │   │   │   │       │       │   │   └── zerofrom feature "derive" (*)
+│   │   │   │   │   │       │       │   ├── icu_normalizer_data v2.1.1
+│   │   │   │   │   │       │       │   ├── icu_provider v2.1.1
+│   │   │   │   │   │       │       │   │   ├── displaydoc v0.2.5 (proc-macro) (*)
+│   │   │   │   │   │       │       │   │   ├── icu_locale_core v2.1.1
+│   │   │   │   │   │       │       │   │   │   ├── displaydoc v0.2.5 (proc-macro) (*)
+│   │   │   │   │   │       │       │   │   │   ├── litemap v0.8.1
+│   │   │   │   │   │       │       │   │   │   ├── tinystr v0.8.2
+│   │   │   │   │   │       │       │   │   │   │   ├── displaydoc v0.2.5 (proc-macro) (*)
+│   │   │   │   │   │       │       │   │   │   │   └── zerovec v0.11.5 (*)
+│   │   │   │   │   │       │       │   │   │   ├── writeable v0.6.2
+│   │   │   │   │   │       │       │   │   │   └── zerovec v0.11.5 (*)
+│   │   │   │   │   │       │       │   │   ├── writeable v0.6.2
+│   │   │   │   │   │       │       │   │   ├── zerotrie v0.2.3
+│   │   │   │   │   │       │       │   │   │   ├── displaydoc v0.2.5 (proc-macro) (*)
+│   │   │   │   │   │       │       │   │   │   ├── zerofrom v0.1.6 (*)
+│   │   │   │   │   │       │       │   │   │   └── yoke feature "derive" (*)
+│   │   │   │   │   │       │       │   │   ├── zerovec feature "derive" (*)
+│   │   │   │   │   │       │       │   │   ├── yoke feature "derive" (*)
+│   │   │   │   │   │       │       │   │   └── zerofrom feature "derive" (*)
+│   │   │   │   │   │       │       │   ├── smallvec v1.15.1
+│   │   │   │   │   │       │       │   └── zerovec v0.11.5 (*)
+│   │   │   │   │   │       │       └── icu_properties v2.1.2
+│   │   │   │   │   │       │           ├── icu_collections v2.1.1 (*)
+│   │   │   │   │   │       │           ├── icu_properties_data v2.1.2
+│   │   │   │   │   │       │           ├── icu_provider v2.1.1 (*)
+│   │   │   │   │   │       │           ├── zerovec feature "derive" (*)
+│   │   │   │   │   │       │           ├── zerovec feature "yoke" (*)
+│   │   │   │   │   │       │           ├── icu_locale_core feature "zerovec"
+│   │   │   │   │   │       │           │   ├── icu_locale_core v2.1.1 (*)
+│   │   │   │   │   │       │           │   └── tinystr feature "zerovec"
+│   │   │   │   │   │       │           │       └── tinystr v0.8.2 (*)
+│   │   │   │   │   │       │           ├── zerotrie feature "yoke"
+│   │   │   │   │   │       │           │   └── zerotrie v0.2.3 (*)
+│   │   │   │   │   │       │           └── zerotrie feature "zerofrom"
+│   │   │   │   │   │       │               └── zerotrie v0.2.3 (*)
+│   │   │   │   │   │       └── utf8_iter feature "default"
+│   │   │   │   │   │           └── utf8_iter v1.0.4
+│   │   │   │   │   └── idna feature "compiled_data"
+│   │   │   │   │       ├── idna v1.1.0 (*)
+│   │   │   │   │       └── idna_adapter feature "compiled_data"
+│   │   │   │   │           ├── idna_adapter v1.2.1 (*)
+│   │   │   │   │           ├── icu_normalizer feature "compiled_data"
+│   │   │   │   │           │   ├── icu_normalizer v2.1.1 (*)
+│   │   │   │   │           │   └── icu_provider feature "baked"
+│   │   │   │   │           │       └── icu_provider v2.1.1 (*)
+│   │   │   │   │           └── icu_properties feature "compiled_data"
+│   │   │   │   │               ├── icu_properties v2.1.2 (*)
+│   │   │   │   │               └── icu_provider feature "baked" (*)
+│   │   │   │   └── url feature "std"
+│   │   │   │       ├── url v2.5.8 (*)
+│   │   │   │       ├── serde feature "std" (*)
+│   │   │   │       ├── form_urlencoded feature "std"
+│   │   │   │       │   ├── form_urlencoded v1.2.2 (*)
+│   │   │   │       │   ├── form_urlencoded feature "alloc" (*)
+│   │   │   │       │   └── percent-encoding feature "std"
+│   │   │   │       │       ├── percent-encoding v2.3.2
+│   │   │   │       │       └── percent-encoding feature "alloc" (*)
+│   │   │   │       ├── percent-encoding feature "std" (*)
+│   │   │   │       └── idna feature "std"
+│   │   │   │           ├── idna v1.1.0 (*)
+│   │   │   │           └── idna feature "alloc" (*)
+│   │   │   ├── url feature "serde"
+│   │   │   │   └── url v2.5.8 (*)
+│   │   │   ├── urlencoding feature "default"
+│   │   │   │   └── urlencoding v2.1.3
+│   │   │   ├── uuid feature "default"
+│   │   │   │   ├── uuid v1.19.0
+│   │   │   │   │   ├── serde_core v1.0.228
+│   │   │   │   │   └── wasm-bindgen feature "msrv"
+│   │   │   │   │       └── wasm-bindgen v0.2.108 (*)
+│   │   │   │   └── uuid feature "std"
+│   │   │   │       ├── uuid v1.19.0 (*)
+│   │   │   │       └── wasm-bindgen feature "std" (*)
+│   │   │   ├── uuid feature "js"
+│   │   │   │   └── uuid v1.19.0 (*)
+│   │   │   ├── uuid feature "serde"
+│   │   │   │   └── uuid v1.19.0 (*)
+│   │   │   ├── uuid feature "v4"
+│   │   │   │   ├── uuid v1.19.0 (*)
+│   │   │   │   └── uuid feature "rng"
+│   │   │   │       └── uuid v1.19.0 (*)
+│   │   │   └── walkdir feature "default"
+│   │   │       └── walkdir v2.5.0
+│   │   │           └── same-file feature "default"
+│   │   │               └── same-file v1.0.6
+│   │   ├── chrono feature "default" (*)
+│   │   ├── js-sys feature "default" (*)
+│   │   ├── wasm-bindgen feature "default" (*)
+│   │   ├── serde feature "default" (*)
+│   │   ├── serde feature "derive" (*)
+│   │   ├── web-sys feature "Headers" (*)
+│   │   ├── web-sys feature "Request" (*)
+│   │   ├── web-sys feature "RequestInit" (*)
+│   │   ├── web-sys feature "RequestMode" (*)
+│   │   ├── web-sys feature "Response" (*)
+│   │   ├── web-sys feature "Window" (*)
+│   │   ├── web-sys feature "default" (*)
+│   │   ├── directories feature "default"
+│   │   │   └── directories v5.0.1
+│   │   │       └── dirs-sys feature "default"
+│   │   │           └── dirs-sys v0.4.1
+│   │   │               └── option-ext feature "default" (*)
+│   │   ├── dirs feature "default"
+│   │   │   └── dirs v5.0.1
+│   │   │       └── dirs-sys feature "default" (*)
+│   │   ├── getrandom feature "default" (*)
+│   │   ├── getrandom feature "js" (*)
+│   │   ├── hex feature "default"
+│   │   │   ├── hex v0.4.3
+│   │   │   └── hex feature "std"
+│   │   │       ├── hex v0.4.3
+│   │   │       └── hex feature "alloc"
+│   │   │           └── hex v0.4.3
+│   │   ├── iced feature "advanced"
+│   │   │   ├── iced v0.13.1
+│   │   │   │   ├── image v0.24.9
+│   │   │   │   │   ├── jpeg-decoder v0.3.2
+│   │   │   │   │   │   └── rayon feature "default" (*)
+│   │   │   │   │   ├── num-traits feature "default"
+│   │   │   │   │   │   ├── num-traits v0.2.19 (*)
+│   │   │   │   │   │   └── num-traits feature "std" (*)
+│   │   │   │   │   ├── bytemuck feature "default"
+│   │   │   │   │   │   └── bytemuck v1.24.0
+│   │   │   │   │   │       └── bytemuck_derive feature "default"
+│   │   │   │   │   │           └── bytemuck_derive v1.10.2 (proc-macro)
+│   │   │   │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │               └── syn feature "default" (*)
+│   │   │   │   │   ├── bytemuck feature "extern_crate_alloc"
+│   │   │   │   │   │   └── bytemuck v1.24.0 (*)
+│   │   │   │   │   ├── byteorder feature "default" (*)
+│   │   │   │   │   ├── color_quant feature "default"
+│   │   │   │   │   │   └── color_quant v1.1.0
+│   │   │   │   │   ├── exr feature "default"
+│   │   │   │   │   │   ├── exr v1.74.0
+│   │   │   │   │   │   │   ├── smallvec feature "default" (*)
+│   │   │   │   │   │   │   ├── rayon-core feature "default" (*)
+│   │   │   │   │   │   │   ├── half feature "default"
+│   │   │   │   │   │   │   │   ├── half v2.7.1
+│   │   │   │   │   │   │   │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   │   │   │   │   ├── zerocopy feature "derive"
+│   │   │   │   │   │   │   │   │   │   ├── zerocopy v0.8.33
+│   │   │   │   │   │   │   │   │   │   │   └── zerocopy-derive feature "default"
+│   │   │   │   │   │   │   │   │   │   │       └── zerocopy-derive v0.8.33 (proc-macro)
+│   │   │   │   │   │   │   │   │   │   │           ├── quote feature "default" (*)
+│   │   │   │   │   │   │   │   │   │   │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │   │   │   │   │           ├── syn feature "default" (*)
+│   │   │   │   │   │   │   │   │   │   │           └── syn feature "full" (*)
+│   │   │   │   │   │   │   │   │   │   └── zerocopy feature "zerocopy-derive"
+│   │   │   │   │   │   │   │   │   │       └── zerocopy v0.8.33 (*)
+│   │   │   │   │   │   │   │   │   └── zerocopy feature "simd"
+│   │   │   │   │   │   │   │   │       └── zerocopy v0.8.33 (*)
+│   │   │   │   │   │   │   │   └── half feature "std"
+│   │   │   │   │   │   │   │       ├── half v2.7.1 (*)
+│   │   │   │   │   │   │   │       └── half feature "alloc"
+│   │   │   │   │   │   │   │           └── half v2.7.1 (*)
+│   │   │   │   │   │   │   ├── bit_field feature "default"
+│   │   │   │   │   │   │   │   └── bit_field v0.10.3
+│   │   │   │   │   │   │   ├── lebe feature "default"
+│   │   │   │   │   │   │   │   └── lebe v0.5.3
+│   │   │   │   │   │   │   ├── miniz_oxide feature "default"
+│   │   │   │   │   │   │   │   ├── miniz_oxide v0.8.9
+│   │   │   │   │   │   │   │   │   ├── adler2 v2.0.1
+│   │   │   │   │   │   │   │   │   └── simd-adler32 v0.3.8
+│   │   │   │   │   │   │   │   └── miniz_oxide feature "with-alloc"
+│   │   │   │   │   │   │   │       └── miniz_oxide v0.8.9 (*)
+│   │   │   │   │   │   │   └── zune-inflate feature "zlib"
+│   │   │   │   │   │   │       ├── zune-inflate v0.2.54
+│   │   │   │   │   │   │       │   └── simd-adler32 v0.3.8
+│   │   │   │   │   │   │       └── zune-inflate feature "simd-adler32"
+│   │   │   │   │   │   │           └── zune-inflate v0.2.54 (*)
+│   │   │   │   │   │   └── exr feature "rayon"
+│   │   │   │   │   │       └── exr v1.74.0 (*)
+│   │   │   │   │   ├── gif feature "default"
+│   │   │   │   │   │   ├── gif v0.13.3
+│   │   │   │   │   │   │   ├── color_quant feature "default" (*)
+│   │   │   │   │   │   │   └── weezl feature "default"
+│   │   │   │   │   │   │       ├── weezl v0.1.12
+│   │   │   │   │   │   │       └── weezl feature "std"
+│   │   │   │   │   │   │           ├── weezl v0.1.12
+│   │   │   │   │   │   │           └── weezl feature "alloc"
+│   │   │   │   │   │   │               └── weezl v0.1.12
+│   │   │   │   │   │   ├── gif feature "color_quant"
+│   │   │   │   │   │   │   └── gif v0.13.3 (*)
+│   │   │   │   │   │   ├── gif feature "raii_no_panic"
+│   │   │   │   │   │   │   └── gif v0.13.3 (*)
+│   │   │   │   │   │   └── gif feature "std"
+│   │   │   │   │   │       └── gif v0.13.3 (*)
+│   │   │   │   │   ├── png feature "default"
+│   │   │   │   │   │   └── png v0.17.16
+│   │   │   │   │   │       ├── miniz_oxide feature "default" (*)
+│   │   │   │   │   │       ├── miniz_oxide feature "simd"
+│   │   │   │   │   │       │   ├── miniz_oxide v0.8.9 (*)
+│   │   │   │   │   │       │   └── miniz_oxide feature "simd-adler32"
+│   │   │   │   │   │       │       └── miniz_oxide v0.8.9 (*)
+│   │   │   │   │   │       ├── bitflags feature "default" (*)
+│   │   │   │   │   │       ├── crc32fast feature "default"
+│   │   │   │   │   │       │   ├── crc32fast v1.5.0
+│   │   │   │   │   │       │   │   └── cfg-if feature "default" (*)
+│   │   │   │   │   │       │   └── crc32fast feature "std"
+│   │   │   │   │   │       │       └── crc32fast v1.5.0 (*)
+│   │   │   │   │   │       ├── fdeflate feature "default"
+│   │   │   │   │   │       │   └── fdeflate v0.3.7
+│   │   │   │   │   │       │       └── simd-adler32 feature "default"
+│   │   │   │   │   │       │           ├── simd-adler32 v0.3.8
+│   │   │   │   │   │       │           ├── simd-adler32 feature "const-generics"
+│   │   │   │   │   │       │           │   └── simd-adler32 v0.3.8
+│   │   │   │   │   │       │           └── simd-adler32 feature "std"
+│   │   │   │   │   │       │               └── simd-adler32 v0.3.8
+│   │   │   │   │   │       └── flate2 feature "default"
+│   │   │   │   │   │           ├── flate2 v1.1.8
+│   │   │   │   │   │           │   ├── miniz_oxide feature "simd" (*)
+│   │   │   │   │   │           │   ├── miniz_oxide feature "with-alloc" (*)
+│   │   │   │   │   │           │   └── crc32fast feature "default" (*)
+│   │   │   │   │   │           └── flate2 feature "rust_backend"
+│   │   │   │   │   │               ├── flate2 v1.1.8 (*)
+│   │   │   │   │   │               ├── flate2 feature "any_impl"
+│   │   │   │   │   │               │   └── flate2 v1.1.8 (*)
+│   │   │   │   │   │               └── flate2 feature "miniz_oxide"
+│   │   │   │   │   │                   └── flate2 v1.1.8 (*)
+│   │   │   │   │   ├── qoi feature "default"
+│   │   │   │   │   │   ├── qoi v0.4.1
+│   │   │   │   │   │   │   └── bytemuck feature "default" (*)
+│   │   │   │   │   │   └── qoi feature "std"
+│   │   │   │   │   │       └── qoi v0.4.1 (*)
+│   │   │   │   │   └── tiff feature "default"
+│   │   │   │   │       └── tiff v0.9.1
+│   │   │   │   │           ├── jpeg-decoder v0.3.2 (*)
+│   │   │   │   │           ├── weezl feature "default" (*)
+│   │   │   │   │           └── flate2 feature "default" (*)
+│   │   │   │   ├── iced_core feature "default"
+│   │   │   │   │   └── iced_core v0.13.2
+│   │   │   │   │       ├── once_cell feature "default" (*)
+│   │   │   │   │       ├── num-traits feature "default" (*)
+│   │   │   │   │       ├── log feature "default" (*)
+│   │   │   │   │       ├── bitflags feature "default" (*)
+│   │   │   │   │       ├── bytes feature "default" (*)
+│   │   │   │   │       ├── dark-light feature "default"
+│   │   │   │   │       │   └── dark-light v1.1.1
+│   │   │   │   │       │       ├── web-sys feature "MediaQueryList"
+│   │   │   │   │       │       │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │       │       │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │       │       ├── web-sys feature "Window" (*)
+│   │   │   │   │       │       └── web-sys feature "default" (*)
+│   │   │   │   │       ├── glam feature "default"
+│   │   │   │   │       │   ├── glam v0.25.0
+│   │   │   │   │       │   └── glam feature "std"
+│   │   │   │   │       │       └── glam v0.25.0
+│   │   │   │   │       ├── palette feature "default"
+│   │   │   │   │       │   ├── palette v0.7.6
+│   │   │   │   │       │   │   ├── approx v0.5.1
+│   │   │   │   │       │   │   │   └── num-traits v0.2.19 (*)
+│   │   │   │   │       │   │   ├── fast-srgb8 feature "default"
+│   │   │   │   │       │   │   │   └── fast-srgb8 v1.0.0
+│   │   │   │   │       │   │   ├── palette_derive feature "default"
+│   │   │   │   │       │   │   │   └── palette_derive v0.7.6 (proc-macro)
+│   │   │   │   │       │   │   │       ├── quote feature "default" (*)
+│   │   │   │   │       │   │   │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │       │   │   │       ├── syn feature "clone-impls" (*)
+│   │   │   │   │       │   │   │       ├── syn feature "derive" (*)
+│   │   │   │   │       │   │   │       ├── syn feature "extra-traits" (*)
+│   │   │   │   │       │   │   │       ├── syn feature "parsing" (*)
+│   │   │   │   │       │   │   │       ├── syn feature "printing" (*)
+│   │   │   │   │       │   │   │       ├── syn feature "proc-macro" (*)
+│   │   │   │   │       │   │   │       └── by_address feature "default"
+│   │   │   │   │       │   │   │           └── by_address v1.2.1
+│   │   │   │   │       │   │   └── phf feature "macros" (*)
+│   │   │   │   │       │   ├── palette feature "approx"
+│   │   │   │   │       │   │   └── palette v0.7.6 (*)
+│   │   │   │   │       │   ├── palette feature "named_from_str"
+│   │   │   │   │       │   │   ├── palette v0.7.6 (*)
+│   │   │   │   │       │   │   ├── palette feature "named"
+│   │   │   │   │       │   │   │   └── palette v0.7.6 (*)
+│   │   │   │   │       │   │   └── palette feature "phf"
+│   │   │   │   │       │   │       └── palette v0.7.6 (*)
+│   │   │   │   │       │   └── palette feature "std"
+│   │   │   │   │       │       ├── palette v0.7.6 (*)
+│   │   │   │   │       │       ├── palette feature "alloc"
+│   │   │   │   │       │       │   └── palette v0.7.6 (*)
+│   │   │   │   │       │       └── approx feature "std"
+│   │   │   │   │       │           └── approx v0.5.1 (*)
+│   │   │   │   │       ├── rustc-hash feature "default"
+│   │   │   │   │       │   ├── rustc-hash v2.1.1
+│   │   │   │   │       │   └── rustc-hash feature "std"
+│   │   │   │   │       │       └── rustc-hash v2.1.1
+│   │   │   │   │       ├── smol_str feature "default"
+│   │   │   │   │       │   ├── smol_str v0.2.2
+│   │   │   │   │       │   └── smol_str feature "std"
+│   │   │   │   │       │       └── smol_str v0.2.2
+│   │   │   │   │       ├── thiserror feature "default" (*)
+│   │   │   │   │       └── web-time feature "default"
+│   │   │   │   │           └── web-time v1.1.0
+│   │   │   │   │               ├── wasm-bindgen v0.2.108 (*)
+│   │   │   │   │               └── js-sys feature "default" (*)
+│   │   │   │   ├── thiserror feature "default" (*)
+│   │   │   │   ├── iced_futures feature "default"
+│   │   │   │   │   └── iced_futures v0.13.2
+│   │   │   │   │       ├── log feature "default" (*)
+│   │   │   │   │       ├── iced_core feature "default" (*)
+│   │   │   │   │       ├── rustc-hash feature "default" (*)
+│   │   │   │   │       ├── futures feature "default" (*)
+│   │   │   │   │       ├── wasm-bindgen-futures feature "default" (*)
+│   │   │   │   │       └── wasm-timer feature "default"
+│   │   │   │   │           └── wasm-timer v0.2.5
+│   │   │   │   │               ├── js-sys feature "default" (*)
+│   │   │   │   │               ├── wasm-bindgen feature "default" (*)
+│   │   │   │   │               ├── web-sys feature "Performance"
+│   │   │   │   │               │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │               │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │               ├── web-sys feature "Window" (*)
+│   │   │   │   │               ├── web-sys feature "default" (*)
+│   │   │   │   │               ├── futures feature "default" (*)
+│   │   │   │   │               ├── pin-utils feature "default" (*)
+│   │   │   │   │               ├── wasm-bindgen-futures feature "default" (*)
+│   │   │   │   │               └── parking_lot feature "default"
+│   │   │   │   │                   └── parking_lot v0.11.2
+│   │   │   │   │                       ├── instant feature "default"
+│   │   │   │   │                       │   └── instant v0.1.13
+│   │   │   │   │                       │       └── cfg-if feature "default" (*)
+│   │   │   │   │                       ├── lock_api feature "default" (*)
+│   │   │   │   │                       └── parking_lot_core feature "default"
+│   │   │   │   │                           └── parking_lot_core v0.8.6
+│   │   │   │   │                               ├── cfg-if feature "default" (*)
+│   │   │   │   │                               ├── instant feature "default" (*)
+│   │   │   │   │                               └── smallvec feature "default" (*)
+│   │   │   │   ├── iced_renderer feature "default"
+│   │   │   │   │   └── iced_renderer v0.13.0
+│   │   │   │   │       ├── log feature "default" (*)
+│   │   │   │   │       ├── thiserror feature "default" (*)
+│   │   │   │   │       ├── iced_graphics feature "default"
+│   │   │   │   │       │   └── iced_graphics v0.13.0
+│   │   │   │   │       │       ├── image v0.24.9 (*)
+│   │   │   │   │       │       ├── once_cell feature "default" (*)
+│   │   │   │   │       │       ├── log feature "default" (*)
+│   │   │   │   │       │       ├── iced_core feature "default" (*)
+│   │   │   │   │       │       ├── bitflags feature "default" (*)
+│   │   │   │   │       │       ├── rustc-hash feature "default" (*)
+│   │   │   │   │       │       ├── thiserror feature "default" (*)
+│   │   │   │   │       │       ├── iced_futures feature "default" (*)
+│   │   │   │   │       │       ├── bytemuck feature "default" (*)
+│   │   │   │   │       │       ├── bytemuck feature "derive"
+│   │   │   │   │       │       │   ├── bytemuck v1.24.0 (*)
+│   │   │   │   │       │       │   └── bytemuck feature "bytemuck_derive"
+│   │   │   │   │       │       │       └── bytemuck v1.24.0 (*)
+│   │   │   │   │       │       ├── cosmic-text feature "default"
+│   │   │   │   │       │       │   ├── cosmic-text v0.12.1
+│   │   │   │   │       │       │   │   ├── fontdb v0.16.2
+│   │   │   │   │       │       │   │   │   ├── slotmap v1.1.1
+│   │   │   │   │       │       │   │   │   │   [build-dependencies]
+│   │   │   │   │       │       │   │   │   │   └── version_check feature "default"
+│   │   │   │   │       │       │   │   │   │       └── version_check v0.9.5
+│   │   │   │   │       │       │   │   │   ├── log feature "default" (*)
+│   │   │   │   │       │       │   │   │   ├── memmap2 feature "default"
+│   │   │   │   │       │       │   │   │   │   └── memmap2 v0.9.9
+│   │   │   │   │       │       │   │   │   ├── tinyvec feature "alloc"
+│   │   │   │   │       │       │   │   │   │   ├── tinyvec v1.10.0
+│   │   │   │   │       │       │   │   │   │   │   └── tinyvec_macros feature "default"
+│   │   │   │   │       │       │   │   │   │   │       └── tinyvec_macros v0.1.1
+│   │   │   │   │       │       │   │   │   │   └── tinyvec feature "tinyvec_macros"
+│   │   │   │   │       │       │   │   │   │       └── tinyvec v1.10.0 (*)
+│   │   │   │   │       │       │   │   │   ├── tinyvec feature "default"
+│   │   │   │   │       │       │   │   │   │   └── tinyvec v1.10.0 (*)
+│   │   │   │   │       │       │   │   │   ├── ttf-parser feature "apple-layout"
+│   │   │   │   │       │       │   │   │   │   └── ttf-parser v0.20.0
+│   │   │   │   │       │       │   │   │   ├── ttf-parser feature "glyph-names"
+│   │   │   │   │       │       │   │   │   │   └── ttf-parser v0.20.0
+│   │   │   │   │       │       │   │   │   ├── ttf-parser feature "opentype-layout"
+│   │   │   │   │       │       │   │   │   │   └── ttf-parser v0.20.0
+│   │   │   │   │       │       │   │   │   └── ttf-parser feature "variable-fonts"
+│   │   │   │   │       │       │   │   │       └── ttf-parser v0.20.0
+│   │   │   │   │       │       │   │   ├── rustc-hash v1.1.0
+│   │   │   │   │       │       │   │   ├── ttf-parser v0.21.1
+│   │   │   │   │       │       │   │   ├── log feature "default" (*)
+│   │   │   │   │       │       │   │   ├── bitflags feature "default" (*)
+│   │   │   │   │       │       │   │   ├── rangemap feature "default"
+│   │   │   │   │       │       │   │   │   └── rangemap v1.7.1
+│   │   │   │   │       │       │   │   ├── rayon feature "default" (*)
+│   │   │   │   │       │       │   │   ├── rustybuzz feature "libm"
+│   │   │   │   │       │       │   │   │   └── rustybuzz v0.14.1
+│   │   │   │   │       │       │   │   │       ├── libm feature "default" (*)
+│   │   │   │   │       │       │   │   │       ├── bitflags feature "default" (*)
+│   │   │   │   │       │       │   │   │       ├── smallvec feature "default" (*)
+│   │   │   │   │       │       │   │   │       ├── bytemuck feature "default" (*)
+│   │   │   │   │       │       │   │   │       ├── bytemuck feature "extern_crate_alloc" (*)
+│   │   │   │   │       │       │   │   │       ├── ttf-parser feature "apple-layout"
+│   │   │   │   │       │       │   │   │       │   └── ttf-parser v0.21.1
+│   │   │   │   │       │       │   │   │       ├── ttf-parser feature "glyph-names"
+│   │   │   │   │       │       │   │   │       │   └── ttf-parser v0.21.1
+│   │   │   │   │       │       │   │   │       ├── ttf-parser feature "opentype-layout"
+│   │   │   │   │       │       │   │   │       │   └── ttf-parser v0.21.1
+│   │   │   │   │       │       │   │   │       ├── ttf-parser feature "variable-fonts"
+│   │   │   │   │       │       │   │   │       │   └── ttf-parser v0.21.1
+│   │   │   │   │       │       │   │   │       ├── unicode-bidi-mirroring feature "default"
+│   │   │   │   │       │       │   │   │       │   └── unicode-bidi-mirroring v0.2.0
+│   │   │   │   │       │       │   │   │       ├── unicode-ccc feature "default"
+│   │   │   │   │       │       │   │   │       │   └── unicode-ccc v0.2.0
+│   │   │   │   │       │       │   │   │       ├── unicode-properties feature "general-category"
+│   │   │   │   │       │       │   │   │       │   └── unicode-properties v0.1.4
+│   │   │   │   │       │       │   │   │       └── unicode-script feature "default"
+│   │   │   │   │       │       │   │   │           └── unicode-script v0.5.8
+│   │   │   │   │       │       │   │   ├── unicode-script feature "default" (*)
+│   │   │   │   │       │       │   │   ├── self_cell feature "default"
+│   │   │   │   │       │       │   │   │   └── self_cell v1.2.2
+│   │   │   │   │       │       │   │   ├── swash feature "default"
+│   │   │   │   │       │       │   │   │   ├── swash v0.1.19
+│   │   │   │   │       │       │   │   │   │   ├── zeno v0.2.3
+│   │   │   │   │       │       │   │   │   │   ├── skrifa feature "default"
+│   │   │   │   │       │       │   │   │   │   │   ├── skrifa v0.22.3
+│   │   │   │   │       │       │   │   │   │   │   │   ├── read-fonts v0.22.7
+│   │   │   │   │       │       │   │   │   │   │   │   │   ├── bytemuck feature "default" (*)
+│   │   │   │   │       │       │   │   │   │   │   │   │   ├── font-types feature "bytemuck"
+│   │   │   │   │       │       │   │   │   │   │   │   │   │   └── font-types v0.7.3
+│   │   │   │   │       │       │   │   │   │   │   │   │   │       ├── bytemuck feature "default" (*)
+│   │   │   │   │       │       │   │   │   │   │   │   │   │       ├── bytemuck feature "derive" (*)
+│   │   │   │   │       │       │   │   │   │   │   │   │   │       └── bytemuck feature "min_const_generics"
+│   │   │   │   │       │       │   │   │   │   │   │   │   │           └── bytemuck v1.24.0 (*)
+│   │   │   │   │       │       │   │   │   │   │   │   │   └── font-types feature "default"
+│   │   │   │   │       │       │   │   │   │   │   │   │       └── font-types v0.7.3 (*)
+│   │   │   │   │       │       │   │   │   │   │   │   └── bytemuck feature "default" (*)
+│   │   │   │   │       │       │   │   │   │   │   ├── skrifa feature "autohint_shaping"
+│   │   │   │   │       │       │   │   │   │   │   │   └── skrifa v0.22.3 (*)
+│   │   │   │   │       │       │   │   │   │   │   └── skrifa feature "traversal"
+│   │   │   │   │       │       │   │   │   │   │       ├── skrifa v0.22.3 (*)
+│   │   │   │   │       │       │   │   │   │   │       ├── skrifa feature "std"
+│   │   │   │   │       │       │   │   │   │   │       │   ├── skrifa v0.22.3 (*)
+│   │   │   │   │       │       │   │   │   │   │       │   └── read-fonts feature "std"
+│   │   │   │   │       │       │   │   │   │   │       │       ├── read-fonts v0.22.7 (*)
+│   │   │   │   │       │       │   │   │   │   │       │       └── font-types feature "std"
+│   │   │   │   │       │       │   │   │   │   │       │           └── font-types v0.7.3 (*)
+│   │   │   │   │       │       │   │   │   │   │       └── read-fonts feature "experimental_traverse"
+│   │   │   │   │       │       │   │   │   │   │           ├── read-fonts v0.22.7 (*)
+│   │   │   │   │       │       │   │   │   │   │           └── read-fonts feature "std" (*)
+│   │   │   │   │       │       │   │   │   │   └── yazi feature "default"
+│   │   │   │   │       │       │   │   │   │       └── yazi v0.1.6
+│   │   │   │   │       │       │   │   │   ├── swash feature "render"
+│   │   │   │   │       │       │   │   │   │   ├── swash v0.1.19 (*)
+│   │   │   │   │       │       │   │   │   │   ├── swash feature "scale"
+│   │   │   │   │       │       │   │   │   │   │   └── swash v0.1.19 (*)
+│   │   │   │   │       │       │   │   │   │   ├── swash feature "zeno"
+│   │   │   │   │       │       │   │   │   │   │   └── swash v0.1.19 (*)
+│   │   │   │   │       │       │   │   │   │   └── zeno feature "eval"
+│   │   │   │   │       │       │   │   │   │       └── zeno v0.2.3
+│   │   │   │   │       │       │   │   │   └── swash feature "scale" (*)
+│   │   │   │   │       │       │   │   ├── sys-locale feature "default"
+│   │   │   │   │       │       │   │   │   └── sys-locale v0.3.2
+│   │   │   │   │       │       │   │   ├── unicode-bidi feature "hardcoded-data"
+│   │   │   │   │       │       │   │   │   └── unicode-bidi v0.3.18
+│   │   │   │   │       │       │   │   ├── unicode-linebreak feature "default"
+│   │   │   │   │       │       │   │   │   └── unicode-linebreak v0.1.5
+│   │   │   │   │       │       │   │   └── unicode-segmentation feature "default"
+│   │   │   │   │       │       │   │       └── unicode-segmentation v1.12.0
+│   │   │   │   │       │       │   ├── cosmic-text feature "fontconfig"
+│   │   │   │   │       │       │   │   ├── cosmic-text v0.12.1 (*)
+│   │   │   │   │       │       │   │   ├── cosmic-text feature "std"
+│   │   │   │   │       │       │   │   │   ├── cosmic-text v0.12.1 (*)
+│   │   │   │   │       │       │   │   │   ├── cosmic-text feature "rayon"
+│   │   │   │   │       │       │   │   │   │   └── cosmic-text v0.12.1 (*)
+│   │   │   │   │       │       │   │   │   ├── cosmic-text feature "sys-locale"
+│   │   │   │   │       │       │   │   │   │   └── cosmic-text v0.12.1 (*)
+│   │   │   │   │       │       │   │   │   ├── fontdb feature "memmap"
+│   │   │   │   │       │       │   │   │   │   ├── fontdb v0.16.2 (*)
+│   │   │   │   │       │       │   │   │   │   ├── fontdb feature "fs"
+│   │   │   │   │       │       │   │   │   │   │   ├── fontdb v0.16.2 (*)
+│   │   │   │   │       │       │   │   │   │   │   └── fontdb feature "std"
+│   │   │   │   │       │       │   │   │   │   │       ├── fontdb v0.16.2 (*)
+│   │   │   │   │       │       │   │   │   │   │       └── ttf-parser feature "std"
+│   │   │   │   │       │       │   │   │   │   │           └── ttf-parser v0.20.0
+│   │   │   │   │       │       │   │   │   │   └── fontdb feature "memmap2"
+│   │   │   │   │       │       │   │   │   │       └── fontdb v0.16.2 (*)
+│   │   │   │   │       │       │   │   │   ├── fontdb feature "std" (*)
+│   │   │   │   │       │       │   │   │   ├── rustybuzz feature "std"
+│   │   │   │   │       │       │   │   │   │   └── rustybuzz v0.14.1 (*)
+│   │   │   │   │       │       │   │   │   ├── ttf-parser feature "std"
+│   │   │   │   │       │       │   │   │   │   └── ttf-parser v0.21.1
+│   │   │   │   │       │       │   │   │   └── unicode-bidi feature "std"
+│   │   │   │   │       │       │   │   │       └── unicode-bidi v0.3.18
+│   │   │   │   │       │       │   │   └── fontdb feature "fontconfig"
+│   │   │   │   │       │       │   │       ├── fontdb v0.16.2 (*)
+│   │   │   │   │       │       │   │       ├── fontdb feature "fontconfig-parser"
+│   │   │   │   │       │       │   │       │   └── fontdb v0.16.2 (*)
+│   │   │   │   │       │       │   │       └── fontdb feature "fs" (*)
+│   │   │   │   │       │       │   ├── cosmic-text feature "std" (*)
+│   │   │   │   │       │       │   └── cosmic-text feature "swash"
+│   │   │   │   │       │       │       └── cosmic-text v0.12.1 (*)
+│   │   │   │   │       │       ├── unicode-segmentation feature "default" (*)
+│   │   │   │   │       │       ├── half feature "default" (*)
+│   │   │   │   │       │       ├── kamadak-exif feature "default"
+│   │   │   │   │       │       │   └── kamadak-exif v0.5.5
+│   │   │   │   │       │       │       └── mutate_once feature "default"
+│   │   │   │   │       │       │           └── mutate_once v0.1.2
+│   │   │   │   │       │       ├── lyon_path feature "default"
+│   │   │   │   │       │       │   ├── lyon_path v1.0.16
+│   │   │   │   │       │       │   │   ├── lyon_geom v1.0.18
+│   │   │   │   │       │       │   │   │   ├── arrayvec v0.7.6
+│   │   │   │   │       │       │   │   │   ├── euclid v0.22.13
+│   │   │   │   │       │       │   │   │   │   └── num-traits v0.2.19 (*)
+│   │   │   │   │       │       │   │   │   └── num-traits feature "libm"
+│   │   │   │   │       │       │   │   │       └── num-traits v0.2.19 (*)
+│   │   │   │   │       │       │   │   └── num-traits feature "libm" (*)
+│   │   │   │   │       │       │   └── lyon_path feature "std"
+│   │   │   │   │       │       │       ├── lyon_path v1.0.16 (*)
+│   │   │   │   │       │       │       ├── num-traits feature "std" (*)
+│   │   │   │   │       │       │       └── lyon_geom feature "std"
+│   │   │   │   │       │       │           ├── lyon_geom v1.0.18 (*)
+│   │   │   │   │       │       │           ├── num-traits feature "std" (*)
+│   │   │   │   │       │       │           ├── arrayvec feature "std"
+│   │   │   │   │       │       │           │   └── arrayvec v0.7.6
+│   │   │   │   │       │       │           └── euclid feature "std"
+│   │   │   │   │       │       │               ├── euclid v0.22.13 (*)
+│   │   │   │   │       │       │               └── num-traits feature "std" (*)
+│   │   │   │   │       │       └── raw-window-handle feature "default"
+│   │   │   │   │       │           └── raw-window-handle v0.6.2
+│   │   │   │   │       ├── iced_tiny_skia feature "default"
+│   │   │   │   │       │   └── iced_tiny_skia v0.13.0
+│   │   │   │   │       │       ├── log feature "default" (*)
+│   │   │   │   │       │       ├── rustc-hash feature "default" (*)
+│   │   │   │   │       │       ├── iced_graphics feature "default" (*)
+│   │   │   │   │       │       ├── bytemuck feature "default" (*)
+│   │   │   │   │       │       ├── bytemuck feature "derive" (*)
+│   │   │   │   │       │       ├── cosmic-text feature "default" (*)
+│   │   │   │   │       │       ├── kurbo feature "default"
+│   │   │   │   │       │       │   ├── kurbo v0.10.4
+│   │   │   │   │       │       │   │   ├── arrayvec v0.7.6
+│   │   │   │   │       │       │   │   └── smallvec feature "default" (*)
+│   │   │   │   │       │       │   └── kurbo feature "std"
+│   │   │   │   │       │       │       └── kurbo v0.10.4 (*)
+│   │   │   │   │       │       ├── resvg feature "default"
+│   │   │   │   │       │       │   ├── resvg v0.42.0
+│   │   │   │   │       │       │   │   ├── usvg v0.42.0
+│   │   │   │   │       │       │   │   │   ├── fontdb v0.18.0
+│   │   │   │   │       │       │   │   │   │   ├── slotmap v1.1.1 (*)
+│   │   │   │   │       │       │   │   │   │   ├── log feature "default" (*)
+│   │   │   │   │       │       │   │   │   │   ├── memmap2 feature "default" (*)
+│   │   │   │   │       │       │   │   │   │   ├── tinyvec feature "alloc" (*)
+│   │   │   │   │       │       │   │   │   │   ├── tinyvec feature "default" (*)
+│   │   │   │   │       │       │   │   │   │   ├── ttf-parser feature "apple-layout" (*)
+│   │   │   │   │       │       │   │   │   │   ├── ttf-parser feature "glyph-names" (*)
+│   │   │   │   │       │       │   │   │   │   ├── ttf-parser feature "opentype-layout" (*)
+│   │   │   │   │       │       │   │   │   │   └── ttf-parser feature "variable-fonts" (*)
+│   │   │   │   │       │       │   │   │   ├── log feature "default" (*)
+│   │   │   │   │       │       │   │   │   ├── siphasher feature "default" (*)
+│   │   │   │   │       │       │   │   │   ├── rustybuzz feature "default"
+│   │   │   │   │       │       │   │   │   │   ├── rustybuzz v0.14.1 (*)
+│   │   │   │   │       │       │   │   │   │   └── rustybuzz feature "std" (*)
+│   │   │   │   │       │       │   │   │   ├── unicode-script feature "default" (*)
+│   │   │   │   │       │       │   │   │   ├── unicode-bidi feature "default"
+│   │   │   │   │       │       │   │   │   │   ├── unicode-bidi v0.3.18
+│   │   │   │   │       │       │   │   │   │   ├── unicode-bidi feature "hardcoded-data" (*)
+│   │   │   │   │       │       │   │   │   │   └── unicode-bidi feature "std" (*)
+│   │   │   │   │       │       │   │   │   ├── flate2 feature "rust_backend" (*)
+│   │   │   │   │       │       │   │   │   ├── pico-args feature "default"
+│   │   │   │   │       │       │   │   │   │   └── pico-args v0.5.0
+│   │   │   │   │       │       │   │   │   ├── pico-args feature "eq-separator"
+│   │   │   │   │       │       │   │   │   │   └── pico-args v0.5.0
+│   │   │   │   │       │       │   │   │   ├── svgtypes feature "default"
+│   │   │   │   │       │       │   │   │   │   └── svgtypes v0.15.3
+│   │   │   │   │       │       │   │   │   │       ├── siphasher feature "default" (*)
+│   │   │   │   │       │       │   │   │   │       └── kurbo feature "default"
+│   │   │   │   │       │       │   │   │   │           ├── kurbo v0.11.3
+│   │   │   │   │       │       │   │   │   │           │   ├── arrayvec v0.7.6
+│   │   │   │   │       │       │   │   │   │           │   └── smallvec feature "default" (*)
+│   │   │   │   │       │       │   │   │   │           └── kurbo feature "std"
+│   │   │   │   │       │       │   │   │   │               └── kurbo v0.11.3 (*)
+│   │   │   │   │       │       │   │   │   ├── kurbo feature "default" (*)
+│   │   │   │   │       │       │   │   │   ├── tiny-skia-path feature "default"
+│   │   │   │   │       │       │   │   │   │   ├── tiny-skia-path v0.11.4
+│   │   │   │   │       │       │   │   │   │   │   ├── strict-num v0.1.1
+│   │   │   │   │       │       │   │   │   │   │   │   └── float-cmp feature "std"
+│   │   │   │   │       │       │   │   │   │   │   │       └── float-cmp v0.9.0
+│   │   │   │   │       │       │   │   │   │   │   ├── bytemuck feature "default" (*)
+│   │   │   │   │       │       │   │   │   │   │   └── arrayref feature "default"
+│   │   │   │   │       │       │   │   │   │   │       └── arrayref v0.3.9
+│   │   │   │   │       │       │   │   │   │   └── tiny-skia-path feature "std"
+│   │   │   │   │       │       │   │   │   │       └── tiny-skia-path v0.11.4 (*)
+│   │   │   │   │       │       │   │   │   ├── strict-num feature "default"
+│   │   │   │   │       │       │   │   │   │   ├── strict-num v0.1.1 (*)
+│   │   │   │   │       │       │   │   │   │   └── strict-num feature "approx-eq"
+│   │   │   │   │       │       │   │   │   │       ├── strict-num v0.1.1 (*)
+│   │   │   │   │       │       │   │   │   │       └── strict-num feature "float-cmp"
+│   │   │   │   │       │       │   │   │   │           └── strict-num v0.1.1 (*)
+│   │   │   │   │       │       │   │   │   ├── base64 feature "default"
+│   │   │   │   │       │       │   │   │   │   ├── base64 v0.22.1
+│   │   │   │   │       │       │   │   │   │   └── base64 feature "std"
+│   │   │   │   │       │       │   │   │   │       ├── base64 v0.22.1
+│   │   │   │   │       │       │   │   │   │       └── base64 feature "alloc"
+│   │   │   │   │       │       │   │   │   │           └── base64 v0.22.1
+│   │   │   │   │       │       │   │   │   ├── data-url feature "default"
+│   │   │   │   │       │       │   │   │   │   ├── data-url v0.3.2
+│   │   │   │   │       │       │   │   │   │   └── data-url feature "std"
+│   │   │   │   │       │       │   │   │   │       ├── data-url v0.3.2
+│   │   │   │   │       │       │   │   │   │       └── data-url feature "alloc"
+│   │   │   │   │       │       │   │   │   │           └── data-url v0.3.2
+│   │   │   │   │       │       │   │   │   ├── imagesize feature "default"
+│   │   │   │   │       │       │   │   │   │   └── imagesize v0.12.0
+│   │   │   │   │       │       │   │   │   ├── roxmltree feature "default"
+│   │   │   │   │       │       │   │   │   │   ├── roxmltree v0.20.0
+│   │   │   │   │       │       │   │   │   │   ├── roxmltree feature "positions"
+│   │   │   │   │       │       │   │   │   │   │   └── roxmltree v0.20.0
+│   │   │   │   │       │       │   │   │   │   └── roxmltree feature "std"
+│   │   │   │   │       │       │   │   │   │       └── roxmltree v0.20.0
+│   │   │   │   │       │       │   │   │   ├── simplecss feature "default"
+│   │   │   │   │       │       │   │   │   │   ├── simplecss v0.2.2
+│   │   │   │   │       │       │   │   │   │   │   └── log v0.4.29
+│   │   │   │   │       │       │   │   │   │   └── simplecss feature "std"
+│   │   │   │   │       │       │   │   │   │       ├── simplecss v0.2.2 (*)
+│   │   │   │   │       │       │   │   │   │       └── log feature "std" (*)
+│   │   │   │   │       │       │   │   │   ├── unicode-vo feature "default"
+│   │   │   │   │       │       │   │   │   │   └── unicode-vo v0.1.0
+│   │   │   │   │       │       │   │   │   └── xmlwriter feature "default"
+│   │   │   │   │       │       │   │   │       └── xmlwriter v0.1.0
+│   │   │   │   │       │       │   │   ├── log feature "default" (*)
+│   │   │   │   │       │       │   │   ├── gif feature "default" (*)
+│   │   │   │   │       │       │   │   ├── jpeg-decoder feature "platform_independent"
+│   │   │   │   │       │       │   │   │   └── jpeg-decoder v0.3.2 (*)
+│   │   │   │   │       │       │   │   ├── pico-args feature "default" (*)
+│   │   │   │   │       │       │   │   ├── pico-args feature "eq-separator" (*)
+│   │   │   │   │       │       │   │   ├── rgb feature "default"
+│   │   │   │   │       │       │   │   │   ├── rgb v0.8.52
+│   │   │   │   │       │       │   │   │   │   └── bytemuck feature "default" (*)
+│   │   │   │   │       │       │   │   │   ├── rgb feature "argb"
+│   │   │   │   │       │       │   │   │   │   └── rgb v0.8.52 (*)
+│   │   │   │   │       │       │   │   │   ├── rgb feature "as-bytes"
+│   │   │   │   │       │       │   │   │   │   ├── rgb v0.8.52 (*)
+│   │   │   │   │       │       │   │   │   │   └── rgb feature "bytemuck"
+│   │   │   │   │       │       │   │   │   │       └── rgb v0.8.52 (*)
+│   │   │   │   │       │       │   │   │   └── rgb feature "grb"
+│   │   │   │   │       │       │   │   │       └── rgb v0.8.52 (*)
+│   │   │   │   │       │       │   │   ├── svgtypes feature "default" (*)
+│   │   │   │   │       │       │   │   └── tiny-skia feature "default"
+│   │   │   │   │       │       │   │       ├── tiny-skia v0.11.4
+│   │   │   │   │       │       │   │       │   ├── arrayvec v0.7.6
+│   │   │   │   │       │       │   │       │   ├── tiny-skia-path v0.11.4 (*)
+│   │   │   │   │       │       │   │       │   ├── cfg-if feature "default" (*)
+│   │   │   │   │       │       │   │       │   ├── log feature "default" (*)
+│   │   │   │   │       │       │   │       │   ├── bytemuck feature "aarch64_simd"
+│   │   │   │   │       │       │   │       │   │   └── bytemuck v1.24.0 (*)
+│   │   │   │   │       │       │   │       │   ├── bytemuck feature "default" (*)
+│   │   │   │   │       │       │   │       │   ├── png feature "default" (*)
+│   │   │   │   │       │       │   │       │   └── arrayref feature "default" (*)
+│   │   │   │   │       │       │   │       ├── tiny-skia feature "png-format"
+│   │   │   │   │       │       │   │       │   ├── tiny-skia v0.11.4 (*)
+│   │   │   │   │       │       │   │       │   ├── tiny-skia feature "png"
+│   │   │   │   │       │       │   │       │   │   └── tiny-skia v0.11.4 (*)
+│   │   │   │   │       │       │   │       │   └── tiny-skia feature "std"
+│   │   │   │   │       │       │   │       │       ├── tiny-skia v0.11.4 (*)
+│   │   │   │   │       │       │   │       │       └── tiny-skia-path feature "std" (*)
+│   │   │   │   │       │       │   │       ├── tiny-skia feature "simd"
+│   │   │   │   │       │       │   │       │   └── tiny-skia v0.11.4 (*)
+│   │   │   │   │       │       │   │       └── tiny-skia feature "std" (*)
+│   │   │   │   │       │       │   ├── resvg feature "memmap-fonts"
+│   │   │   │   │       │       │   │   ├── resvg v0.42.0 (*)
+│   │   │   │   │       │       │   │   └── usvg feature "memmap-fonts"
+│   │   │   │   │       │       │   │       ├── usvg v0.42.0 (*)
+│   │   │   │   │       │       │   │       ├── usvg feature "fontdb"
+│   │   │   │   │       │       │   │       │   └── usvg v0.42.0 (*)
+│   │   │   │   │       │       │   │       └── fontdb feature "memmap"
+│   │   │   │   │       │       │   │           ├── fontdb v0.18.0 (*)
+│   │   │   │   │       │       │   │           ├── fontdb feature "fs"
+│   │   │   │   │       │       │   │           │   ├── fontdb v0.18.0 (*)
+│   │   │   │   │       │       │   │           │   └── fontdb feature "std"
+│   │   │   │   │       │       │   │           │       ├── fontdb v0.18.0 (*)
+│   │   │   │   │       │       │   │           │       └── ttf-parser feature "std" (*)
+│   │   │   │   │       │       │   │           └── fontdb feature "memmap2"
+│   │   │   │   │       │       │   │               └── fontdb v0.18.0 (*)
+│   │   │   │   │       │       │   ├── resvg feature "raster-images"
+│   │   │   │   │       │       │   │   ├── resvg v0.42.0 (*)
+│   │   │   │   │       │       │   │   ├── resvg feature "gif"
+│   │   │   │   │       │       │   │   │   └── resvg v0.42.0 (*)
+│   │   │   │   │       │       │   │   └── resvg feature "jpeg-decoder"
+│   │   │   │   │       │       │   │       └── resvg v0.42.0 (*)
+│   │   │   │   │       │       │   ├── resvg feature "system-fonts"
+│   │   │   │   │       │       │   │   ├── resvg v0.42.0 (*)
+│   │   │   │   │       │       │   │   └── usvg feature "system-fonts"
+│   │   │   │   │       │       │   │       ├── usvg v0.42.0 (*)
+│   │   │   │   │       │       │   │       ├── usvg feature "fontdb" (*)
+│   │   │   │   │       │       │   │       ├── fontdb feature "fontconfig"
+│   │   │   │   │       │       │   │       │   ├── fontdb v0.18.0 (*)
+│   │   │   │   │       │       │   │       │   ├── fontdb feature "fontconfig-parser"
+│   │   │   │   │       │       │   │       │   │   └── fontdb v0.18.0 (*)
+│   │   │   │   │       │       │   │       │   └── fontdb feature "fs" (*)
+│   │   │   │   │       │       │   │       └── fontdb feature "fs" (*)
+│   │   │   │   │       │       │   └── resvg feature "text"
+│   │   │   │   │       │       │       ├── resvg v0.42.0 (*)
+│   │   │   │   │       │       │       └── usvg feature "text"
+│   │   │   │   │       │       │           ├── usvg v0.42.0 (*)
+│   │   │   │   │       │       │           ├── usvg feature "fontdb" (*)
+│   │   │   │   │       │       │           ├── usvg feature "rustybuzz"
+│   │   │   │   │       │       │           │   └── usvg v0.42.0 (*)
+│   │   │   │   │       │       │           ├── usvg feature "unicode-bidi"
+│   │   │   │   │       │       │           │   └── usvg v0.42.0 (*)
+│   │   │   │   │       │       │           ├── usvg feature "unicode-script"
+│   │   │   │   │       │       │           │   └── usvg v0.42.0 (*)
+│   │   │   │   │       │       │           └── usvg feature "unicode-vo"
+│   │   │   │   │       │       │               └── usvg v0.42.0 (*)
+│   │   │   │   │       │       ├── tiny-skia feature "default" (*)
+│   │   │   │   │       │       └── softbuffer feature "default"
+│   │   │   │   │       │           ├── softbuffer v0.4.8
+│   │   │   │   │       │           │   ├── tracing v0.1.44 (*)
+│   │   │   │   │       │           │   ├── js-sys feature "default" (*)
+│   │   │   │   │       │           │   ├── wasm-bindgen feature "default" (*)
+│   │   │   │   │       │           │   ├── web-sys feature "CanvasRenderingContext2d"
+│   │   │   │   │       │           │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   ├── web-sys feature "Document"
+│   │   │   │   │       │           │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │       │           │   │   └── web-sys feature "Node"
+│   │   │   │   │       │           │   │       ├── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   │       └── web-sys feature "EventTarget" (*)
+│   │   │   │   │       │           │   ├── web-sys feature "Element"
+│   │   │   │   │       │           │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │       │           │   │   └── web-sys feature "Node" (*)
+│   │   │   │   │       │           │   ├── web-sys feature "HtmlCanvasElement"
+│   │   │   │   │       │           │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   │   ├── web-sys feature "Element" (*)
+│   │   │   │   │       │           │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │       │           │   │   ├── web-sys feature "HtmlElement"
+│   │   │   │   │       │           │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   │   │   ├── web-sys feature "Element" (*)
+│   │   │   │   │       │           │   │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │       │           │   │   │   └── web-sys feature "Node" (*)
+│   │   │   │   │       │           │   │   └── web-sys feature "Node" (*)
+│   │   │   │   │       │           │   ├── web-sys feature "ImageData"
+│   │   │   │   │       │           │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   ├── web-sys feature "OffscreenCanvas"
+│   │   │   │   │       │           │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │       │           │   ├── web-sys feature "OffscreenCanvasRenderingContext2d"
+│   │   │   │   │       │           │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │       │           │   ├── web-sys feature "Window" (*)
+│   │   │   │   │       │           │   ├── web-sys feature "default" (*)
+│   │   │   │   │       │           │   ├── raw-window-handle feature "default" (*)
+│   │   │   │   │       │           │   └── raw-window-handle feature "std"
+│   │   │   │   │       │           │       ├── raw-window-handle v0.6.2
+│   │   │   │   │       │           │       └── raw-window-handle feature "alloc"
+│   │   │   │   │       │           │           └── raw-window-handle v0.6.2
+│   │   │   │   │       │           ├── softbuffer feature "kms"
+│   │   │   │   │       │           │   ├── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "bytemuck"
+│   │   │   │   │       │           │   │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "drm"
+│   │   │   │   │       │           │   │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   └── softbuffer feature "rustix"
+│   │   │   │   │       │           │       └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           ├── softbuffer feature "wayland"
+│   │   │   │   │       │           │   ├── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "fastrand"
+│   │   │   │   │       │           │   │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "memmap2"
+│   │   │   │   │       │           │   │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "rustix" (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "wayland-backend"
+│   │   │   │   │       │           │   │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "wayland-client"
+│   │   │   │   │       │           │   │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   └── softbuffer feature "wayland-sys"
+│   │   │   │   │       │           │       └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           ├── softbuffer feature "wayland-dlopen"
+│   │   │   │   │       │           │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           ├── softbuffer feature "x11"
+│   │   │   │   │       │           │   ├── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "as-raw-xcb-connection"
+│   │   │   │   │       │           │   │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "bytemuck" (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "fastrand" (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "rustix" (*)
+│   │   │   │   │       │           │   ├── softbuffer feature "tiny-xlib"
+│   │   │   │   │       │           │   │   └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           │   └── softbuffer feature "x11rb"
+│   │   │   │   │       │           │       └── softbuffer v0.4.8 (*)
+│   │   │   │   │       │           └── softbuffer feature "x11-dlopen"
+│   │   │   │   │       │               └── softbuffer v0.4.8 (*)
+│   │   │   │   │       └── iced_wgpu feature "default"
+│   │   │   │   │           └── iced_wgpu v0.13.5
+│   │   │   │   │               ├── once_cell feature "default" (*)
+│   │   │   │   │               ├── log feature "default" (*)
+│   │   │   │   │               ├── bitflags feature "default" (*)
+│   │   │   │   │               ├── glam feature "default" (*)
+│   │   │   │   │               ├── rustc-hash feature "default" (*)
+│   │   │   │   │               ├── thiserror feature "default" (*)
+│   │   │   │   │               ├── futures feature "default" (*)
+│   │   │   │   │               ├── iced_graphics feature "default" (*)
+│   │   │   │   │               ├── bytemuck feature "default" (*)
+│   │   │   │   │               ├── bytemuck feature "derive" (*)
+│   │   │   │   │               ├── resvg feature "default" (*)
+│   │   │   │   │               ├── guillotiere feature "default"
+│   │   │   │   │               │   └── guillotiere v0.6.2
+│   │   │   │   │               │       ├── euclid feature "default"
+│   │   │   │   │               │       │   ├── euclid v0.22.13 (*)
+│   │   │   │   │               │       │   └── euclid feature "std" (*)
+│   │   │   │   │               │       └── svg_fmt feature "default"
+│   │   │   │   │               │           └── svg_fmt v0.4.5
+│   │   │   │   │               ├── iced_glyphon feature "default"
+│   │   │   │   │               │   └── iced_glyphon v0.6.0
+│   │   │   │   │               │       ├── lru v0.12.5
+│   │   │   │   │               │       ├── rustc-hash feature "default" (*)
+│   │   │   │   │               │       ├── cosmic-text feature "default" (*)
+│   │   │   │   │               │       ├── etagere feature "default"
+│   │   │   │   │               │       │   └── etagere v0.2.15
+│   │   │   │   │               │       │       ├── euclid feature "default" (*)
+│   │   │   │   │               │       │       └── svg_fmt feature "default" (*)
+│   │   │   │   │               │       └── wgpu feature "wgsl"
+│   │   │   │   │               │           └── wgpu v0.19.4
+│   │   │   │   │               │               ├── profiling v1.0.17
+│   │   │   │   │               │               ├── js-sys feature "default" (*)
+│   │   │   │   │               │               ├── wasm-bindgen feature "default" (*)
+│   │   │   │   │               │               ├── cfg-if feature "default" (*)
+│   │   │   │   │               │               ├── log feature "default" (*)
+│   │   │   │   │               │               ├── web-sys feature "Document" (*)
+│   │   │   │   │               │               ├── web-sys feature "Event"
+│   │   │   │   │               │               │   └── web-sys v0.3.85 (*)
+│   │   │   │   │               │               ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │               │               ├── web-sys feature "HtmlCanvasElement" (*)
+│   │   │   │   │               │               ├── web-sys feature "ImageBitmap"
+│   │   │   │   │               │               │   └── web-sys v0.3.85 (*)
+│   │   │   │   │               │               ├── web-sys feature "ImageBitmapRenderingContext"
+│   │   │   │   │               │               │   └── web-sys v0.3.85 (*)
+│   │   │   │   │               │               ├── web-sys feature "Navigator"
+│   │   │   │   │               │               │   └── web-sys v0.3.85 (*)
+│   │   │   │   │               │               ├── web-sys feature "Node" (*)
+│   │   │   │   │               │               ├── web-sys feature "NodeList"
+│   │   │   │   │               │               │   └── web-sys v0.3.85 (*)
+│   │   │   │   │               │               ├── web-sys feature "OffscreenCanvas" (*)
+│   │   │   │   │               │               ├── web-sys feature "Window" (*)
+│   │   │   │   │               │               ├── web-sys feature "WorkerGlobalScope"
+│   │   │   │   │               │               │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │               │               │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │               │               ├── web-sys feature "WorkerNavigator"
+│   │   │   │   │               │               │   └── web-sys v0.3.85 (*)
+│   │   │   │   │               │               ├── web-sys feature "default" (*)
+│   │   │   │   │               │               ├── wasm-bindgen-futures feature "default" (*)
+│   │   │   │   │               │               ├── smallvec feature "default" (*)
+│   │   │   │   │               │               ├── arrayvec feature "default"
+│   │   │   │   │               │               │   ├── arrayvec v0.7.6
+│   │   │   │   │               │               │   └── arrayvec feature "std" (*)
+│   │   │   │   │               │               ├── raw-window-handle feature "default" (*)
+│   │   │   │   │               │               ├── raw-window-handle feature "std" (*)
+│   │   │   │   │               │               ├── parking_lot feature "default" (*)
+│   │   │   │   │               │               ├── static_assertions feature "default"
+│   │   │   │   │               │               │   └── static_assertions v1.1.0
+│   │   │   │   │               │               └── wgpu-types feature "default"
+│   │   │   │   │               │                   └── wgpu-types v0.19.2
+│   │   │   │   │               │                       ├── js-sys feature "default" (*)
+│   │   │   │   │               │                       ├── web-sys feature "HtmlCanvasElement" (*)
+│   │   │   │   │               │                       ├── web-sys feature "HtmlVideoElement"
+│   │   │   │   │               │                       │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │               │                       │   ├── web-sys feature "Element" (*)
+│   │   │   │   │               │                       │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │               │                       │   ├── web-sys feature "HtmlElement" (*)
+│   │   │   │   │               │                       │   ├── web-sys feature "HtmlMediaElement"
+│   │   │   │   │               │                       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │               │                       │   │   ├── web-sys feature "Element" (*)
+│   │   │   │   │               │                       │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │               │                       │   │   ├── web-sys feature "HtmlElement" (*)
+│   │   │   │   │               │                       │   │   └── web-sys feature "Node" (*)
+│   │   │   │   │               │                       │   └── web-sys feature "Node" (*)
+│   │   │   │   │               │                       ├── web-sys feature "ImageBitmap" (*)
+│   │   │   │   │               │                       ├── web-sys feature "OffscreenCanvas" (*)
+│   │   │   │   │               │                       ├── web-sys feature "default" (*)
+│   │   │   │   │               │                       └── bitflags feature "default" (*)
+│   │   │   │   │               │               [build-dependencies]
+│   │   │   │   │               │               └── cfg_aliases feature "default"
+│   │   │   │   │               │                   └── cfg_aliases v0.1.1
+│   │   │   │   │               ├── wgpu feature "default"
+│   │   │   │   │               │   ├── wgpu v0.19.4 (*)
+│   │   │   │   │               │   ├── wgpu feature "dx12"
+│   │   │   │   │               │   │   └── wgpu v0.19.4 (*)
+│   │   │   │   │               │   ├── wgpu feature "metal"
+│   │   │   │   │               │   │   └── wgpu v0.19.4 (*)
+│   │   │   │   │               │   ├── wgpu feature "webgpu"
+│   │   │   │   │               │   │   └── wgpu v0.19.4 (*)
+│   │   │   │   │               │   └── wgpu feature "wgsl" (*)
+│   │   │   │   │               └── lyon feature "default"
+│   │   │   │   │                   └── lyon v1.0.16
+│   │   │   │   │                       ├── lyon_algorithms feature "default"
+│   │   │   │   │                       │   ├── lyon_algorithms v1.0.16
+│   │   │   │   │                       │   │   ├── lyon_path v1.0.16 (*)
+│   │   │   │   │                       │   │   └── num-traits feature "libm" (*)
+│   │   │   │   │                       │   └── lyon_algorithms feature "std"
+│   │   │   │   │                       │       ├── lyon_algorithms v1.0.16 (*)
+│   │   │   │   │                       │       ├── num-traits feature "std" (*)
+│   │   │   │   │                       │       └── lyon_path feature "std" (*)
+│   │   │   │   │                       └── lyon_tessellation feature "default"
+│   │   │   │   │                           ├── lyon_tessellation v1.0.16
+│   │   │   │   │                           │   ├── lyon_path v1.0.16 (*)
+│   │   │   │   │                           │   ├── num-traits feature "libm" (*)
+│   │   │   │   │                           │   └── float_next_after feature "default"
+│   │   │   │   │                           │       └── float_next_after v1.0.0
+│   │   │   │   │                           └── lyon_tessellation feature "std"
+│   │   │   │   │                               ├── lyon_tessellation v1.0.16 (*)
+│   │   │   │   │                               ├── num-traits feature "std" (*)
+│   │   │   │   │                               └── lyon_path feature "std" (*)
+│   │   │   │   ├── iced_widget feature "default"
+│   │   │   │   │   └── iced_widget v0.13.4
+│   │   │   │   │       ├── once_cell feature "default" (*)
+│   │   │   │   │       ├── num-traits feature "default" (*)
+│   │   │   │   │       ├── rustc-hash feature "default" (*)
+│   │   │   │   │       ├── thiserror feature "default" (*)
+│   │   │   │   │       ├── iced_renderer feature "default" (*)
+│   │   │   │   │       ├── unicode-segmentation feature "default" (*)
+│   │   │   │   │       ├── iced_runtime feature "default"
+│   │   │   │   │       │   └── iced_runtime v0.13.2
+│   │   │   │   │       │       ├── iced_core feature "default" (*)
+│   │   │   │   │       │       ├── bytes feature "default" (*)
+│   │   │   │   │       │       ├── thiserror feature "default" (*)
+│   │   │   │   │       │       ├── iced_futures feature "default" (*)
+│   │   │   │   │       │       ├── iced_futures feature "thread-pool"
+│   │   │   │   │       │       │   ├── iced_futures v0.13.2 (*)
+│   │   │   │   │       │       │   └── futures feature "thread-pool"
+│   │   │   │   │       │       │       ├── futures v0.3.31 (*)
+│   │   │   │   │       │       │       ├── futures feature "executor" (*)
+│   │   │   │   │       │       │       ├── futures feature "futures-executor" (*)
+│   │   │   │   │       │       │       └── futures-executor feature "thread-pool"
+│   │   │   │   │       │       │           ├── futures-executor v0.3.31 (*)
+│   │   │   │   │       │       │           ├── futures-executor feature "num_cpus"
+│   │   │   │   │       │       │           │   └── futures-executor v0.3.31 (*)
+│   │   │   │   │       │       │           └── futures-executor feature "std" (*)
+│   │   │   │   │       │       └── raw-window-handle feature "default" (*)
+│   │   │   │   │       └── ouroboros feature "default"
+│   │   │   │   │           ├── ouroboros v0.18.5
+│   │   │   │   │           │   ├── static_assertions feature "default" (*)
+│   │   │   │   │           │   ├── aliasable feature "default"
+│   │   │   │   │           │   │   ├── aliasable v0.1.3
+│   │   │   │   │           │   │   └── aliasable feature "alloc"
+│   │   │   │   │           │   │       └── aliasable v0.1.3
+│   │   │   │   │           │   └── ouroboros_macro feature "default"
+│   │   │   │   │           │       └── ouroboros_macro v0.18.5 (proc-macro)
+│   │   │   │   │           │           ├── quote feature "default" (*)
+│   │   │   │   │           │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │           │           ├── syn feature "default" (*)
+│   │   │   │   │           │           ├── syn feature "full" (*)
+│   │   │   │   │           │           ├── heck feature "default"
+│   │   │   │   │           │           │   └── heck v0.4.1
+│   │   │   │   │           │           └── proc-macro2-diagnostics feature "default"
+│   │   │   │   │           │               ├── proc-macro2-diagnostics v0.10.1
+│   │   │   │   │           │               │   ├── quote feature "default" (*)
+│   │   │   │   │           │               │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │           │               │   ├── syn feature "default" (*)
+│   │   │   │   │           │               │   └── yansi feature "default"
+│   │   │   │   │           │               │       ├── yansi v1.0.1
+│   │   │   │   │           │               │       └── yansi feature "std"
+│   │   │   │   │           │               │           ├── yansi v1.0.1
+│   │   │   │   │           │               │           └── yansi feature "alloc"
+│   │   │   │   │           │               │               └── yansi v1.0.1
+│   │   │   │   │           │               │   [build-dependencies]
+│   │   │   │   │           │               │   └── version_check feature "default" (*)
+│   │   │   │   │           │               └── proc-macro2-diagnostics feature "colors"
+│   │   │   │   │           │                   ├── proc-macro2-diagnostics v0.10.1 (*)
+│   │   │   │   │           │                   └── proc-macro2-diagnostics feature "yansi"
+│   │   │   │   │           │                       └── proc-macro2-diagnostics v0.10.1 (*)
+│   │   │   │   │           └── ouroboros feature "std"
+│   │   │   │   │               ├── ouroboros v0.18.5 (*)
+│   │   │   │   │               └── ouroboros_macro feature "std"
+│   │   │   │   │                   └── ouroboros_macro v0.18.5 (proc-macro) (*)
+│   │   │   │   ├── iced_winit feature "default"
+│   │   │   │   │   ├── iced_winit v0.13.0
+│   │   │   │   │   │   ├── log feature "default" (*)
+│   │   │   │   │   │   ├── web-sys feature "Document" (*)
+│   │   │   │   │   │   ├── web-sys feature "HtmlCanvasElement" (*)
+│   │   │   │   │   │   ├── web-sys feature "Window" (*)
+│   │   │   │   │   │   ├── web-sys feature "default" (*)
+│   │   │   │   │   │   ├── rustc-hash feature "default" (*)
+│   │   │   │   │   │   ├── thiserror feature "default" (*)
+│   │   │   │   │   │   ├── iced_futures feature "default" (*)
+│   │   │   │   │   │   ├── wasm-bindgen-futures feature "default" (*)
+│   │   │   │   │   │   ├── iced_graphics feature "default" (*)
+│   │   │   │   │   │   ├── tracing feature "default" (*)
+│   │   │   │   │   │   ├── iced_runtime feature "default" (*)
+│   │   │   │   │   │   ├── window_clipboard feature "default"
+│   │   │   │   │   │   │   └── window_clipboard v0.4.1
+│   │   │   │   │   │   │       ├── thiserror feature "default" (*)
+│   │   │   │   │   │   │       ├── raw-window-handle feature "default" (*)
+│   │   │   │   │   │   │       └── raw-window-handle feature "std" (*)
+│   │   │   │   │   │   └── winit feature "default"
+│   │   │   │   │   │       ├── winit v0.30.12
+│   │   │   │   │   │       │   ├── tracing v0.1.44 (*)
+│   │   │   │   │   │       │   ├── js-sys feature "default" (*)
+│   │   │   │   │   │       │   ├── wasm-bindgen feature "default" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "AbortController"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "AbortSignal"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Blob"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "BlobPropertyBag"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "CssStyleDeclaration"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Document" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "DomException"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "DomRect"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "DomRectReadOnly"
+│   │   │   │   │   │       │   │       └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "DomRectReadOnly" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Element" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Event" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "FocusEvent"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "Event" (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "UiEvent"
+│   │   │   │   │   │       │   │       ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │       └── web-sys feature "Event" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "HtmlCanvasElement" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "HtmlElement" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "HtmlImageElement"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "Element" (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "HtmlElement" (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "Node" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ImageBitmap" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ImageBitmapOptions"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ImageBitmapRenderingContext" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ImageData" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "IntersectionObserver"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "IntersectionObserverEntry"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "KeyboardEvent"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "Event" (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "UiEvent" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "MediaQueryList" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "MessageChannel"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "MessagePort"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Navigator" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Node" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "OrientationLockType"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "OrientationType"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "PageTransitionEvent"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "Event" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "PermissionState"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "PermissionStatus"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Permissions"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "PointerEvent"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "Event" (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "MouseEvent"
+│   │   │   │   │   │       │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   │   ├── web-sys feature "Event" (*)
+│   │   │   │   │   │       │   │   │   └── web-sys feature "UiEvent" (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "UiEvent" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "PremultiplyAlpha"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ResizeObserver"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ResizeObserverBoxOptions"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ResizeObserverEntry"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ResizeObserverOptions"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ResizeObserverSize"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Screen"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "ScreenOrientation"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Url"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "VisibilityState"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "WheelEvent"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "Event" (*)
+│   │   │   │   │   │       │   │   ├── web-sys feature "MouseEvent" (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "UiEvent" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Window" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "Worker"
+│   │   │   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │   │   │       │   ├── web-sys feature "console"
+│   │   │   │   │   │       │   │   └── web-sys v0.3.85 (*)
+│   │   │   │   │   │       │   ├── web-sys feature "default" (*)
+│   │   │   │   │   │       │   ├── bitflags feature "default" (*)
+│   │   │   │   │   │       │   ├── smol_str feature "default" (*)
+│   │   │   │   │   │       │   ├── web-time feature "default" (*)
+│   │   │   │   │   │       │   ├── wasm-bindgen-futures feature "default" (*)
+│   │   │   │   │   │       │   ├── raw-window-handle feature "default" (*)
+│   │   │   │   │   │       │   ├── raw-window-handle feature "std" (*)
+│   │   │   │   │   │       │   ├── cursor-icon feature "default"
+│   │   │   │   │   │       │   │   ├── cursor-icon v1.2.0
+│   │   │   │   │   │       │   │   └── cursor-icon feature "std"
+│   │   │   │   │   │       │   │       ├── cursor-icon v1.2.0
+│   │   │   │   │   │       │   │       └── cursor-icon feature "alloc"
+│   │   │   │   │   │       │   │           └── cursor-icon v1.2.0
+│   │   │   │   │   │       │   ├── dpi feature "default"
+│   │   │   │   │   │       │   │   ├── dpi v0.1.2
+│   │   │   │   │   │       │   │   └── dpi feature "std"
+│   │   │   │   │   │       │   │       └── dpi v0.1.2
+│   │   │   │   │   │       │   └── pin-project feature "default"
+│   │   │   │   │   │       │       └── pin-project v1.1.10
+│   │   │   │   │   │       │           └── pin-project-internal feature "default"
+│   │   │   │   │   │       │               └── pin-project-internal v1.1.10 (proc-macro)
+│   │   │   │   │   │       │                   ├── quote feature "default" (*)
+│   │   │   │   │   │       │                   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │       │                   ├── syn feature "clone-impls" (*)
+│   │   │   │   │   │       │                   ├── syn feature "full" (*)
+│   │   │   │   │   │       │                   ├── syn feature "parsing" (*)
+│   │   │   │   │   │       │                   ├── syn feature "printing" (*)
+│   │   │   │   │   │       │                   ├── syn feature "proc-macro" (*)
+│   │   │   │   │   │       │                   └── syn feature "visit-mut" (*)
+│   │   │   │   │   │       │   [build-dependencies]
+│   │   │   │   │   │       │   └── cfg_aliases feature "default"
+│   │   │   │   │   │       │       └── cfg_aliases v0.2.1
+│   │   │   │   │   │       ├── winit feature "rwh_06"
+│   │   │   │   │   │       │   └── winit v0.30.12 (*)
+│   │   │   │   │   │       ├── winit feature "wayland"
+│   │   │   │   │   │       │   ├── winit v0.30.12 (*)
+│   │   │   │   │   │       │   ├── winit feature "ahash"
+│   │   │   │   │   │       │   │   └── winit v0.30.12 (*)
+│   │   │   │   │   │       │   ├── winit feature "memmap2"
+│   │   │   │   │   │       │   │   └── winit v0.30.12 (*)
+│   │   │   │   │   │       │   ├── winit feature "sctk"
+│   │   │   │   │   │       │   │   └── winit v0.30.12 (*)
+│   │   │   │   │   │       │   ├── winit feature "wayland-backend"
+│   │   │   │   │   │       │   │   └── winit v0.30.12 (*)
+│   │   │   │   │   │       │   ├── winit feature "wayland-client"
+│   │   │   │   │   │       │   │   └── winit v0.30.12 (*)
+│   │   │   │   │   │       │   ├── winit feature "wayland-protocols"
+│   │   │   │   │   │       │   │   └── winit v0.30.12 (*)
+│   │   │   │   │   │       │   └── winit feature "wayland-protocols-plasma"
+│   │   │   │   │   │       │       └── winit v0.30.12 (*)
+│   │   │   │   │   │       ├── winit feature "wayland-csd-adwaita"
+│   │   │   │   │   │       │   ├── winit v0.30.12 (*)
+│   │   │   │   │   │       │   └── winit feature "sctk-adwaita"
+│   │   │   │   │   │       │       └── winit v0.30.12 (*)
+│   │   │   │   │   │       ├── winit feature "wayland-dlopen"
+│   │   │   │   │   │       │   └── winit v0.30.12 (*)
+│   │   │   │   │   │       └── winit feature "x11"
+│   │   │   │   │   │           ├── winit v0.30.12 (*)
+│   │   │   │   │   │           ├── winit feature "bytemuck"
+│   │   │   │   │   │           │   └── winit v0.30.12 (*)
+│   │   │   │   │   │           ├── winit feature "percent-encoding"
+│   │   │   │   │   │           │   └── winit v0.30.12 (*)
+│   │   │   │   │   │           ├── winit feature "x11-dl"
+│   │   │   │   │   │           │   └── winit v0.30.12 (*)
+│   │   │   │   │   │           └── winit feature "x11rb"
+│   │   │   │   │   │               └── winit v0.30.12 (*)
+│   │   │   │   │   ├── iced_winit feature "wayland"
+│   │   │   │   │   │   ├── iced_winit v0.13.0 (*)
+│   │   │   │   │   │   └── winit feature "wayland" (*)
+│   │   │   │   │   ├── iced_winit feature "wayland-csd-adwaita"
+│   │   │   │   │   │   ├── iced_winit v0.13.0 (*)
+│   │   │   │   │   │   └── winit feature "wayland-csd-adwaita" (*)
+│   │   │   │   │   ├── iced_winit feature "wayland-dlopen"
+│   │   │   │   │   │   ├── iced_winit v0.13.0 (*)
+│   │   │   │   │   │   └── winit feature "wayland-dlopen" (*)
+│   │   │   │   │   └── iced_winit feature "x11"
+│   │   │   │   │       ├── iced_winit v0.13.0 (*)
+│   │   │   │   │       └── winit feature "x11" (*)
+│   │   │   │   └── iced_winit feature "program"
+│   │   │   │       └── iced_winit v0.13.0 (*)
+│   │   │   ├── iced_core feature "advanced"
+│   │   │   │   └── iced_core v0.13.2 (*)
+│   │   │   └── iced_widget feature "advanced"
+│   │   │       └── iced_widget v0.13.4 (*)
+│   │   ├── iced feature "canvas"
+│   │   │   ├── iced v0.13.1 (*)
+│   │   │   └── iced_widget feature "canvas"
+│   │   │       ├── iced_widget v0.13.4 (*)
+│   │   │       └── iced_renderer feature "geometry"
+│   │   │           ├── iced_renderer v0.13.0 (*)
+│   │   │           ├── iced_graphics feature "geometry"
+│   │   │           │   ├── iced_graphics v0.13.0 (*)
+│   │   │           │   └── iced_graphics feature "lyon_path"
+│   │   │           │       └── iced_graphics v0.13.0 (*)
+│   │   │           ├── iced_tiny_skia feature "geometry"
+│   │   │           │   ├── iced_tiny_skia v0.13.0 (*)
+│   │   │           │   └── iced_graphics feature "geometry" (*)
+│   │   │           └── iced_wgpu feature "geometry"
+│   │   │               ├── iced_wgpu v0.13.5 (*)
+│   │   │               ├── iced_graphics feature "geometry" (*)
+│   │   │               └── iced_wgpu feature "lyon"
+│   │   │                   └── iced_wgpu v0.13.5 (*)
+│   │   ├── iced feature "default"
+│   │   │   ├── iced v0.13.1 (*)
+│   │   │   ├── iced feature "auto-detect-theme"
+│   │   │   │   ├── iced v0.13.1 (*)
+│   │   │   │   └── iced_core feature "auto-detect-theme"
+│   │   │   │       └── iced_core v0.13.2 (*)
+│   │   │   ├── iced feature "fira-sans"
+│   │   │   │   ├── iced v0.13.1 (*)
+│   │   │   │   └── iced_renderer feature "fira-sans"
+│   │   │   │       ├── iced_renderer v0.13.0 (*)
+│   │   │   │       └── iced_graphics feature "fira-sans"
+│   │   │   │           └── iced_graphics v0.13.0 (*)
+│   │   │   ├── iced feature "tiny-skia"
+│   │   │   │   ├── iced v0.13.1 (*)
+│   │   │   │   └── iced_renderer feature "tiny-skia"
+│   │   │   │       ├── iced_renderer v0.13.0 (*)
+│   │   │   │       └── iced_renderer feature "iced_tiny_skia"
+│   │   │   │           └── iced_renderer v0.13.0 (*)
+│   │   │   └── iced feature "wgpu"
+│   │   │       ├── iced v0.13.1 (*)
+│   │   │       ├── iced_renderer feature "wgpu"
+│   │   │       │   ├── iced_renderer v0.13.0 (*)
+│   │   │       │   └── iced_renderer feature "iced_wgpu"
+│   │   │       │       └── iced_renderer v0.13.0 (*)
+│   │   │       └── iced_widget feature "wgpu"
+│   │   │           ├── iced_widget v0.13.4 (*)
+│   │   │           └── iced_renderer feature "wgpu" (*)
+│   │   ├── iced feature "image"
+│   │   │   ├── iced v0.13.1 (*)
+│   │   │   ├── iced feature "image" (*)
+│   │   │   ├── iced feature "image-without-codecs"
+│   │   │   │   ├── iced v0.13.1 (*)
+│   │   │   │   └── iced_widget feature "image"
+│   │   │   │       ├── iced_widget v0.13.4 (*)
+│   │   │   │       └── iced_renderer feature "image"
+│   │   │   │           ├── iced_renderer v0.13.0 (*)
+│   │   │   │           ├── iced_tiny_skia feature "image"
+│   │   │   │           │   ├── iced_tiny_skia v0.13.0 (*)
+│   │   │   │           │   └── iced_graphics feature "image"
+│   │   │   │           │       ├── iced_graphics v0.13.0 (*)
+│   │   │   │           │       └── iced_graphics feature "kamadak-exif"
+│   │   │   │           │           └── iced_graphics v0.13.0 (*)
+│   │   │   │           └── iced_wgpu feature "image"
+│   │   │   │               ├── iced_wgpu v0.13.5 (*)
+│   │   │   │               └── iced_graphics feature "image" (*)
+│   │   │   └── image feature "default"
+│   │   │       ├── image v0.24.9 (*)
+│   │   │       ├── image feature "bmp"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       ├── image feature "dds"
+│   │   │       │   ├── image v0.24.9 (*)
+│   │   │       │   └── image feature "dxt"
+│   │   │       │       └── image v0.24.9 (*)
+│   │   │       ├── image feature "dxt" (*)
+│   │   │       ├── image feature "farbfeld"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       ├── image feature "gif"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       ├── image feature "hdr"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       ├── image feature "ico"
+│   │   │       │   ├── image v0.24.9 (*)
+│   │   │       │   ├── image feature "bmp" (*)
+│   │   │       │   └── image feature "png"
+│   │   │       │       └── image v0.24.9 (*)
+│   │   │       ├── image feature "jpeg"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       ├── image feature "jpeg_rayon"
+│   │   │       │   ├── image v0.24.9 (*)
+│   │   │       │   ├── image feature "jpeg" (*)
+│   │   │       │   └── jpeg-decoder feature "rayon"
+│   │   │       │       └── jpeg-decoder v0.3.2 (*)
+│   │   │       ├── image feature "openexr"
+│   │   │       │   ├── image v0.24.9 (*)
+│   │   │       │   └── image feature "exr"
+│   │   │       │       └── image v0.24.9 (*)
+│   │   │       ├── image feature "png" (*)
+│   │   │       ├── image feature "pnm"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       ├── image feature "qoi"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       ├── image feature "tga"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       ├── image feature "tiff"
+│   │   │       │   └── image v0.24.9 (*)
+│   │   │       └── image feature "webp"
+│   │   │           └── image v0.24.9 (*)
+│   │   ├── iced feature "svg"
+│   │   │   ├── iced v0.13.1 (*)
+│   │   │   └── iced_widget feature "svg"
+│   │   │       ├── iced_widget v0.13.4 (*)
+│   │   │       └── iced_renderer feature "svg"
+│   │   │           ├── iced_renderer v0.13.0 (*)
+│   │   │           ├── iced_tiny_skia feature "svg"
+│   │   │           │   ├── iced_tiny_skia v0.13.0 (*)
+│   │   │           │   ├── iced_graphics feature "svg"
+│   │   │           │   │   └── iced_graphics v0.13.0 (*)
+│   │   │           │   └── iced_tiny_skia feature "resvg"
+│   │   │           │       └── iced_tiny_skia v0.13.0 (*)
+│   │   │           └── iced_wgpu feature "svg"
+│   │   │               ├── iced_wgpu v0.13.5 (*)
+│   │   │               ├── iced_graphics feature "svg" (*)
+│   │   │               ├── resvg feature "text" (*)
+│   │   │               └── iced_wgpu feature "resvg"
+│   │   │                   └── iced_wgpu v0.13.5 (*)
+│   │   ├── iced feature "wgpu" (*)
+│   │   ├── thiserror feature "default" (*)
+│   │   ├── wasm-bindgen-futures feature "default" (*)
+│   │   ├── lazy_static feature "default" (*)
+│   │   ├── opener feature "default"
+│   │   │   └── opener v0.6.1
+│   │   ├── portable-pty feature "default" (*)
+│   │   ├── serde_json feature "default" (*)
+│   │   ├── sysinfo feature "default" (*)
+│   │   ├── tokio feature "default" (*)
+│   │   ├── tokio feature "full" (*)
+│   │   ├── regex feature "default"
+│   │   │   ├── regex v1.12.2
+│   │   │   │   ├── aho-corasick v1.1.4
+│   │   │   │   │   └── memchr v2.7.6
+│   │   │   │   ├── memchr v2.7.6
+│   │   │   │   ├── regex-syntax v0.8.8
+│   │   │   │   ├── regex-automata feature "alloc"
+│   │   │   │   │   └── regex-automata v0.4.13
+│   │   │   │   │       ├── aho-corasick v1.1.4 (*)
+│   │   │   │   │       ├── memchr v2.7.6
+│   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   ├── regex-automata feature "meta"
+│   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   ├── regex-automata feature "nfa-pikevm"
+│   │   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │   └── regex-automata feature "nfa-thompson"
+│   │   │   │   │   │       ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │       └── regex-automata feature "alloc" (*)
+│   │   │   │   │   └── regex-automata feature "syntax"
+│   │   │   │   │       ├── regex-automata v0.4.13 (*)
+│   │   │   │   │       └── regex-automata feature "alloc" (*)
+│   │   │   │   ├── regex-automata feature "nfa-pikevm" (*)
+│   │   │   │   └── regex-automata feature "syntax" (*)
+│   │   │   ├── regex feature "perf"
+│   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   ├── regex feature "perf-backtrack"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   └── regex-automata feature "nfa-backtrack"
+│   │   │   │   │       ├── regex-automata v0.4.13 (*)
+│   │   │   │   │       └── regex-automata feature "nfa-thompson" (*)
+│   │   │   │   ├── regex feature "perf-cache"
+│   │   │   │   │   └── regex v1.12.2 (*)
+│   │   │   │   ├── regex feature "perf-dfa"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   └── regex-automata feature "hybrid"
+│   │   │   │   │       ├── regex-automata v0.4.13 (*)
+│   │   │   │   │       ├── regex-automata feature "alloc" (*)
+│   │   │   │   │       └── regex-automata feature "nfa-thompson" (*)
+│   │   │   │   ├── regex feature "perf-inline"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   └── regex-automata feature "perf-inline"
+│   │   │   │   │       └── regex-automata v0.4.13 (*)
+│   │   │   │   ├── regex feature "perf-literal"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   └── regex-automata feature "perf-literal"
+│   │   │   │   │       ├── regex-automata v0.4.13 (*)
+│   │   │   │   │       ├── regex-automata feature "perf-literal-multisubstring"
+│   │   │   │   │       │   └── regex-automata v0.4.13 (*)
+│   │   │   │   │       └── regex-automata feature "perf-literal-substring"
+│   │   │   │   │           ├── regex-automata v0.4.13 (*)
+│   │   │   │   │           └── aho-corasick feature "perf-literal"
+│   │   │   │   │               └── aho-corasick v1.1.4 (*)
+│   │   │   │   └── regex feature "perf-onepass"
+│   │   │   │       ├── regex v1.12.2 (*)
+│   │   │   │       └── regex-automata feature "dfa-onepass"
+│   │   │   │           ├── regex-automata v0.4.13 (*)
+│   │   │   │           └── regex-automata feature "nfa-thompson" (*)
+│   │   │   ├── regex feature "std"
+│   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   ├── memchr feature "std" (*)
+│   │   │   │   ├── aho-corasick feature "std"
+│   │   │   │   │   ├── aho-corasick v1.1.4 (*)
+│   │   │   │   │   └── memchr feature "std" (*)
+│   │   │   │   ├── regex-automata feature "std"
+│   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   ├── memchr feature "std" (*)
+│   │   │   │   │   ├── aho-corasick feature "std" (*)
+│   │   │   │   │   ├── regex-automata feature "alloc" (*)
+│   │   │   │   │   └── regex-syntax feature "std"
+│   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   └── regex-syntax feature "std" (*)
+│   │   │   ├── regex feature "unicode"
+│   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   ├── regex feature "unicode-age"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-age"
+│   │   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │   └── regex-syntax feature "unicode-age"
+│   │   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   │   └── regex-syntax feature "unicode-age" (*)
+│   │   │   │   ├── regex feature "unicode-bool"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-bool"
+│   │   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │   └── regex-syntax feature "unicode-bool"
+│   │   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   │   └── regex-syntax feature "unicode-bool" (*)
+│   │   │   │   ├── regex feature "unicode-case"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-case"
+│   │   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │   └── regex-syntax feature "unicode-case"
+│   │   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   │   └── regex-syntax feature "unicode-case" (*)
+│   │   │   │   ├── regex feature "unicode-gencat"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-gencat"
+│   │   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │   └── regex-syntax feature "unicode-gencat"
+│   │   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   │   └── regex-syntax feature "unicode-gencat" (*)
+│   │   │   │   ├── regex feature "unicode-perl"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-perl"
+│   │   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │   └── regex-syntax feature "unicode-perl"
+│   │   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   │   ├── regex-automata feature "unicode-word-boundary"
+│   │   │   │   │   │   └── regex-automata v0.4.13 (*)
+│   │   │   │   │   └── regex-syntax feature "unicode-perl" (*)
+│   │   │   │   ├── regex feature "unicode-script"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-script"
+│   │   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │   └── regex-syntax feature "unicode-script"
+│   │   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   │   └── regex-syntax feature "unicode-script" (*)
+│   │   │   │   ├── regex feature "unicode-segment"
+│   │   │   │   │   ├── regex v1.12.2 (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-segment"
+│   │   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   │   └── regex-syntax feature "unicode-segment"
+│   │   │   │   │   │       └── regex-syntax v0.8.8
+│   │   │   │   │   └── regex-syntax feature "unicode-segment" (*)
+│   │   │   │   ├── regex-automata feature "unicode"
+│   │   │   │   │   ├── regex-automata v0.4.13 (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-age" (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-bool" (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-case" (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-gencat" (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-perl" (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-script" (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-segment" (*)
+│   │   │   │   │   ├── regex-automata feature "unicode-word-boundary" (*)
+│   │   │   │   │   └── regex-syntax feature "unicode"
+│   │   │   │   │       ├── regex-syntax v0.8.8
+│   │   │   │   │       ├── regex-syntax feature "unicode-age" (*)
+│   │   │   │   │       ├── regex-syntax feature "unicode-bool" (*)
+│   │   │   │   │       ├── regex-syntax feature "unicode-case" (*)
+│   │   │   │   │       ├── regex-syntax feature "unicode-gencat" (*)
+│   │   │   │   │       ├── regex-syntax feature "unicode-perl" (*)
+│   │   │   │   │       ├── regex-syntax feature "unicode-script" (*)
+│   │   │   │   │       └── regex-syntax feature "unicode-segment" (*)
+│   │   │   │   └── regex-syntax feature "unicode" (*)
+│   │   │   └── regex-syntax feature "default"
+│   │   │       ├── regex-syntax v0.8.8
+│   │   │       ├── regex-syntax feature "std" (*)
+│   │   │       └── regex-syntax feature "unicode" (*)
+│   │   └── sha2 feature "default"
+│   │       ├── sha2 v0.10.9
+│   │       │   ├── cfg-if feature "default" (*)
+│   │       │   └── digest feature "default"
+│   │       │       ├── digest v0.10.7
+│   │       │       │   ├── block-buffer feature "default"
+│   │       │       │   │   └── block-buffer v0.10.4
+│   │       │       │   │       └── generic-array feature "default"
+│   │       │       │   │           └── generic-array v0.14.7
+│   │       │       │   │               └── typenum feature "default"
+│   │       │       │   │                   └── typenum v1.19.0
+│   │       │       │   │               [build-dependencies]
+│   │       │       │   │               └── version_check feature "default" (*)
+│   │       │       │   └── crypto-common feature "default"
+│   │       │       │       └── crypto-common v0.1.7
+│   │       │       │           ├── generic-array feature "default" (*)
+│   │       │       │           ├── generic-array feature "more_lengths"
+│   │       │       │           │   └── generic-array v0.14.7 (*)
+│   │       │       │           └── typenum feature "default" (*)
+│   │       │       └── digest feature "core-api"
+│   │       │           ├── digest v0.10.7 (*)
+│   │       │           └── digest feature "block-buffer"
+│   │       │               └── digest v0.10.7 (*)
+│   │       └── sha2 feature "std"
+│   │           ├── sha2 v0.10.9 (*)
+│   │           └── digest feature "std"
+│   │               ├── digest v0.10.7 (*)
+│   │               ├── digest feature "alloc"
+│   │               │   └── digest v0.10.7 (*)
+│   │               └── crypto-common feature "std"
+│   │                   └── crypto-common v0.1.7 (*)
+│   ├── peak-intelligence v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-intelligence) (*)
+│   ├── peak-theme v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-theme)
+│   │   ├── peak-core v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-core) (*)
+│   │   ├── serde feature "default" (*)
+│   │   ├── serde feature "derive" (*)
+│   │   ├── iced feature "advanced" (*)
+│   │   └── iced feature "default" (*)
+│   ├── peak-ui v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-ui)
+│   │   ├── js-sys feature "default" (*)
+│   │   ├── wasm-bindgen feature "default" (*)
+│   │   ├── console_error_panic_hook feature "default"
+│   │   │   └── console_error_panic_hook v0.1.7
+│   │   │       ├── wasm-bindgen feature "default" (*)
+│   │   │       └── cfg-if feature "default" (*)
+│   │   ├── console_log feature "default"
+│   │   │   └── console_log v1.0.0
+│   │   │       ├── log feature "default" (*)
+│   │   │       ├── web-sys feature "console" (*)
+│   │   │       └── web-sys feature "default" (*)
+│   │   ├── log feature "default" (*)
+│   │   ├── iced feature "advanced" (*)
+│   │   ├── iced feature "canvas" (*)
+│   │   ├── iced feature "default" (*)
+│   │   ├── iced feature "image" (*)
+│   │   ├── iced feature "lazy"
+│   │   │   ├── iced v0.13.1 (*)
+│   │   │   └── iced_widget feature "lazy"
+│   │   │       ├── iced_widget v0.13.4 (*)
+│   │   │       └── iced_widget feature "ouroboros"
+│   │   │           └── iced_widget v0.13.4 (*)
+│   │   ├── iced feature "svg" (*)
+│   │   ├── iced feature "wgpu" (*)
+│   │   ├── wasm-bindgen-futures feature "default" (*)
+│   │   ├── tiny-skia feature "default" (*)
+│   │   ├── iced_widget feature "default" (*)
+│   │   ├── iced_widget feature "lazy" (*)
+│   │   ├── peak-core feature "wasm"
+│   │   │   └── peak-core v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-core) (*)
+│   │   └── peak-theme feature "wasm"
+│   │       ├── peak-theme v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-theme) (*)
+│   │       └── peak-core feature "wasm" (*)
+│   ├── chrono feature "default" (*)
+│   ├── js-sys feature "default" (*)
+│   ├── wasm-bindgen feature "default" (*)
+│   ├── serde feature "default" (*)
+│   ├── serde feature "derive" (*)
+│   ├── web-sys feature "Headers" (*)
+│   ├── web-sys feature "Request" (*)
+│   ├── web-sys feature "RequestInit" (*)
+│   ├── web-sys feature "RequestMode" (*)
+│   ├── web-sys feature "Response" (*)
+│   ├── web-sys feature "Window" (*)
+│   ├── web-sys feature "default" (*)
+│   ├── directories feature "default" (*)
+│   ├── dirs feature "default" (*)
+│   ├── getrandom feature "default" (*)
+│   ├── getrandom feature "js" (*)
+│   ├── hex feature "default" (*)
+│   ├── iced feature "advanced" (*)
+│   ├── iced feature "canvas" (*)
+│   ├── iced feature "default" (*)
+│   ├── iced feature "image" (*)
+│   ├── iced feature "svg" (*)
+│   ├── iced feature "wgpu" (*)
+│   ├── wasm-bindgen-futures feature "default" (*)
+│   ├── lazy_static feature "default" (*)
+│   ├── open feature "default"
+│   │   └── open v5.3.3
+│   ├── opener feature "default" (*)
+│   ├── portable-pty feature "default" (*)
+│   ├── serde_json feature "default" (*)
+│   ├── sysinfo feature "default" (*)
+│   ├── tokio feature "default" (*)
+│   ├── tokio feature "full" (*)
+│   ├── regex feature "default" (*)
+│   ├── sha2 feature "default" (*)
+│   ├── rand feature "default"
+│   │   ├── rand v0.8.5
+│   │   │   ├── rand_chacha v0.3.1
+│   │   │   │   ├── ppv-lite86 feature "simd"
+│   │   │   │   │   └── ppv-lite86 v0.2.21
+│   │   │   │   │       ├── zerocopy feature "default"
+│   │   │   │   │       │   └── zerocopy v0.8.33 (*)
+│   │   │   │   │       └── zerocopy feature "simd" (*)
+│   │   │   │   └── rand_core feature "default"
+│   │   │   │       └── rand_core v0.6.4
+│   │   │   │           └── getrandom feature "default" (*)
+│   │   │   └── rand_core feature "default" (*)
+│   │   ├── rand feature "std"
+│   │   │   ├── rand v0.8.5 (*)
+│   │   │   ├── rand feature "alloc"
+│   │   │   │   ├── rand v0.8.5 (*)
+│   │   │   │   └── rand_core feature "alloc"
+│   │   │   │       └── rand_core v0.6.4 (*)
+│   │   │   ├── rand feature "getrandom"
+│   │   │   │   ├── rand v0.8.5 (*)
+│   │   │   │   └── rand_core feature "getrandom"
+│   │   │   │       └── rand_core v0.6.4 (*)
+│   │   │   ├── rand feature "libc"
+│   │   │   │   └── rand v0.8.5 (*)
+│   │   │   ├── rand feature "rand_chacha"
+│   │   │   │   └── rand v0.8.5 (*)
+│   │   │   ├── rand_chacha feature "std"
+│   │   │   │   ├── rand_chacha v0.3.1 (*)
+│   │   │   │   └── ppv-lite86 feature "std"
+│   │   │   │       └── ppv-lite86 v0.2.21 (*)
+│   │   │   └── rand_core feature "std"
+│   │   │       ├── rand_core v0.6.4 (*)
+│   │   │       ├── getrandom feature "std"
+│   │   │       │   └── getrandom v0.2.17 (*)
+│   │   │       ├── rand_core feature "alloc" (*)
+│   │   │       └── rand_core feature "getrandom" (*)
+│   │   └── rand feature "std_rng"
+│   │       ├── rand v0.8.5 (*)
+│   │       └── rand feature "rand_chacha" (*)
+│   ├── rfd feature "default"
+│   │   ├── rfd v0.14.1
+│   │   │   ├── js-sys feature "default" (*)
+│   │   │   ├── wasm-bindgen feature "default" (*)
+│   │   │   ├── log feature "default" (*)
+│   │   │   ├── web-sys feature "Blob" (*)
+│   │   │   ├── web-sys feature "BlobPropertyBag" (*)
+│   │   │   ├── web-sys feature "Document" (*)
+│   │   │   ├── web-sys feature "Element" (*)
+│   │   │   ├── web-sys feature "File"
+│   │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   └── web-sys feature "Blob" (*)
+│   │   │   ├── web-sys feature "FileList"
+│   │   │   │   └── web-sys v0.3.85 (*)
+│   │   │   ├── web-sys feature "FileReader"
+│   │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   ├── web-sys feature "HtmlAnchorElement"
+│   │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   ├── web-sys feature "Element" (*)
+│   │   │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   ├── web-sys feature "HtmlElement" (*)
+│   │   │   │   └── web-sys feature "Node" (*)
+│   │   │   ├── web-sys feature "HtmlButtonElement"
+│   │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   ├── web-sys feature "Element" (*)
+│   │   │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   ├── web-sys feature "HtmlElement" (*)
+│   │   │   │   └── web-sys feature "Node" (*)
+│   │   │   ├── web-sys feature "HtmlInputElement"
+│   │   │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │   ├── web-sys feature "Element" (*)
+│   │   │   │   ├── web-sys feature "EventTarget" (*)
+│   │   │   │   ├── web-sys feature "HtmlElement" (*)
+│   │   │   │   └── web-sys feature "Node" (*)
+│   │   │   ├── web-sys feature "Url" (*)
+│   │   │   ├── web-sys feature "Window" (*)
+│   │   │   ├── web-sys feature "default" (*)
+│   │   │   ├── wasm-bindgen-futures feature "default" (*)
+│   │   │   └── raw-window-handle feature "default" (*)
+│   │   ├── rfd feature "async-std"
+│   │   │   └── rfd v0.14.1 (*)
+│   │   └── rfd feature "xdg-portal"
+│   │       ├── rfd v0.14.1 (*)
+│   │       ├── rfd feature "ashpd"
+│   │       │   └── rfd v0.14.1 (*)
+│   │       ├── rfd feature "pollster"
+│   │       │   └── rfd v0.14.1 (*)
+│   │       └── rfd feature "urlencoding"
+│   │           └── rfd v0.14.1 (*)
+│   ├── rodio feature "default"
+│   │   ├── rodio v0.17.3
+│   │   │   ├── symphonia v0.5.5
+│   │   │   │   ├── symphonia-bundle-mp3 v0.5.5
+│   │   │   │   │   ├── log feature "default" (*)
+│   │   │   │   │   ├── lazy_static feature "default" (*)
+│   │   │   │   │   ├── symphonia-core feature "default"
+│   │   │   │   │   │   └── symphonia-core v0.5.5
+│   │   │   │   │   │       ├── log feature "default" (*)
+│   │   │   │   │   │       ├── bytemuck feature "default" (*)
+│   │   │   │   │   │       ├── bitflags feature "default" (*)
+│   │   │   │   │   │       ├── arrayvec feature "default" (*)
+│   │   │   │   │   │       └── lazy_static feature "default" (*)
+│   │   │   │   │   └── symphonia-metadata feature "default"
+│   │   │   │   │       └── symphonia-metadata v0.5.5
+│   │   │   │   │           ├── log feature "default" (*)
+│   │   │   │   │           ├── lazy_static feature "default" (*)
+│   │   │   │   │           ├── symphonia-core feature "default" (*)
+│   │   │   │   │           └── encoding_rs feature "default"
+│   │   │   │   │               ├── encoding_rs v0.8.35
+│   │   │   │   │               │   └── cfg-if feature "default" (*)
+│   │   │   │   │               └── encoding_rs feature "alloc"
+│   │   │   │   │                   └── encoding_rs v0.8.35 (*)
+│   │   │   │   ├── lazy_static feature "default" (*)
+│   │   │   │   ├── symphonia-core feature "default" (*)
+│   │   │   │   └── symphonia-metadata feature "default" (*)
+│   │   │   ├── cpal feature "default"
+│   │   │   │   └── cpal v0.15.3
+│   │   │   │       ├── js-sys feature "default" (*)
+│   │   │   │       ├── web-sys feature "AudioBuffer"
+│   │   │   │       │   └── web-sys v0.3.85 (*)
+│   │   │   │       ├── web-sys feature "AudioBufferSourceNode"
+│   │   │   │       │   ├── web-sys v0.3.85 (*)
+│   │   │   │       │   ├── web-sys feature "AudioNode"
+│   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │       │   ├── web-sys feature "AudioScheduledSourceNode"
+│   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │       │   │   ├── web-sys feature "AudioNode" (*)
+│   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │       │   └── web-sys feature "EventTarget" (*)
+│   │   │   │       ├── web-sys feature "AudioContext"
+│   │   │   │       │   ├── web-sys v0.3.85 (*)
+│   │   │   │       │   ├── web-sys feature "BaseAudioContext"
+│   │   │   │       │   │   ├── web-sys v0.3.85 (*)
+│   │   │   │       │   │   └── web-sys feature "EventTarget" (*)
+│   │   │   │       │   └── web-sys feature "EventTarget" (*)
+│   │   │   │       ├── web-sys feature "AudioContextOptions"
+│   │   │   │       │   └── web-sys v0.3.85 (*)
+│   │   │   │       ├── web-sys feature "AudioContextState"
+│   │   │   │       │   └── web-sys v0.3.85 (*)
+│   │   │   │       ├── web-sys feature "AudioDestinationNode"
+│   │   │   │       │   ├── web-sys v0.3.85 (*)
+│   │   │   │       │   ├── web-sys feature "AudioNode" (*)
+│   │   │   │       │   └── web-sys feature "EventTarget" (*)
+│   │   │   │       ├── web-sys feature "AudioNode" (*)
+│   │   │   │       ├── web-sys feature "Window" (*)
+│   │   │   │       ├── web-sys feature "default" (*)
+│   │   │   │       └── dasp_sample feature "default"
+│   │   │   │           ├── dasp_sample v0.11.0
+│   │   │   │           └── dasp_sample feature "std"
+│   │   │   │               └── dasp_sample v0.11.0
+│   │   │   ├── claxon feature "default"
+│   │   │   │   └── claxon v0.4.3
+│   │   │   ├── hound feature "default"
+│   │   │   │   └── hound v3.5.1
+│   │   │   └── lewton feature "default"
+│   │   │       ├── lewton v0.10.2
+│   │   │       │   ├── tinyvec feature "alloc" (*)
+│   │   │       │   ├── tinyvec feature "default" (*)
+│   │   │       │   ├── byteorder feature "default" (*)
+│   │   │       │   └── ogg feature "default"
+│   │   │       │       └── ogg v0.8.0
+│   │   │       │           └── byteorder feature "default" (*)
+│   │   │       └── lewton feature "ogg"
+│   │   │           └── lewton v0.10.2 (*)
+│   │   ├── rodio feature "flac"
+│   │   │   ├── rodio v0.17.3 (*)
+│   │   │   └── rodio feature "claxon"
+│   │   │       └── rodio v0.17.3 (*)
+│   │   ├── rodio feature "mp3"
+│   │   │   ├── rodio v0.17.3 (*)
+│   │   │   └── rodio feature "symphonia-mp3"
+│   │   │       ├── rodio v0.17.3 (*)
+│   │   │       ├── rodio feature "symphonia"
+│   │   │       │   └── rodio v0.17.3 (*)
+│   │   │       └── symphonia feature "mp3"
+│   │   │           ├── symphonia v0.5.5 (*)
+│   │   │           ├── symphonia feature "symphonia-bundle-mp3"
+│   │   │           │   └── symphonia v0.5.5 (*)
+│   │   │           └── symphonia-bundle-mp3 feature "mp3"
+│   │   │               └── symphonia-bundle-mp3 v0.5.5 (*)
+│   │   ├── rodio feature "vorbis"
+│   │   │   ├── rodio v0.17.3 (*)
+│   │   │   └── rodio feature "lewton"
+│   │   │       └── rodio v0.17.3 (*)
+│   │   └── rodio feature "wav"
+│   │       ├── rodio v0.17.3 (*)
+│   │       └── rodio feature "hound"
+│   │           └── rodio v0.17.3 (*)
+│   └── serde_yaml feature "default"
+│       └── serde_yaml v0.9.34+deprecated
+│           ├── serde feature "default" (*)
+│           ├── indexmap feature "default" (*)
+│           ├── itoa feature "default" (*)
+│           ├── ryu feature "default"
+│           │   └── ryu v1.0.22
+│           └── unsafe-libyaml feature "default"
+│               └── unsafe-libyaml v0.2.11
+├── peak-core v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-core) (*)
+├── peak-intelligence v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-intelligence) (*)
+├── peak-shell v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-shell)
+│   ├── peak-core v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-core) (*)
+│   ├── peak-system v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-system)
+│   │   ├── peak-core v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-core) (*)
+│   │   ├── serde feature "default" (*)
+│   │   ├── serde feature "derive" (*)
+│   │   ├── iced feature "advanced" (*)
+│   │   ├── iced feature "default" (*)
+│   │   └── sysinfo feature "default" (*)
+│   ├── peak-theme v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-theme) (*)
+│   ├── peak-ui v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-ui) (*)
+│   ├── chrono feature "default" (*)
+│   ├── serde feature "default" (*)
+│   ├── serde feature "derive" (*)
+│   ├── iced feature "advanced" (*)
+│   ├── iced feature "default" (*)
+│   ├── iced feature "image" (*)
+│   └── iced feature "svg" (*)
+├── peak-theme v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-theme) (*)
+├── peak-ui v0.1.0 (/Users/vegarberentsen/Documents/PeakOS/crates/peak-ui) (*)
+├── anyhow feature "default" (*)
+├── chrono feature "default" (*)
+├── js-sys feature "default" (*)
+├── wasm-bindgen feature "default" (*)
+├── serde feature "default" (*)
+├── serde feature "derive" (*)
+├── console_error_panic_hook feature "default" (*)
+├── console_log feature "default" (*)
+├── log feature "default" (*)
+├── web-sys feature "Headers" (*)
+├── web-sys feature "Request" (*)
+├── web-sys feature "RequestInit" (*)
+├── web-sys feature "RequestMode" (*)
+├── web-sys feature "Response" (*)
+├── web-sys feature "Window" (*)
+├── web-sys feature "default" (*)
+├── cpal feature "default" (*)
+├── directories feature "default" (*)
+├── dirs feature "default" (*)
+├── getrandom feature "default" (*)
+├── getrandom feature "js" (*)
+├── hex feature "default" (*)
+├── iced feature "advanced" (*)
+├── iced feature "canvas" (*)
+├── iced feature "default" (*)
+├── iced feature "image" (*)
+├── iced feature "svg" (*)
+├── iced feature "wgpu" (*)
+├── wasm-bindgen-futures feature "default" (*)
+├── lazy_static feature "default" (*)
+├── open feature "default" (*)
+├── opener feature "default" (*)
+├── portable-pty feature "default" (*)
+├── serde_json feature "default" (*)
+├── sysinfo feature "default" (*)
+├── tokio feature "default" (*)
+├── tokio feature "full" (*)
+├── regex feature "default" (*)
+├── sha2 feature "default" (*)
+├── rand feature "default" (*)
+└── rodio feature "default" (*)

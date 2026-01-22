@@ -18,7 +18,7 @@ impl<Message> VStack<Message> {
             children: Vec::new(),
             spacing: 0.0,
             padding: iced::Padding::from(0.0),
-            width: Length::Shrink,
+            width: Length::Fill,
             height: Length::Shrink,
             align_x: iced::Alignment::Start,
         }
@@ -95,7 +95,7 @@ impl<Message> HStack<Message> {
             children: Vec::new(),
             spacing: 0.0,
             padding: iced::Padding::from(0.0),
-            width: Length::Shrink,
+            width: Length::Fill,
             height: Length::Shrink,
             align_y: iced::Alignment::Start,
         }
@@ -163,7 +163,7 @@ impl<Message> ZStack<Message> {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
-            width: Length::Shrink,
+            width: Length::Fill,
             height: Length::Shrink,
         }
     }

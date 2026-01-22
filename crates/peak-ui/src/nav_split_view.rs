@@ -50,12 +50,7 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
         if context.is_slim() {
             if self.force_sidebar_on_slim {
                 // Mobile Sidebar View
-                let sidebar_scroll = crate::scroll_view::ScrollView::apply_style(
-                    iced::widget::scrollable(self.sidebar.view(context)),
-                    &theme,
-                );
-
-                container(sidebar_scroll)
+                container(self.sidebar.view(context))
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .style(move |_| container::Style {
@@ -90,12 +85,7 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                     );
                 }
 
-                let content_view = crate::scroll_view::ScrollView::apply_style(
-                    iced::widget::scrollable(self.content.view(context)),
-                    &theme,
-                )
-                .width(Length::Fill)
-                .height(Length::Fill);
+                let content_view = self.content.view(context);
 
                 content_col = content_col.push(
                     container(content_view)
@@ -132,22 +122,18 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                         ),
                     );
 
-                    // Sheet Content
-                    let sheet = container(crate::scroll_view::ScrollView::apply_style(
-                        iced::widget::scrollable(inspector.view(context)),
-                        &theme,
-                    ))
-                    .width(Length::Fill)
-                    .height(Length::FillPortion(1)) // Take up half screen? Or fixed height?
-                    .padding(16)
-                    .style(move |_| container::Style {
-                        background: Some(theme.colors.surface_variant.into()),
-                        border: iced::Border {
-                            radius: 16.0.into(), // Top corners rounded - simplified to all for now
+                    let sheet = container(inspector.view(context))
+                        .width(Length::Fill)
+                        .height(Length::FillPortion(1)) // Take up half screen? Or fixed height?
+                        .padding(16)
+                        .style(move |_| container::Style {
+                            background: Some(theme.colors.surface_variant.into()),
+                            border: iced::Border {
+                                radius: 16.0.into(), // Top corners rounded - simplified to all for now
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
-                    });
+                        });
 
                     // Align to bottom
                     stack = stack.push(
@@ -168,67 +154,15 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
             // Desktop Layout
             let mut main_row = row![
                 // 1. Sidebar
-                container(
-                    crate::scroll_view::ScrollView::apply_style(
-                        iced::widget::scrollable(self.sidebar.view(context)),
-                        &theme,
-                    )
-                    .height(Length::Fill)
-                )
-                .width(Length::Fixed(180.0))
-                .height(Length::Fill)
-                .style(move |_| container::Style {
-                    background: Some(if theme.colors.background.r < 0.1 {
-                        iced::Color::from_rgb8(28, 28, 30).into()
-                    } else {
-                        let mut c = theme.colors.surface;
-                        c.a = theme.glass_opacity;
-                        c.into()
-                    }),
-                    border: iced::Border {
-                        color: theme.colors.divider,
-                        width: 1.0,
-                        ..Default::default()
-                    },
-                    text_color: Some(theme.colors.text_primary),
-                    ..Default::default()
-                }),
-                // 2. Content
-                container(
-                    crate::scroll_view::ScrollView::apply_style(
-                        iced::widget::scrollable(self.content.view(context)),
-                        &theme,
-                    )
-                    .height(Length::Fill)
-                )
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .style(move |_| container::Style {
-                    background: Some(theme.colors.background.into()),
-                    text_color: Some(theme.colors.text_primary),
-                    ..Default::default()
-                })
-            ]
-            .height(Length::Fill);
-
-            // 3. Inspector (Optional)
-            if let Some(inspector) = &self.inspector {
-                main_row = main_row.push(
-                    container(
-                        crate::scroll_view::ScrollView::apply_style(
-                            iced::widget::scrollable(inspector.view(context)),
-                            &theme,
-                        )
-                        .height(Length::Fill),
-                    )
-                    .width(Length::Fixed(220.0)) // Standard inspector width
+                container(self.sidebar.view(context))
+                    .width(Length::Fixed(180.0))
                     .height(Length::Fill)
                     .style(move |_| container::Style {
                         background: Some(if theme.colors.background.r < 0.1 {
-                            iced::Color::from_rgb8(28, 28, 30).into() // Darker sidebar match
+                            iced::Color::from_rgb8(28, 28, 30).into()
                         } else {
                             let mut c = theme.colors.surface;
-                            c.a = 0.5; // Slightly more transparent than sidebar
+                            c.a = theme.glass_opacity;
                             c.into()
                         }),
                         border: iced::Border {
@@ -239,6 +173,39 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                         text_color: Some(theme.colors.text_primary),
                         ..Default::default()
                     }),
+                container(self.content.view(context))
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .style(move |_| container::Style {
+                        background: Some(theme.colors.background.into()),
+                        text_color: Some(theme.colors.text_primary),
+                        ..Default::default()
+                    })
+            ]
+            .height(Length::Fill);
+
+            // 3. Inspector (Optional)
+            if let Some(inspector) = &self.inspector {
+                main_row = main_row.push(
+                    container(inspector.view(context))
+                        .width(Length::Fixed(220.0)) // Standard inspector width
+                        .height(Length::Fill)
+                        .style(move |_| container::Style {
+                            background: Some(if theme.colors.background.r < 0.1 {
+                                iced::Color::from_rgb8(28, 28, 30).into() // Darker sidebar match
+                            } else {
+                                let mut c = theme.colors.surface;
+                                c.a = 0.5; // Slightly more transparent than sidebar
+                                c.into()
+                            }),
+                            border: iced::Border {
+                                color: theme.colors.divider,
+                                width: 1.0,
+                                ..Default::default()
+                            },
+                            text_color: Some(theme.colors.text_primary),
+                            ..Default::default()
+                        }),
                 );
             }
 
