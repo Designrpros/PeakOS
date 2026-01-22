@@ -155,7 +155,7 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
             let mut main_row = row![
                 // 1. Sidebar
                 container(self.sidebar.view(context))
-                    .width(Length::Fixed(180.0))
+                    .width(Length::Fixed(240.0))
                     .height(Length::Fill)
                     .style(move |_| container::Style {
                         background: Some(if theme.colors.background.r < 0.1 {
@@ -165,14 +165,16 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                             c.a = theme.glass_opacity;
                             c.into()
                         }),
-                        border: iced::Border {
-                            color: theme.colors.divider,
-                            width: 1.0,
-                            ..Default::default()
-                        },
                         text_color: Some(theme.colors.text_primary),
                         ..Default::default()
                     }),
+                // Right border divider
+                container(iced::widget::Space::new(Length::Fixed(1.0), Length::Fill)).style(
+                    move |_| container::Style {
+                        background: Some(theme.colors.divider.into()),
+                        ..Default::default()
+                    }
+                ),
                 container(self.content.view(context))
                     .width(Length::Fill)
                     .height(Length::Fill)

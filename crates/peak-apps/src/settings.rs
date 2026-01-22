@@ -129,12 +129,15 @@ impl SettingsDesktopView for SettingsApp {
                 VStack::new()
                     .spacing(24.0)
                     .push(tab_title)
-                    .push(app.view_tab_content(&ctx, &handles_clone)) // <--- No comma here!
-                    .height(Length::Shrink), // <--- This prevents the panic
+                    .push(app.view_tab_content(&ctx, &handles_clone))
+                    .height(Length::Shrink),
             );
 
+            let is_sidebar = app.current_tab == SettingsTab::Sidebar;
+
             NavigationSplitView::new(sidebar, content)
-                .on_back(SettingsMessage::TabChanged(SettingsTab::General))
+                .force_sidebar_on_slim(is_sidebar)
+                .on_back(SettingsMessage::TabChanged(SettingsTab::Sidebar))
                 .view(&ctx)
         })
     }
@@ -145,6 +148,7 @@ impl SettingsDesktopView for SettingsApp {
         _handles: &std::collections::HashMap<String, iced::widget::image::Handle>,
     ) -> Box<dyn View<SettingsMessage>> {
         match self.current_tab {
+            SettingsTab::Sidebar => VStack::new().into_box(),
             SettingsTab::General => VStack::new()
                 .spacing(24.0)
                 .push(Section::new(

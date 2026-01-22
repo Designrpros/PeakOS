@@ -19,6 +19,7 @@ impl std::fmt::Display for ThemeMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SettingsTab {
+    Sidebar,
     General,
     WiFi,
     Bluetooth,

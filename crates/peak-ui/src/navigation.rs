@@ -179,7 +179,7 @@ impl<Message: Clone + 'static> crate::core::View<Message> for Sidebar<Message> {
         }
 
         container(scrollable(content))
-            .width(Length::Fixed(220.0))
+            .width(Length::Fill)
             .height(Length::Fill)
             .padding(12)
             .style(move |_| container::Style {
