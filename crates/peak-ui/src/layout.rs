@@ -1,10 +1,9 @@
-use crate::core::{Context, View};
-use iced::widget::{column, container, row, stack};
+use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
+use iced::widget::stack;
+use iced::{Length, Renderer, Theme};
 
-use iced::{Element, Length, Renderer, Theme};
-
-pub struct VStack<Message> {
-    children: Vec<Box<dyn View<Message>>>,
+pub struct VStack<Message: 'static, B: Backend = IcedBackend> {
+    children: Vec<Box<dyn View<Message, B>>>,
     spacing: f32,
     padding: iced::Padding,
     width: Length,
@@ -12,8 +11,20 @@ pub struct VStack<Message> {
     align_x: iced::Alignment,
 }
 
-impl<Message> VStack<Message> {
+impl<Message: 'static> VStack<Message, IcedBackend> {
     pub fn new() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static> VStack<Message, TermBackend> {
+    pub fn new_tui() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static, B: Backend> VStack<Message, B> {
+    pub fn new_generic() -> Self {
         Self {
             children: Vec::new(),
             spacing: 0.0,
@@ -49,39 +60,29 @@ impl<Message> VStack<Message> {
         self
     }
 
-    pub fn push(mut self, view: impl View<Message> + 'static) -> Self {
+    pub fn push(mut self, view: impl View<Message, B> + 'static) -> Self {
         self.children.push(Box::new(view));
         self
     }
 }
 
-impl<Message: 'static> View<Message> for VStack<Message> {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        let children: Vec<_> = self.children.iter().map(|c| c.view(context)).collect();
-        let scale = context.theme.scaling;
-        let scaled_spacing = self.spacing * scale;
-        let p = self.padding;
-        let scaled_padding = iced::Padding {
-            top: p.top * scale,
-            right: p.right * scale,
-            bottom: p.bottom * scale,
-            left: p.left * scale,
-        };
-
-        container(
-            column(children)
-                .spacing(scaled_spacing)
-                .align_x(self.align_x),
+impl<Message: 'static, B: Backend> View<Message, B> for VStack<Message, B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        let child_views = self.children.iter().map(|c| c.view(context)).collect();
+        B::vstack(
+            child_views,
+            self.spacing,
+            self.padding,
+            self.width,
+            self.height,
+            self.align_x,
+            context.theme.scaling,
         )
-        .padding(scaled_padding)
-        .width(self.width)
-        .height(self.height)
-        .into()
     }
 }
 
-pub struct HStack<Message> {
-    children: Vec<Box<dyn View<Message>>>,
+pub struct HStack<Message: 'static, B: Backend = IcedBackend> {
+    children: Vec<Box<dyn View<Message, B>>>,
     spacing: f32,
     padding: iced::Padding,
     width: Length,
@@ -89,8 +90,20 @@ pub struct HStack<Message> {
     align_y: iced::Alignment,
 }
 
-impl<Message> HStack<Message> {
+impl<Message: 'static> HStack<Message, IcedBackend> {
     pub fn new() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static> HStack<Message, TermBackend> {
+    pub fn new_tui() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static, B: Backend> HStack<Message, B> {
+    pub fn new_generic() -> Self {
         Self {
             children: Vec::new(),
             spacing: 0.0,
@@ -126,41 +139,47 @@ impl<Message> HStack<Message> {
         self
     }
 
-    pub fn push(mut self, view: impl View<Message> + 'static) -> Self {
+    pub fn push(mut self, view: impl View<Message, B> + 'static) -> Self {
         self.children.push(Box::new(view));
         self
     }
 }
 
-impl<Message: 'static> View<Message> for HStack<Message> {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        let children: Vec<_> = self.children.iter().map(|c| c.view(context)).collect();
-        let scale = context.theme.scaling;
-        let scaled_spacing = self.spacing * scale;
-        let p = self.padding;
-        let scaled_padding = iced::Padding {
-            top: p.top * scale,
-            right: p.right * scale,
-            bottom: p.bottom * scale,
-            left: p.left * scale,
-        };
-
-        container(row(children).spacing(scaled_spacing).align_y(self.align_y))
-            .padding(scaled_padding)
-            .width(self.width)
-            .height(self.height)
-            .into()
+impl<Message: 'static, B: Backend> View<Message, B> for HStack<Message, B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        let child_views = self.children.iter().map(|c| c.view(context)).collect();
+        B::hstack(
+            child_views,
+            self.spacing,
+            self.padding,
+            self.width,
+            self.height,
+            self.align_y,
+            context.theme.scaling,
+        )
     }
 }
 
-pub struct ZStack<Message> {
-    children: Vec<Box<dyn View<Message>>>,
+pub struct ZStack<Message: 'static, B: Backend = IcedBackend> {
+    children: Vec<Box<dyn View<Message, B>>>,
     width: Length,
     height: Length,
 }
 
-impl<Message> ZStack<Message> {
+impl<Message: 'static> ZStack<Message, IcedBackend> {
     pub fn new() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static> ZStack<Message, TermBackend> {
+    pub fn new_tui() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static, B: Backend> ZStack<Message, B> {
+    pub fn new_generic() -> Self {
         Self {
             children: Vec::new(),
             width: Length::Fill,
@@ -178,14 +197,14 @@ impl<Message> ZStack<Message> {
         self
     }
 
-    pub fn push(mut self, view: impl View<Message> + 'static) -> Self {
+    pub fn push(mut self, view: impl View<Message, B> + 'static) -> Self {
         self.children.push(Box::new(view));
         self
     }
 }
 
-impl<Message: 'static> View<Message> for ZStack<Message> {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
+impl<Message: 'static> View<Message, IcedBackend> for ZStack<Message, IcedBackend> {
+    fn view(&self, context: &Context) -> iced::Element<'static, Message, Theme, Renderer> {
         let mut s = stack(Vec::new()).width(self.width).height(self.height);
 
         for child in &self.children {
@@ -196,13 +215,35 @@ impl<Message: 'static> View<Message> for ZStack<Message> {
     }
 }
 
-pub struct ResponsiveGrid<Message> {
-    children: Vec<Box<dyn View<Message>>>,
+impl<Message: 'static> View<Message, TermBackend> for ZStack<Message, TermBackend> {
+    fn view(&self, context: &Context) -> String {
+        self.children
+            .iter()
+            .map(|c| c.view(context))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+}
+
+pub struct ResponsiveGrid<Message: 'static, B: Backend = IcedBackend> {
+    children: Vec<Box<dyn View<Message, B>>>,
     spacing: f32,
 }
 
-impl<Message> ResponsiveGrid<Message> {
+impl<Message: 'static> ResponsiveGrid<Message, IcedBackend> {
     pub fn new() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static> ResponsiveGrid<Message, TermBackend> {
+    pub fn new_tui() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static, B: Backend> ResponsiveGrid<Message, B> {
+    pub fn new_generic() -> Self {
         Self {
             children: Vec::new(),
             spacing: 20.0,
@@ -214,17 +255,17 @@ impl<Message> ResponsiveGrid<Message> {
         self
     }
 
-    pub fn push(mut self, view: impl View<Message> + 'static) -> Self {
+    pub fn push(mut self, view: impl View<Message, B> + 'static) -> Self {
         self.children.push(Box::new(view));
         self
     }
 }
 
-impl<Message: 'static> View<Message> for ResponsiveGrid<Message> {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
+impl<Message: 'static> View<Message, IcedBackend> for ResponsiveGrid<Message, IcedBackend> {
+    fn view(&self, context: &Context) -> iced::Element<'static, Message, Theme, Renderer> {
+        use iced::widget::{column, container, row};
         let children: Vec<_> = self.children.iter().map(|c| c.view(context)).collect();
 
-        // Calculate columns based on screen width
         let items_per_row = if context.size.width < 600.0 {
             1
         } else if context.size.width < 900.0 {
@@ -240,7 +281,6 @@ impl<Message: 'static> View<Message> for ResponsiveGrid<Message> {
         let scale = context.theme.scaling;
         let scaled_spacing = self.spacing * scale;
 
-        // Create rows with equal-width columns
         let mut rows = Vec::new();
         let mut current_row = Vec::new();
         let mut count = 0;
@@ -261,7 +301,6 @@ impl<Message: 'static> View<Message> for ResponsiveGrid<Message> {
             }
         }
 
-        // Handle last row with fillers
         if !current_row.is_empty() {
             for _ in count..items_per_row {
                 current_row.push(
@@ -283,5 +322,15 @@ impl<Message: 'static> View<Message> for ResponsiveGrid<Message> {
         container(column(rows).spacing(scaled_spacing).width(Length::Fill))
             .width(Length::Fill)
             .into()
+    }
+}
+
+impl<Message: 'static> View<Message, TermBackend> for ResponsiveGrid<Message, TermBackend> {
+    fn view(&self, context: &Context) -> String {
+        self.children
+            .iter()
+            .map(|c| c.view(context))
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }

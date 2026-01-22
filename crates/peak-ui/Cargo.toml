@@ -2,14 +2,15 @@
 name = "peak-ui"
 version = "0.1.0"
 edition = "2021"
+license = "BSL-1.1"
 
 [[bin]]
 name = "peak-ui-showcase"
 path = "src/main.rs"
 
 [dependencies]
-peak-core = { path = "../peak-core", default-features = false, features = ["wasm"] }
-peak-theme = { path = "../peak-theme", default-features = false, features = ["wasm"] }
+peak-core = { path = "../peak-core", default-features = false }
+peak-theme = { path = "../peak-theme", default-features = false }
 iced = { version = "0.13", features = ["canvas", "advanced", "wgpu", "image", "svg", "lazy"] }
 iced_widget = { version = "0.13", features = ["lazy"] }
 tiny-skia = "0.11"
@@ -23,12 +24,14 @@ console_log = "1.0"
 log = "0.4"
 
 [features]
-default = ["tokio"]
+default = ["native"]
+native = [
+    "tokio",
+    "peak-core/native",
+    "peak-theme/native"
+]
 tokio = ["iced/tokio"]
 wasm = [
     "peak-core/wasm",
     "peak-theme/wasm"
 ]
-
-
-

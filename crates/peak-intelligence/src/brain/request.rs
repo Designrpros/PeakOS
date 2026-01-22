@@ -7,7 +7,7 @@ use tokio::fs;
 use tokio::io::{self, AsyncWriteExt};
 
 use std::path::Path;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "native")]
 use std::time::Instant;
 
 #[derive(Debug, Clone, Copy)]
@@ -33,8 +33,8 @@ pub fn download_file<'a>(
     destination: impl AsRef<Path> + Send + 'a,
 ) -> impl Straw<(), Progress, Error> + 'a {
     sipper(
-        move |#[cfg_attr(target_arch = "wasm32", allow(unused_mut))] mut progress| async move {
-            #[cfg(not(target_arch = "wasm32"))]
+        move |#[cfg_attr(not(feature = "native"), allow(unused_mut))] mut progress| async move {
+            #[cfg(feature = "native")]
             {
                 let url = url.as_ref();
                 let destination = destination.as_ref();
@@ -61,11 +61,12 @@ pub fn download_file<'a>(
                 Ok(())
             }
 
-            #[cfg(target_arch = "wasm32")]
+            #[cfg(not(feature = "native"))]
             {
                 let _ = (url, destination, progress);
                 Err(Error::WasmError(
-                    "File download not supported on web".to_string(),
+                    "File download not supported on this platform without the native feature"
+                        .to_string(),
                 ))
             }
         },

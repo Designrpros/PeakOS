@@ -236,11 +236,11 @@ impl File {
 
     pub fn download<'a>(
         &'a self,
-        #[cfg_attr(target_arch = "wasm32", allow(unused_variables))] directory: &'a Directory,
+        #[cfg_attr(not(feature = "native"), allow(unused_variables))] directory: &'a Directory,
     ) -> impl Straw<PathBuf, request::Progress, Error> + 'a {
         sipper(
-            async move |#[cfg_attr(target_arch = "wasm32", allow(unused_variables))] sender| {
-                #[cfg(not(target_arch = "wasm32"))]
+            async move |#[cfg_attr(not(feature = "native"), allow(unused_variables))] sender| {
+                #[cfg(feature = "native")]
                 {
                     let old_path = Directory::old().0.join(&self.name);
                     let directory = directory.0.join(&self.model.0);
@@ -272,15 +272,16 @@ impl File {
 
                     let temp_path = model_path.with_extension("tmp");
 
-                    request::download_file(url, &temp_path).run(sender).await?;
+                    request::download_file(url, &temp_path).run(&sender).await?;
                     fs::rename(temp_path, &model_path).await?;
 
                     Ok(model_path)
                 }
 
-                #[cfg(target_arch = "wasm32")]
+                #[cfg(not(feature = "native"))]
                 Err(Error::WasmError(
-                    "Model downloads are not supported on WASM".into(),
+                    "Model downloads are not supported on this platform without the native feature"
+                        .into(),
                 ))
             },
         )
@@ -380,7 +381,7 @@ pub struct Library {
 
 impl Library {
     pub async fn scan(directory: impl AsRef<Path>) -> Result<Self, Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             let mut files = Vec::new();
             let directory = directory.as_ref();
@@ -433,7 +434,7 @@ impl Library {
             })
         }
 
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         Ok(Self {
             directory: Directory(directory.as_ref().to_path_buf()),
             files: Vec::new(),

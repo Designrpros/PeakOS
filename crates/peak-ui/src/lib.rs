@@ -18,10 +18,13 @@ pub mod scroll_view;
 
 pub mod prelude {
     pub use crate::atoms::{Divider, Icon, Image, Rectangle, Space, Text};
+    pub use crate::catalog::{Catalog, CatalogItem, CatalogMessage};
     pub use crate::console::Console;
     pub use crate::containers::{Card, Section};
     pub use crate::controls::{Button, ButtonStyle, Slider, Stepper, Toggle};
-    pub use crate::core::{responsive, Context, DeviceType, ProxyView, View};
+    pub use crate::core::{
+        responsive, Context, DeviceType, IcedBackend, ProxyView, TermBackend, View,
+    };
     pub use crate::forms::{Form, FormStyle};
     pub use crate::inputs::{TextField, TextInput};
     pub use crate::layout::{HStack, ResponsiveGrid, VStack, ZStack};

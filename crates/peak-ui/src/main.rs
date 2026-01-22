@@ -1,8 +1,7 @@
 use iced::{Element, Task, Theme};
 use peak_core::registry::ShellMode;
 use peak_theme::{ThemeTokens, ThemeTone};
-use peak_ui::catalog::{Catalog, CatalogMessage};
-use peak_ui::core::responsive;
+use peak_ui::prelude::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn main() -> iced::Result {
@@ -21,12 +20,12 @@ pub fn run() {
     console_error_panic_hook::set_once();
     console_log::init_with_level(log::Level::Debug).expect("Console log failed");
     log::info!("PeakUI Showcase WASM started");
-    
+
     let _ = iced::application("PeakUI Showcase", App::update, App::view).run();
 }
 
 struct App {
-    catalog: Catalog,
+    catalog: Catalog<IcedBackend>,
 }
 
 #[derive(Debug, Clone)]
@@ -37,7 +36,7 @@ enum Message {
 impl Default for App {
     fn default() -> Self {
         Self {
-            catalog: Catalog::new(),
+            catalog: Catalog::<IcedBackend>::new(),
         }
     }
 }

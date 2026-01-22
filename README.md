@@ -6,6 +6,12 @@ Boot seamlessly into **Desktop**, **Console**, **TV**, or **Robot** mode. Your O
 
 ---
 
+### Project Governance
+*   [**Strategic Framework Vision**](docs/peak-ui-strategy.md) — The future of PeakUI as "SwiftUI for Rust."
+*   [**Product Roadmap**](docs/roadmap.md) — Multi-phase evolution of OS and UI.
+
+---
+
 ## Why PeakOS?
 
 ### The Problem
@@ -158,7 +164,8 @@ sudo dd if=peakos-alpine-x86_64.iso of=/dev/sdX bs=1M status=progress
 
 ## License
 
-[MIT License](LICENSE) — Free to use, modify, and distribute.
+- **PeakOS**: [GPLv3 License](LICENSE) — Copyleft protected.
+- **PeakUI Framework**: [BSL 1.1 License](crates/peak-ui/LICENSE) — Business Source (Source Available).
 
 ---
 

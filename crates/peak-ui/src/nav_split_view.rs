@@ -1,19 +1,37 @@
-use crate::core::{Context, View};
+use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
 use iced::widget::{column, container, row};
 use iced::{Element, Length, Renderer, Theme};
 
-pub struct NavigationSplitView<Message> {
-    sidebar: Box<dyn View<Message>>,
-    content: Box<dyn View<Message>>,
-    inspector: Option<Box<dyn View<Message>>>,
+pub struct NavigationSplitView<Message: 'static, B: Backend = IcedBackend> {
+    sidebar: Box<dyn View<Message, B>>,
+    content: Box<dyn View<Message, B>>,
+    inspector: Option<Box<dyn View<Message, B>>>,
     force_sidebar_on_slim: bool,
     on_back: Option<Message>,
 }
 
-impl<Message: Clone> NavigationSplitView<Message> {
+impl<Message: Clone + 'static> NavigationSplitView<Message, IcedBackend> {
     pub fn new(
-        sidebar: impl View<Message> + 'static,
-        content: impl View<Message> + 'static,
+        sidebar: impl View<Message, IcedBackend> + 'static,
+        content: impl View<Message, IcedBackend> + 'static,
+    ) -> Self {
+        Self::new_generic(sidebar, content)
+    }
+}
+
+impl<Message: Clone + 'static> NavigationSplitView<Message, TermBackend> {
+    pub fn new_tui(
+        sidebar: impl View<Message, TermBackend> + 'static,
+        content: impl View<Message, TermBackend> + 'static,
+    ) -> Self {
+        Self::new_generic(sidebar, content)
+    }
+}
+
+impl<Message: Clone + 'static, B: Backend> NavigationSplitView<Message, B> {
+    pub fn new_generic(
+        sidebar: impl View<Message, B> + 'static,
+        content: impl View<Message, B> + 'static,
     ) -> Self {
         Self {
             sidebar: Box::new(sidebar),
@@ -24,7 +42,7 @@ impl<Message: Clone> NavigationSplitView<Message> {
         }
     }
 
-    pub fn inspector(mut self, inspector: impl View<Message> + 'static) -> Self {
+    pub fn inspector(mut self, inspector: impl View<Message, B> + 'static) -> Self {
         self.inspector = Some(Box::new(inspector));
         self
     }
@@ -43,7 +61,9 @@ impl<Message: Clone> NavigationSplitView<Message> {
 #[allow(unused_imports)]
 use crate::scroll_view::ScrollView;
 
-impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
+impl<Message: Clone + 'static> View<Message, IcedBackend>
+    for NavigationSplitView<Message, IcedBackend>
+{
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let theme = context.theme;
 
@@ -161,8 +181,8 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                         background: Some(if theme.colors.background.r < 0.1 {
                             iced::Color::from_rgb8(28, 28, 30).into()
                         } else {
-                            let mut c = theme.colors.surface;
-                            c.a = theme.glass_opacity;
+                            let mut c = theme.colors.surface_variant;
+                            c.a = 0.5; // High transparency for glass
                             c.into()
                         }),
                         text_color: Some(theme.colors.text_primary),
@@ -220,5 +240,18 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                 })
                 .into()
         }
+    }
+}
+
+impl<Message: Clone + 'static> View<Message, TermBackend>
+    for NavigationSplitView<Message, TermBackend>
+{
+    fn view(&self, context: &Context) -> String {
+        let mut out = String::new();
+        out.push_str("=== SIDEBAR ===\n");
+        out.push_str(&self.sidebar.view(context));
+        out.push_str("\n=== CONTENT ===\n");
+        out.push_str(&self.content.view(context));
+        out
     }
 }

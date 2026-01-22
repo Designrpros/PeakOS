@@ -1,16 +1,28 @@
-use crate::core::{Context, View};
+use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
 use iced::widget::{column, container, text};
 use iced::{Element, Length, Padding, Renderer, Theme};
 
-pub struct Card<Message> {
-    content: Box<dyn View<Message>>,
+pub struct Card<Message: 'static, B: Backend = IcedBackend> {
+    content: Box<dyn View<Message, B>>,
     padding: Padding,
     width: Length,
     height: Length,
 }
 
-impl<Message> Card<Message> {
-    pub fn new(content: impl View<Message> + 'static) -> Self {
+impl<Message: 'static> Card<Message, IcedBackend> {
+    pub fn new(content: impl View<Message, IcedBackend> + 'static) -> Self {
+        Self::new_generic(content)
+    }
+}
+
+impl<Message: 'static> Card<Message, TermBackend> {
+    pub fn new_tui(content: impl View<Message, TermBackend> + 'static) -> Self {
+        Self::new_generic(content)
+    }
+}
+
+impl<Message: 'static, B: Backend> Card<Message, B> {
+    pub fn new_generic(content: impl View<Message, B> + 'static) -> Self {
         Self {
             content: Box::new(content),
             padding: Padding::from(16),
@@ -30,13 +42,11 @@ impl<Message> Card<Message> {
     }
 }
 
-impl<Message: 'static> View<Message> for Card<Message> {
+impl<Message: 'static> View<Message, IcedBackend> for Card<Message, IcedBackend> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let theme = context.theme;
 
-        // Base container with shadow and outer border
         container(
-            // Inner container for the "inner border" highlight effect
             container(self.content.view(context))
                 .padding(self.padding)
                 .width(self.width)
@@ -71,15 +81,58 @@ impl<Message: 'static> View<Message> for Card<Message> {
     }
 }
 
-pub struct Section<Message> {
+impl<Message: 'static> View<Message, TermBackend> for Card<Message, TermBackend> {
+    fn view(&self, context: &Context) -> String {
+        let inner = self.content.view(context);
+        let lines: Vec<&str> = inner.lines().collect();
+        let width = lines.iter().map(|l| l.len()).max().unwrap_or(0) + 4;
+
+        let mut out = String::new();
+        out.push_str("┌");
+        out.push_str(&"─".repeat(width - 2));
+        out.push_str("┐\n");
+
+        for line in lines {
+            out.push_str("│ ");
+            out.push_str(line);
+            out.push_str(&" ".repeat(width - 4 - line.len()));
+            out.push_str(" │\n");
+        }
+
+        out.push_str("└");
+        out.push_str(&"─".repeat(width - 2));
+        out.push_str("┘");
+        out
+    }
+}
+
+pub struct Section<Message: 'static, B: Backend = IcedBackend> {
     title: String,
-    content: Box<dyn View<Message>>,
+    content: Box<dyn View<Message, B>>,
     width: Length,
     height: Length,
 }
 
-impl<Message> Section<Message> {
-    pub fn new(title: impl Into<String>, content: impl View<Message> + 'static) -> Self {
+impl<Message: 'static> Section<Message, IcedBackend> {
+    pub fn new(
+        title: impl Into<String>,
+        content: impl View<Message, IcedBackend> + 'static,
+    ) -> Self {
+        Self::new_generic(title, content)
+    }
+}
+
+impl<Message: 'static> Section<Message, TermBackend> {
+    pub fn new_tui(
+        title: impl Into<String>,
+        content: impl View<Message, TermBackend> + 'static,
+    ) -> Self {
+        Self::new_generic(title, content)
+    }
+}
+
+impl<Message: 'static, B: Backend> Section<Message, B> {
+    pub fn new_generic(title: impl Into<String>, content: impl View<Message, B> + 'static) -> Self {
         Self {
             title: title.into(),
             content: Box::new(content),
@@ -99,7 +152,7 @@ impl<Message> Section<Message> {
     }
 }
 
-impl<Message: 'static> View<Message> for Section<Message> {
+impl<Message: 'static> View<Message, IcedBackend> for Section<Message, IcedBackend> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         container(
             column![
@@ -113,5 +166,15 @@ impl<Message: 'static> View<Message> for Section<Message> {
         .width(self.width)
         .height(self.height)
         .into()
+    }
+}
+
+impl<Message: 'static> View<Message, TermBackend> for Section<Message, TermBackend> {
+    fn view(&self, context: &Context) -> String {
+        format!(
+            "\x1b[1;2m# {}\x1b[0m\n{}",
+            self.title.to_uppercase(),
+            self.content.view(context)
+        )
     }
 }

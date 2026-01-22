@@ -1,10 +1,7 @@
-use iced::{Element, Renderer, Size, Theme};
-use peak_core::registry::ShellMode;
-use peak_theme::ThemeTokens;
-
-/// Experimental: Core View Trait for Declarative UI
-///
-/// This moves away from the "Widget" composition model to a "View" description model.
+use crate::modifiers::Intent;
+use iced::{Alignment, Color, Length, Padding, Renderer, Size, Theme};
+pub use peak_core::registry::ShellMode;
+pub use peak_theme::ThemeTokens;
 
 #[derive(Clone, Debug)]
 pub struct Context {
@@ -47,11 +44,405 @@ impl Context {
     }
 }
 
-/// A View describes *what* to render, given a Context.
-pub trait View<Message> {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer>;
+/// A Backend defines the output type and composition logic for a View.
+pub trait Backend: Sized + 'static {
+    type AnyView<Message: 'static>: 'static;
 
-    fn into_box(self) -> Box<dyn View<Message>>
+    fn vstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        spacing: f32,
+        padding: Padding,
+        width: Length,
+        height: Length,
+        align_x: Alignment,
+        scale: f32,
+    ) -> Self::AnyView<Message>;
+
+    fn hstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        spacing: f32,
+        padding: Padding,
+        width: Length,
+        height: Length,
+        align_y: Alignment,
+        scale: f32,
+    ) -> Self::AnyView<Message>;
+
+    fn text<Message: 'static>(
+        content: String,
+        size: f32,
+        color: Option<Color>,
+        is_bold: bool,
+        is_dim: bool,
+        intent: Option<Intent>,
+        font: Option<iced::Font>,
+        alignment: Alignment,
+        context: &Context,
+    ) -> Self::AnyView<Message>;
+
+    fn icon<Message: 'static>(
+        name: String,
+        size: f32,
+        color: Option<Color>,
+        context: &Context,
+    ) -> Self::AnyView<Message>;
+
+    fn divider<Message: 'static>(context: &Context) -> Self::AnyView<Message>;
+
+    fn space<Message: 'static>(width: Length, height: Length) -> Self::AnyView<Message>;
+
+    fn rectangle<Message: 'static>(
+        width: Length,
+        height: Length,
+        color: Option<Color>,
+        radius: f32,
+        border_width: f32,
+        border_color: Option<Color>,
+    ) -> Self::AnyView<Message>;
+
+    fn button<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        on_press: Option<Message>,
+        context: &Context,
+    ) -> Self::AnyView<Message>;
+
+    fn sidebar_item<Message: 'static>(
+        title: String,
+        icon: String,
+        is_selected: bool,
+        context: &Context,
+    ) -> Self::AnyView<Message>;
+}
+
+/// The default Iced-based GUI backend.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct IcedBackend;
+
+impl Backend for IcedBackend {
+    type AnyView<Message: 'static> = iced::Element<'static, Message, Theme, Renderer>;
+
+    fn vstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        spacing: f32,
+        padding: Padding,
+        width: Length,
+        height: Length,
+        align_x: Alignment,
+        scale: f32,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::{column, container};
+        container(column(children).spacing(spacing * scale).align_x(align_x))
+            .padding(Padding {
+                top: padding.top * scale,
+                right: padding.right * scale,
+                bottom: padding.bottom * scale,
+                left: padding.left * scale,
+            })
+            .width(width)
+            .height(height)
+            .into()
+    }
+
+    fn hstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        spacing: f32,
+        padding: Padding,
+        width: Length,
+        height: Length,
+        align_y: Alignment,
+        scale: f32,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::{container, row};
+        container(row(children).spacing(spacing * scale).align_y(align_y))
+            .padding(Padding {
+                top: padding.top * scale,
+                right: padding.right * scale,
+                bottom: padding.bottom * scale,
+                left: padding.left * scale,
+            })
+            .width(width)
+            .height(height)
+            .into()
+    }
+
+    fn text<Message: 'static>(
+        content: String,
+        size: f32,
+        color: Option<Color>,
+        is_bold: bool,
+        is_dim: bool,
+        intent: Option<Intent>,
+        font: Option<iced::Font>,
+        alignment: Alignment,
+        context: &Context,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::text;
+        let color = color.unwrap_or_else(|| {
+            if let Some(i) = intent {
+                match i {
+                    Intent::Primary => context.theme.colors.primary,
+                    Intent::Secondary => context.theme.colors.secondary,
+                    Intent::Success => context.theme.colors.success,
+                    Intent::Warning => context.theme.colors.warning,
+                    Intent::Danger => context.theme.colors.danger,
+                    Intent::Info => context.theme.colors.info,
+                    Intent::Neutral => context.theme.colors.text_primary,
+                }
+            } else if is_dim {
+                context.theme.colors.text_secondary
+            } else {
+                context.theme.colors.text_primary
+            }
+        });
+
+        let mut font = font.unwrap_or_default();
+        if is_bold {
+            font.weight = iced::font::Weight::Bold;
+        }
+
+        text(content)
+            .size(size * context.theme.scaling)
+            .color(color)
+            .font(font)
+            .align_x(alignment)
+            .into()
+    }
+
+    fn icon<Message: 'static>(
+        name: String,
+        size: f32,
+        color: Option<Color>,
+        context: &Context,
+    ) -> Self::AnyView<Message> {
+        let theme = context.theme;
+        let color = color.unwrap_or(theme.colors.text_primary);
+
+        let hex_color = format!(
+            "#{:02X}{:02X}{:02X}",
+            (color.r * 255.0) as u8,
+            (color.g * 255.0) as u8,
+            (color.b * 255.0) as u8
+        );
+
+        let handle = peak_core::icons::get_ui_icon(&name, &hex_color);
+
+        iced::widget::svg(handle).width(size).height(size).into()
+    }
+
+    fn divider<Message: 'static>(context: &Context) -> Self::AnyView<Message> {
+        use iced::widget::{container, Rule};
+        let divider_color = context.theme.colors.divider;
+        container(Rule::horizontal(1))
+            .style(move |_| container::Style {
+                text_color: Some(divider_color),
+                ..Default::default()
+            })
+            .into()
+    }
+
+    fn space<Message: 'static>(width: Length, height: Length) -> Self::AnyView<Message> {
+        iced::widget::Space::new(width, height).into()
+    }
+
+    fn rectangle<Message: 'static>(
+        width: Length,
+        height: Length,
+        color: Option<Color>,
+        radius: f32,
+        border_width: f32,
+        border_color: Option<Color>,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::container;
+        container(iced::widget::Space::new(Length::Fill, Length::Fill))
+            .width(width)
+            .height(height)
+            .style(move |_| container::Style {
+                background: color.map(iced::Background::Color),
+                border: iced::Border {
+                    color: border_color.unwrap_or(Color::TRANSPARENT),
+                    width: border_width,
+                    radius: radius.into(),
+                },
+                ..Default::default()
+            })
+            .into()
+    }
+
+    fn button<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        on_press: Option<Message>,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::button;
+        button(content).on_press_maybe(on_press).into()
+    }
+
+    fn sidebar_item<Message: 'static>(
+        title: String,
+        icon: String,
+        is_selected: bool,
+        context: &Context,
+    ) -> Self::AnyView<Message> {
+        use crate::atoms::{Icon, Text};
+        use crate::layout::HStack;
+        use iced::widget::container;
+
+        let theme = context.theme;
+        let content = HStack::<Message, Self>::new_generic()
+            .spacing(12.0)
+            .padding(iced::Padding {
+                top: 8.0,
+                right: 12.0,
+                bottom: 8.0,
+                left: 12.0,
+            })
+            .align_y(iced::Alignment::Center)
+            .push(Icon::<Self>::new(icon).size(18.0))
+            .push(Text::<Self>::new(title).body().bold());
+
+        if is_selected {
+            container(content.view(context))
+                .style(move |_| container::Style {
+                    background: Some(theme.colors.primary.into()),
+                    border: iced::Border {
+                        radius: 8.0.into(),
+                        ..Default::default()
+                    },
+                    text_color: Some(iced::Color::WHITE),
+                    ..Default::default()
+                })
+                .width(Length::Fill)
+                .into()
+        } else {
+            content.view(context)
+        }
+    }
+}
+
+/// A Terminal-based TUI backend.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct TermBackend;
+
+impl Backend for TermBackend {
+    type AnyView<Message: 'static> = String;
+
+    fn vstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _spacing: f32,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _align_x: Alignment,
+        _scale: f32,
+    ) -> Self::AnyView<Message> {
+        children.join("\n")
+    }
+
+    fn hstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _spacing: f32,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _align_y: Alignment,
+        _scale: f32,
+    ) -> Self::AnyView<Message> {
+        children.join(" ")
+    }
+
+    fn text<Message: 'static>(
+        content: String,
+        _size: f32,
+        _color: Option<Color>,
+        is_bold: bool,
+        is_dim: bool,
+        intent: Option<Intent>,
+        _font: Option<iced::Font>,
+        _alignment: Alignment,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        let mut out = content;
+        if is_bold {
+            out = format!("\x1b[1m{}\x1b[0m", out);
+        } else if is_dim {
+            out = format!("\x1b[2m{}\x1b[0m", out);
+        }
+
+        if let Some(i) = intent {
+            let code = match i {
+                Intent::Primary => "34",
+                Intent::Success => "32",
+                Intent::Warning => "33",
+                Intent::Danger => "31",
+                Intent::Info => "36",
+                _ => "0",
+            };
+            out = format!("\x1b[{}m{}\x1b[0m", code, out);
+        }
+        out
+    }
+
+    fn icon<Message: 'static>(
+        name: String,
+        _size: f32,
+        _color: Option<Color>,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        let symbol = match name.as_str() {
+            "settings" => "⚙",
+            "terminal" => "",
+            "chevron_right" => "",
+            _ => "○",
+        };
+        format!("\x1b[36m{}\x1b[0m", symbol)
+    }
+
+    fn divider<Message: 'static>(_context: &Context) -> Self::AnyView<Message> {
+        "────────────────────".to_string()
+    }
+
+    fn space<Message: 'static>(_width: Length, _height: Length) -> Self::AnyView<Message> {
+        " ".to_string()
+    }
+
+    fn rectangle<Message: 'static>(
+        _width: Length,
+        _height: Length,
+        _color: Option<Color>,
+        _radius: f32,
+        _border_width: f32,
+        _border_color: Option<Color>,
+    ) -> Self::AnyView<Message> {
+        "█".to_string()
+    }
+
+    fn button<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        _on_press: Option<Message>,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        format!("[ {} ]", content)
+    }
+
+    fn sidebar_item<Message: 'static>(
+        title: String,
+        _icon: String,
+        is_selected: bool,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        if is_selected {
+            format!("\x1b[1;34m {}\x1b[0m", title)
+        } else {
+            format!("  {}", title)
+        }
+    }
+}
+
+/// A View describes *what* to render, given a Context.
+pub trait View<Message: 'static, B: Backend = IcedBackend> {
+    fn view(&self, context: &Context) -> B::AnyView<Message>;
+
+    fn into_box(self) -> Box<dyn View<Message, B>>
     where
         Self: Sized + 'static,
     {
@@ -59,18 +450,18 @@ pub trait View<Message> {
     }
 }
 
-impl<Message> View<Message> for Box<dyn View<Message>> {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
+impl<Message: 'static, B: Backend> View<Message, B> for Box<dyn View<Message, B>> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
         self.as_ref().view(context)
     }
 }
 
-/// A responsive helper that automatically manages the UI context.
+/// A responsive helper.
 pub fn responsive<Message>(
     mode: ShellMode,
     theme: peak_theme::ThemeTokens,
-    f: impl Fn(Context) -> Element<'static, Message, Theme, Renderer> + 'static,
-) -> Element<'static, Message, Theme, Renderer>
+    f: impl Fn(Context) -> iced::Element<'static, Message, Theme, Renderer> + 'static,
+) -> iced::Element<'static, Message, Theme, Renderer>
 where
     Message: 'static,
 {
@@ -81,16 +472,14 @@ where
     .into()
 }
 
-/// A bridge between the View trait and iced's Element.
-/// Useful for wrapping existing native elements or complex custom logic.
-pub struct ProxyView<Message> {
-    view_fn: Box<dyn Fn(&Context) -> Element<'static, Message, Theme, Renderer>>,
+pub struct ProxyView<Message: 'static, B: Backend = IcedBackend> {
+    view_fn: Box<dyn Fn(&Context) -> B::AnyView<Message>>,
 }
 
-impl<Message> ProxyView<Message> {
+impl<Message: 'static, B: Backend> ProxyView<Message, B> {
     pub fn new<F>(view_fn: F) -> Self
     where
-        F: Fn(&Context) -> Element<'static, Message, Theme, Renderer> + 'static,
+        F: Fn(&Context) -> B::AnyView<Message> + 'static,
     {
         Self {
             view_fn: Box::new(view_fn),
@@ -98,8 +487,8 @@ impl<Message> ProxyView<Message> {
     }
 }
 
-impl<Message> View<Message> for ProxyView<Message> {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
+impl<Message: 'static, B: Backend> View<Message, B> for ProxyView<Message, B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
         (self.view_fn)(context)
     }
 }

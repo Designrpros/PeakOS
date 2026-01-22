@@ -1,14 +1,26 @@
-use crate::core::{Context, View};
+use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
 use iced::{Element, Length, Renderer, Theme};
 
-pub struct ScrollView<Message> {
-    content: Box<dyn View<Message>>,
+pub struct ScrollView<Message: 'static, B: Backend = IcedBackend> {
+    content: Box<dyn View<Message, B>>,
     width: Length,
     height: Length,
 }
 
-impl<Message> ScrollView<Message> {
-    pub fn new(content: impl View<Message> + 'static) -> Self {
+impl<Message: 'static> ScrollView<Message, IcedBackend> {
+    pub fn new(content: impl View<Message, IcedBackend> + 'static) -> Self {
+        Self::new_generic(content)
+    }
+}
+
+impl<Message: 'static> ScrollView<Message, TermBackend> {
+    pub fn new_tui(content: impl View<Message, TermBackend> + 'static) -> Self {
+        Self::new_generic(content)
+    }
+}
+
+impl<Message: 'static, B: Backend> ScrollView<Message, B> {
+    pub fn new_generic(content: impl View<Message, B> + 'static) -> Self {
         Self {
             content: Box::new(content),
             width: Length::Fill,
@@ -27,7 +39,7 @@ impl<Message> ScrollView<Message> {
     }
 }
 
-impl<Message: 'static> View<Message> for ScrollView<Message> {
+impl<Message: 'static> View<Message, IcedBackend> for ScrollView<Message, IcedBackend> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         Self::apply_style(
             iced::widget::scrollable(self.content.view(context)),
@@ -39,7 +51,13 @@ impl<Message: 'static> View<Message> for ScrollView<Message> {
     }
 }
 
-impl<Message> ScrollView<Message> {
+impl<Message: 'static> View<Message, TermBackend> for ScrollView<Message, TermBackend> {
+    fn view(&self, context: &Context) -> String {
+        self.content.view(context)
+    }
+}
+
+impl<Message: 'static> ScrollView<Message, IcedBackend> {
     pub fn apply_style<'a>(
         s: iced::widget::Scrollable<'a, Message, Theme, Renderer>,
         theme: &peak_theme::ThemeTokens,

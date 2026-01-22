@@ -1,7 +1,7 @@
 mod schema;
 
 use crate::brain::assistant::{self, Assistant, Reply, Token};
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "native")]
 use crate::brain::directory;
 use crate::brain::model;
 use crate::brain::plan::{self, Plan};
@@ -46,7 +46,7 @@ impl Chat {
     }
 
     pub async fn fetch(id: Id) -> Result<Self, Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             let json = fs::read_to_string(Self::path(&id).await?).await?;
 
@@ -54,7 +54,7 @@ impl Chat {
 
             task::spawn_blocking(move || schema::decode(&json)).await?
         }
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         {
             let _ = id;
             Err(Error::WasmError("Storage not supported".to_string()))
@@ -101,7 +101,7 @@ impl Chat {
     }
 
     pub async fn save(self) -> Result<Self, Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             if let Ok(current) = Self::fetch(self.id).await {
                 if current.title != self.title {
@@ -121,14 +121,14 @@ impl Chat {
 
             Ok(chat)
         }
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         {
             Ok(self)
         }
     }
 
     pub async fn delete(id: Id) -> Result<(), Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             fs::remove_file(Self::path(&id).await?).await?;
 
@@ -150,7 +150,7 @@ impl Chat {
                 _ => {}
             }
         }
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         {
             let _ = id;
         }
@@ -306,7 +306,7 @@ impl List {
     }
 
     async fn fetch() -> Result<Self, Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             let path = Self::path().await?;
             let bytes = fs::read(&path).await;
@@ -322,7 +322,7 @@ impl List {
             )
         }
 
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         Ok(List::default())
     }
 
@@ -341,7 +341,7 @@ impl List {
     }
 
     async fn save(self) -> Result<(), Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             let json = task::spawn_blocking(move || serde_json::to_vec_pretty(&self)).await?;
 
@@ -362,13 +362,13 @@ impl LastOpened {
 
     async fn fetch() -> Result<Self, Error> {
         let path = Self::path().await?;
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             let bytes = fs::read(path).await?;
             Ok(serde_json::from_slice(&bytes)?)
         }
 
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         {
             let _ = path;
             Err(Error::WasmError("Storage not supported".to_string()))
@@ -376,21 +376,21 @@ impl LastOpened {
     }
 
     async fn update(id: Id) -> Result<(), Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             let json = serde_json::to_vec(&LastOpened(id))?;
 
             fs::write(Self::path().await?, json).await?;
         }
 
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         let _ = id;
 
         Ok(())
     }
 
     async fn delete() -> Result<(), Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         fs::remove_file(Self::path().await?).await?;
 
         Ok(())
@@ -398,7 +398,7 @@ impl LastOpened {
 }
 
 async fn storage_dir() -> Result<PathBuf, io::Error> {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(feature = "native")]
     {
         let directory = directory::data().join("chats");
 
@@ -407,7 +407,7 @@ async fn storage_dir() -> Result<PathBuf, io::Error> {
         return Ok(directory);
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(not(feature = "native"))]
     {
         Err(io::Error::new(
             io::ErrorKind::Other,

@@ -1,28 +1,32 @@
-use crate::core::{Context, View};
+use crate::core::{Backend, Context, IcedBackend, View};
 use crate::modifiers::Intent;
-use iced::widget::{container, text};
-use iced::{Color, Element, Length, Renderer, Theme};
+use iced::{Alignment, Color, Length};
+use std::marker::PhantomData;
 
-pub struct Text {
+pub struct Text<B: Backend = IcedBackend> {
     content: String,
     size: f32,
     color: Option<Color>,
-    font: iced::Font,
     intent: Option<Intent>,
-    is_secondary: bool,
-    centered: bool,
+    is_bold: bool,
+    is_dim: bool,
+    alignment: Alignment,
+    font: iced::Font,
+    _phantom: PhantomData<B>,
 }
 
-impl Text {
+impl<B: Backend> Text<B> {
     pub fn new(content: impl Into<String>) -> Self {
         Self {
             content: content.into(),
-            size: 14.0,  // Default body text
-            color: None, // Will use theme default if None
-            font: Default::default(),
+            size: 14.0,
+            color: None,
             intent: None,
-            is_secondary: false,
-            centered: false,
+            is_bold: false,
+            is_dim: false,
+            alignment: Alignment::Start,
+            font: iced::Font::default(),
+            _phantom: PhantomData,
         }
     }
 
@@ -46,130 +50,118 @@ impl Text {
         self
     }
 
-    pub fn center(mut self) -> Self {
-        self.centered = true;
+    pub fn bold(mut self) -> Self {
+        self.is_bold = true;
         self
     }
 
-    // Semantic modifiers could go here
+    pub fn dim(mut self) -> Self {
+        self.is_dim = true;
+        self
+    }
+
+    pub fn center(mut self) -> Self {
+        self.alignment = Alignment::Center;
+        self
+    }
+
     pub fn large_title(mut self) -> Self {
         self.size = 32.0;
-        self.font.weight = iced::font::Weight::Bold;
+        self.is_bold = true;
         self
     }
 
     pub fn title1(mut self) -> Self {
         self.size = 28.0;
-        self.font.weight = iced::font::Weight::Bold;
+        self.is_bold = true;
         self
     }
 
     pub fn title2(mut self) -> Self {
         self.size = 22.0;
-        self.font.weight = iced::font::Weight::Bold;
+        self.is_bold = true;
         self
     }
 
     pub fn title3(mut self) -> Self {
         self.size = 20.0;
-        self.font.weight = iced::font::Weight::Semibold;
+        self.is_bold = true;
         self
     }
 
     pub fn headline(mut self) -> Self {
         self.size = 17.0;
-        self.font.weight = iced::font::Weight::Semibold;
+        self.is_bold = true;
         self
     }
 
     pub fn body(mut self) -> Self {
-        self.size = 17.0; // Apple Human Interface Guidelines default body
-        self.font.weight = iced::font::Weight::Normal;
+        self.size = 17.0;
         self
     }
 
     pub fn callout(mut self) -> Self {
         self.size = 16.0;
-        self.font.weight = iced::font::Weight::Normal;
         self
     }
 
     pub fn subheadline(mut self) -> Self {
         self.size = 15.0;
-        self.font.weight = iced::font::Weight::Normal;
+        self.is_dim = true;
         self
     }
 
     pub fn footnote(mut self) -> Self {
         self.size = 13.0;
-        self.font.weight = iced::font::Weight::Normal;
+        self.is_dim = true;
         self
     }
 
     pub fn caption1(mut self) -> Self {
         self.size = 12.0;
-        self.font.weight = iced::font::Weight::Normal;
+        self.is_dim = true;
         self
     }
 
     pub fn caption2(mut self) -> Self {
         self.size = 11.0;
-        self.font.weight = iced::font::Weight::Normal;
+        self.is_dim = true;
         self
     }
 
     pub fn secondary(mut self) -> Self {
-        self.is_secondary = true;
+        self.is_dim = true;
         self
     }
 }
 
-impl<Message: 'static> View<Message> for Text {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        let color = self.color.unwrap_or_else(|| {
-            if let Some(intent) = self.intent {
-                match intent {
-                    Intent::Primary => context.theme.colors.primary,
-                    Intent::Secondary => context.theme.colors.secondary,
-                    Intent::Success => context.theme.colors.success,
-                    Intent::Warning => context.theme.colors.warning,
-                    Intent::Danger => context.theme.colors.danger,
-                    Intent::Info => context.theme.colors.info,
-                    Intent::Neutral => context.theme.colors.text_primary,
-                }
-            } else if self.is_secondary {
-                context.theme.colors.text_secondary
-            } else {
-                context.theme.colors.text_primary
-            }
-        });
-
-        let t = text(self.content.clone())
-            .size(self.size * context.theme.scaling)
-            .color(color)
-            .font(self.font);
-
-        if self.centered {
-            container(t)
-                .width(Length::Fill)
-                .align_x(iced::alignment::Horizontal::Center)
-                .into()
-        } else {
-            t.into()
-        }
+impl<Message: 'static, B: Backend> View<Message, B> for Text<B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        B::text(
+            self.content.clone(),
+            self.size,
+            self.color,
+            self.is_bold,
+            self.is_dim,
+            self.intent,
+            Some(self.font),
+            self.alignment,
+            context,
+        )
     }
 }
 
-pub struct Rectangle {
+pub struct Rectangle<B: Backend = IcedBackend> {
     width: Length,
     height: Length,
     color: Option<Color>,
     radius: f32,
     border_width: f32,
     border_color: Option<Color>,
+    _phantom: PhantomData<B>,
 }
 
-impl Rectangle {
+impl<B: Backend> Rectangle<B> {
     pub fn new(width: Length, height: Length) -> Self {
         Self {
             width,
@@ -178,6 +170,7 @@ impl Rectangle {
             radius: 0.0,
             border_width: 0.0,
             border_color: None,
+            _phantom: PhantomData,
         }
     }
 
@@ -198,79 +191,73 @@ impl Rectangle {
     }
 }
 
-impl<Message: 'static> View<Message> for Rectangle {
-    fn view(&self, _context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        let color = self.color;
-        let border_color = self.border_color;
-        let border_width = self.border_width;
-        let radius = self.radius;
-
-        container(iced::widget::Space::new(Length::Fill, Length::Fill))
-            .width(self.width)
-            .height(self.height)
-            .style(move |_| container::Style {
-                background: color.map(iced::Background::Color),
-                border: iced::Border {
-                    color: border_color.unwrap_or(Color::TRANSPARENT),
-                    width: border_width,
-                    radius: radius.into(),
-                },
-                ..Default::default()
-            })
-            .into()
+impl<Message: 'static, B: Backend> View<Message, B> for Rectangle<B> {
+    fn view(&self, _context: &Context) -> B::AnyView<Message> {
+        B::rectangle(
+            self.width,
+            self.height,
+            self.color,
+            self.radius,
+            self.border_width,
+            self.border_color,
+        )
     }
 }
 
-pub struct Space {
+pub struct Space<B: Backend = IcedBackend> {
     width: Length,
     height: Length,
+    _phantom: PhantomData<B>,
 }
 
-impl Space {
+impl<B: Backend> Space<B> {
     pub fn new(width: Length, height: Length) -> Self {
-        Self { width, height }
+        Self {
+            width,
+            height,
+            _phantom: PhantomData,
+        }
     }
 }
 
-impl<Message: 'static> View<Message> for Space {
-    fn view(&self, _context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        iced::widget::Space::new(self.width, self.height).into()
+impl<Message: 'static, B: Backend> View<Message, B> for Space<B> {
+    fn view(&self, _context: &Context) -> B::AnyView<Message> {
+        B::space(self.width, self.height)
     }
 }
 
-pub struct Divider;
+pub struct Divider<B: Backend = IcedBackend> {
+    _phantom: PhantomData<B>,
+}
 
-impl Divider {
+impl<B: Backend> Divider<B> {
     pub fn new() -> Self {
-        Self
+        Self {
+            _phantom: PhantomData,
+        }
     }
 }
 
-impl<Message: 'static> View<Message> for Divider {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        let divider_color = context.theme.colors.divider;
-        container(iced::widget::Rule::horizontal(1))
-            .style(move |_| container::Style {
-                // Use border color or divider color from theme
-                text_color: Some(divider_color),
-                ..Default::default()
-            })
-            .into()
+impl<Message: 'static, B: Backend> View<Message, B> for Divider<B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        B::divider(context)
     }
 }
 
-pub struct Icon {
+pub struct Icon<B: Backend = IcedBackend> {
     name: String,
     size: f32,
     color: Option<Color>,
+    _phantom: PhantomData<B>,
 }
 
-impl Icon {
+impl<B: Backend> Icon<B> {
     pub fn new(name: impl Into<String>) -> Self {
         Self {
             name: name.into(),
             size: 24.0,
             color: None,
+            _phantom: PhantomData,
         }
     }
 
@@ -285,41 +272,28 @@ impl Icon {
     }
 }
 
-impl<Message: 'static> View<Message> for Icon {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        let theme = context.theme;
-        let color = self.color.unwrap_or(theme.colors.text_primary);
-
-        let hex_color = format!(
-            "#{:02X}{:02X}{:02X}",
-            (color.r * 255.0) as u8,
-            (color.g * 255.0) as u8,
-            (color.b * 255.0) as u8
-        );
-
-        let handle = peak_core::icons::get_ui_icon(&self.name, &hex_color);
-
-        iced::widget::svg(handle)
-            .width(self.size)
-            .height(self.size)
-            .into()
+impl<Message: 'static, B: Backend> View<Message, B> for Icon<B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        B::icon(self.name.clone(), self.size, self.color, context)
     }
 }
 
-pub struct Image {
+pub struct Image<B: Backend = IcedBackend> {
     path: std::path::PathBuf,
     width: Length,
     height: Length,
     radius: f32,
+    _phantom: PhantomData<B>,
 }
 
-impl Image {
+impl<B: Backend> Image<B> {
     pub fn new(path: impl Into<std::path::PathBuf>) -> Self {
         Self {
             path: path.into(),
             width: Length::Shrink,
             height: Length::Shrink,
             radius: 0.0,
+            _phantom: PhantomData,
         }
     }
 
@@ -339,35 +313,19 @@ impl Image {
     }
 }
 
-impl<Message: 'static> View<Message> for Image {
-    fn view(&self, _context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        // In a real app we'd handle handle loading/caching.
-        // Here we assume local path or bundled asset.
-        let handle = iced::widget::image::Handle::from_path(&self.path);
-        let radius = self.radius;
-
-        // Image widget doesn't support border radius natively easily without being in a container that clips?
-        // Iced Image widget is simple. We can use container with border radius + overflow hidden if supported?
-        // Current Iced container clipping is limited.
-        // For now, we render just the image.
-
-        let img = iced::widget::image(handle)
-            .width(self.width)
-            .height(self.height)
-            .content_fit(iced::ContentFit::Cover);
-
-        if radius > 0.0 {
-            container(img)
-                .style(move |_| container::Style {
-                    border: iced::Border {
-                        radius: radius.into(),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .into()
-        } else {
-            img.into()
-        }
+impl<Message: 'static, B: Backend> View<Message, B> for Image<B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        // Image is complex, stub for TUI
+        B::text(
+            format!("[IMG: {:?}]", self.path),
+            12.0,
+            None,
+            false,
+            true,
+            None,
+            None,
+            Alignment::Center,
+            context,
+        )
     }
 }

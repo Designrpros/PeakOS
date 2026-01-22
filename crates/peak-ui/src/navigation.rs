@@ -1,3 +1,4 @@
+use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
 use iced::widget::{column, container, row, scrollable, text};
 use iced::{Alignment, Color, Element, Length, Padding};
 use peak_core::icons;
@@ -10,25 +11,39 @@ pub struct SidebarItem<Message> {
     pub is_selected: bool,
 }
 
-pub struct Sidebar<Message> {
+pub struct Sidebar<Message: 'static, B: Backend = IcedBackend> {
     pub title: String,
     pub items: Vec<SidebarItem<Message>>,
     pub search_query: Option<String>,
     pub on_search: Option<Arc<dyn Fn(String) -> Message + Send + Sync + 'static>>,
     pub tokens: peak_theme::ThemeTokens,
+    _phantom: std::marker::PhantomData<B>,
 }
 
-impl<Message> Sidebar<Message>
+impl<Message: Clone + 'static> Sidebar<Message, IcedBackend> {
+    pub fn new(title: impl Into<String>, tokens: peak_theme::ThemeTokens) -> Self {
+        Self::new_generic(title, tokens)
+    }
+}
+
+impl<Message: Clone + 'static> Sidebar<Message, TermBackend> {
+    pub fn new_tui(title: impl Into<String>, tokens: peak_theme::ThemeTokens) -> Self {
+        Self::new_generic(title, tokens)
+    }
+}
+
+impl<Message: 'static, B: Backend> Sidebar<Message, B>
 where
     Message: Clone + 'static,
 {
-    pub fn new(title: impl Into<String>, tokens: peak_theme::ThemeTokens) -> Self {
+    pub fn new_generic(title: impl Into<String>, tokens: peak_theme::ThemeTokens) -> Self {
         Self {
             title: title.into(),
             items: Vec::new(),
             search_query: None,
             on_search: None,
             tokens,
+            _phantom: std::marker::PhantomData,
         }
     }
 
@@ -59,11 +74,8 @@ where
     }
 }
 
-impl<Message: Clone + 'static> crate::core::View<Message> for Sidebar<Message> {
-    fn view(
-        &self,
-        context: &crate::core::Context,
-    ) -> Element<'static, Message, iced::Theme, iced::Renderer> {
+impl<Message: Clone + 'static> View<Message, IcedBackend> for Sidebar<Message, IcedBackend> {
+    fn view(&self, context: &Context) -> Element<'static, Message, iced::Theme, iced::Renderer> {
         let tokens = context.theme;
         let hex_text = format!(
             "#{:02X}{:02X}{:02X}",
@@ -187,5 +199,16 @@ impl<Message: Clone + 'static> crate::core::View<Message> for Sidebar<Message> {
                 ..Default::default()
             })
             .into()
+    }
+}
+
+impl<Message: Clone + 'static> View<Message, TermBackend> for Sidebar<Message, TermBackend> {
+    fn view(&self, _context: &Context) -> String {
+        let mut out = format!("=== {} ===\n", self.title);
+        for item in &self.items {
+            let prefix = if item.is_selected { "> " } else { "  " };
+            out.push_str(&format!("{}{} ({})\n", prefix, item.label, item.icon_name));
+        }
+        out
     }
 }

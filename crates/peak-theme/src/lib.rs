@@ -49,7 +49,7 @@ impl ThemeTokens {
 
         // Theme-specific visual properties
         let (glass_opacity, blur_radius, radius, shadow_blur, spacing_unit) = match theme {
-            PeakTheme::Cupertino => (0.8, 20.0, 10.0, 12.0, 8.0),
+            PeakTheme::Cupertino => (0.7, 40.0, 12.0, 16.0, 8.0),
             PeakTheme::Gaming => (0.6, 15.0, 8.0, 16.0, 12.0),
             PeakTheme::MediaCenter => (0.8, 30.0, 16.0, 40.0, 16.0),
             PeakTheme::Ambient => (0.4, 25.0, 30.0, 20.0, 16.0),

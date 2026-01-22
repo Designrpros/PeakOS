@@ -1,0 +1,12 @@
+- [x] SwiftTUI-style Architecture (TUI Support)
+    - [x] Define `Backend` trait in `peak-ui/src/core.rs`
+    - [x] Implement `IcedBackend` (preserve current GUI)
+    - [x] Create `TermBackend` stub (Proof of Concept)
+    - [x] Proof of Concept: Render `SettingsApp` sidebar in Terminal
+- [x] Enhance TUI Visuals & Generic Architecture
+    - [x] Implement generic `Backend` for all atoms and layouts
+    - [x] Update `Catalog` and other components to be backend-agnostic
+    - [x] Harmonize ANSI colors and Nerd-font symbols in `TermBackend`
+    - [x] Resolve workspace-wide compilation and scope issues
+    - [x] Verify TUI output with `examples/tui_demo.rs`
+- [x] Restart ISO Deployment Build (Approved by User)

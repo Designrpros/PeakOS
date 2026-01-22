@@ -103,15 +103,15 @@ impl PeakTheme {
             ThemeTone::Light => PeakColors {
                 primary: Color::from_rgb8(0, 122, 255),
                 on_primary: Color::WHITE,
-                primary_container: Color::from_rgb8(200, 230, 255),
-                on_primary_container: Color::from_rgb8(0, 50, 100),
+                primary_container: Color::from_rgb8(230, 240, 255),
+                on_primary_container: Color::from_rgb8(0, 64, 128),
 
-                secondary: Color::from_rgb8(90, 200, 250),
+                secondary: Color::from_rgb8(88, 86, 214),
                 on_secondary: Color::WHITE,
-                secondary_container: Color::from_rgb8(220, 240, 255),
-                on_secondary_container: Color::from_rgb8(0, 50, 80),
+                secondary_container: Color::from_rgb8(242, 242, 247),
+                on_secondary_container: Color::from_rgb8(60, 60, 67),
 
-                accent: Color::from_rgb8(255, 59, 48),
+                accent: Color::from_rgb8(255, 45, 85),
                 on_accent: Color::WHITE,
 
                 success: Color::from_rgb8(52, 199, 89),
@@ -120,21 +120,21 @@ impl PeakTheme {
                 info: Color::from_rgb8(0, 122, 255),
 
                 surface: Color::WHITE,
-                on_surface: Color::from_rgb8(25, 25, 25),
+                on_surface: Color::from_rgb8(0, 0, 0),
                 surface_variant: Color::from_rgb8(242, 242, 247),
                 on_surface_variant: Color::from_rgb8(60, 60, 67),
 
-                background: Color::from_rgb8(242, 242, 247),
-                on_background: Color::from_rgb8(25, 25, 25),
+                background: Color::from_rgb8(255, 255, 255),
+                on_background: Color::from_rgb8(0, 0, 0),
 
-                border: Color::from_rgba8(0, 0, 0, 25.0),
-                divider: Color::from_rgba8(0, 0, 0, 20.0),
-                overlay: Color::from_rgba(0.0, 0.0, 0.0, 0.4),
+                border: Color::from_rgba8(0, 0, 0, 15.0),
+                divider: Color::from_rgba8(0, 0, 0, 10.0),
+                overlay: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
 
-                text_primary: Color::from_rgb8(25, 25, 25),
-                text_secondary: Color::from_rgba8(25, 25, 25, 153.0),
-                text_tertiary: Color::from_rgba8(25, 25, 25, 97.0),
-                text_disabled: Color::from_rgba8(25, 25, 25, 66.0),
+                text_primary: Color::from_rgb8(0, 0, 0),
+                text_secondary: Color::from_rgba8(60, 60, 67, 153.0),
+                text_tertiary: Color::from_rgba8(60, 60, 67, 97.0),
+                text_disabled: Color::from_rgba8(60, 60, 67, 66.0),
             },
             ThemeTone::Dark => PeakColors {
                 primary: Color::from_rgb8(10, 132, 255),
@@ -142,12 +142,12 @@ impl PeakTheme {
                 primary_container: Color::from_rgb8(0, 64, 128),
                 on_primary_container: Color::from_rgb8(180, 220, 255),
 
-                secondary: Color::from_rgb8(100, 210, 255),
+                secondary: Color::from_rgb8(191, 191, 191),
                 on_secondary: Color::BLACK,
-                secondary_container: Color::from_rgb8(0, 80, 120),
+                secondary_container: Color::from_rgb8(44, 44, 46),
                 on_secondary_container: Color::from_rgb8(200, 235, 255),
 
-                accent: Color::from_rgb8(255, 69, 58),
+                accent: Color::from_rgb8(255, 55, 95),
                 on_accent: Color::WHITE,
 
                 success: Color::from_rgb8(48, 209, 88),
@@ -156,21 +156,21 @@ impl PeakTheme {
                 info: Color::from_rgb8(10, 132, 255),
 
                 surface: Color::from_rgb8(28, 28, 30),
-                on_surface: Color::from_rgb8(242, 242, 247),
+                on_surface: Color::from_rgb8(255, 255, 255),
                 surface_variant: Color::from_rgb8(44, 44, 46),
                 on_surface_variant: Color::from_rgb8(199, 199, 204),
 
-                background: Color::from_rgb8(16, 16, 18),
-                on_background: Color::from_rgb8(242, 242, 247),
+                background: Color::from_rgb8(0, 0, 0),
+                on_background: Color::from_rgb8(255, 255, 255),
 
-                border: Color::from_rgba8(255, 255, 255, 25.0),
-                divider: Color::from_rgba8(255, 255, 255, 25.0),
-                overlay: Color::from_rgba(0.0, 0.0, 0.0, 0.6),
+                border: Color::from_rgba8(255, 255, 255, 15.0),
+                divider: Color::from_rgba8(255, 255, 255, 15.0),
+                overlay: Color::from_rgba(0.0, 0.0, 0.0, 0.5),
 
-                text_primary: Color::from_rgb8(242, 242, 247),
-                text_secondary: Color::from_rgba8(242, 242, 247, 153.0),
-                text_tertiary: Color::from_rgba8(242, 242, 247, 97.0),
-                text_disabled: Color::from_rgba8(242, 242, 247, 66.0),
+                text_primary: Color::from_rgb8(255, 255, 255),
+                text_secondary: Color::from_rgba8(235, 235, 245, 153.0),
+                text_tertiary: Color::from_rgba8(235, 235, 245, 97.0),
+                text_disabled: Color::from_rgba8(235, 235, 245, 66.0),
             },
         }
     }

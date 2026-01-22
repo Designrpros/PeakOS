@@ -2,9 +2,7 @@ use iced::{Element, Task};
 use peak_core::app_traits::{PeakApp, ShellContext};
 use peak_core::registry::ShellMode;
 use peak_theme::{ThemeTokens, ThemeTone};
-use peak_ui::core::responsive;
-// Import the shared catalog
-use peak_ui::catalog::{Catalog, CatalogMessage};
+use peak_ui::prelude::*;
 
 #[derive(Debug, Clone)]
 pub enum Message {

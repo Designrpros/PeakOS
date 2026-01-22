@@ -12,12 +12,12 @@ pub use plan::Plan;
 pub use settings::Settings;
 pub use url::Url;
 
-mod directory;
-mod request;
+pub(crate) mod directory;
+pub(crate) mod request;
 
 use std::io;
 use std::sync::Arc;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "native")]
 use tokio::task;
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -48,7 +48,7 @@ pub enum Error {
     WasmError(String),
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "native")]
 impl From<reqwest::Error> for Error {
     fn from(error: reqwest::Error) -> Self {
         Self::RequestFailed(error.to_string())

@@ -16,7 +16,7 @@ pub struct Settings {
 
 impl Settings {
     pub fn fetch() -> Result<Self, Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             use std::fs;
 
@@ -26,12 +26,12 @@ impl Settings {
             Ok(Self::decode(config)?)
         }
 
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         Ok(Self::default())
     }
 
     pub async fn save(self) -> Result<(), Error> {
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(feature = "native")]
         {
             let toml = toml::to_string_pretty(&self.encode())?;
 

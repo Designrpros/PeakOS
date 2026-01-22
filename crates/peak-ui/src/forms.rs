@@ -1,4 +1,4 @@
-use crate::core::{Context, View};
+use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
 use iced::{Element, Length, Renderer, Theme};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -7,13 +7,25 @@ pub enum FormStyle {
     Plain,
 }
 
-pub struct Form<Message> {
-    sections: Vec<Box<dyn View<Message>>>,
+pub struct Form<Message: 'static, B: Backend = IcedBackend> {
+    sections: Vec<Box<dyn View<Message, B>>>,
     style: FormStyle,
 }
 
-impl<Message> Form<Message> {
+impl<Message: 'static> Form<Message, IcedBackend> {
     pub fn new() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static> Form<Message, TermBackend> {
+    pub fn new_tui() -> Self {
+        Self::new_generic()
+    }
+}
+
+impl<Message: 'static, B: Backend> Form<Message, B> {
+    pub fn new_generic() -> Self {
         Self {
             sections: Vec::new(),
             style: FormStyle::Grouped,
@@ -25,13 +37,13 @@ impl<Message> Form<Message> {
         self
     }
 
-    pub fn push(mut self, section: impl View<Message> + 'static) -> Self {
+    pub fn push(mut self, section: impl View<Message, B> + 'static) -> Self {
         self.sections.push(Box::new(section));
         self
     }
 }
 
-impl<Message: 'static> View<Message> for Form<Message> {
+impl<Message: 'static> View<Message, IcedBackend> for Form<Message, IcedBackend> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let mut column = iced::widget::Column::new()
             .spacing(24.0)
@@ -87,5 +99,15 @@ impl<Message: 'static> View<Message> for Form<Message> {
         }
 
         column.into()
+    }
+}
+
+impl<Message: 'static> View<Message, TermBackend> for Form<Message, TermBackend> {
+    fn view(&self, context: &Context) -> String {
+        self.sections
+            .iter()
+            .map(|s| s.view(context))
+            .collect::<Vec<_>>()
+            .join("\n\n")
     }
 }
