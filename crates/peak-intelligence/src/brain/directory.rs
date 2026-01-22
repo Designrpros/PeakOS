@@ -10,10 +10,17 @@ pub fn data() -> &'static Path {
 }
 
 static DATA: LazyLock<PathBuf> = LazyLock::new(|| {
-    let home = std::env::var("HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("."));
-    home.join(".peak").join("intelligence")
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let home = std::env::var("HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| PathBuf::from("."));
+        home.join(".peak").join("intelligence")
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        PathBuf::from("/tmp/peak/intelligence")
+    }
 });
 
 static CONFIG: LazyLock<PathBuf> = LazyLock::new(|| DATA.join("config"));

@@ -15,26 +15,33 @@ pub struct SteamScanner;
 impl SteamScanner {
     // 1. Locate the Steam Directory based on OS
     fn locate_steam_dir() -> Option<PathBuf> {
-        let home = dirs::home_dir()?;
+        #[cfg(feature = "native")]
+        {
+            let home = dirs::home_dir()?;
 
-        // This is a rough heuristic. A production app might check registry (Windows) or more paths.
-        let paths = vec![
-            // MacOS
-            home.join("Library/Application Support/Steam/steamapps"),
-            // Linux
-            home.join(".local/share/Steam/steamapps"),
-            home.join(".steam/steam/steamapps"),
-            // Windows
-            PathBuf::from(r"C:\Program Files (x86)\Steam\steamapps"),
-        ];
+            // This is a rough heuristic. A production app might check registry (Windows) or more paths.
+            let paths = vec![
+                // MacOS
+                home.join("Library/Application Support/Steam/steamapps"),
+                // Linux
+                home.join(".local/share/Steam/steamapps"),
+                home.join(".steam/steam/steamapps"),
+                // Windows
+                PathBuf::from(r"C:\Program Files (x86)\Steam\steamapps"),
+            ];
 
-        paths.into_iter().find(|p| p.exists())
+            paths.into_iter().find(|p| p.exists())
+        }
+
+        #[cfg(not(feature = "native"))]
+        None
     }
 
     // 2. Scan for Manifest Files
     pub fn scan() -> Vec<SteamGame> {
         let mut games = Vec::new();
 
+        #[cfg(feature = "native")]
         if let Some(steam_apps) = Self::locate_steam_dir() {
             println!("✅ Found Steam Library at: {:?}", steam_apps);
 
@@ -78,7 +85,13 @@ impl SteamScanner {
     // 3. Launch Protocol
     #[allow(dead_code)]
     pub fn launch(app_id: &str) {
-        let uri = format!("steam://run/{}", app_id);
-        let _ = opener::open(&uri);
+        #[cfg(feature = "native")]
+        {
+            let uri = format!("steam://run/{}", app_id);
+            let _ = opener::open(&uri);
+        }
+
+        #[cfg(not(feature = "native"))]
+        let _ = app_id;
     }
 }

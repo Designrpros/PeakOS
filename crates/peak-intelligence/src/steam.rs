@@ -16,7 +16,11 @@ pub fn scan_library() -> Vec<SteamGame> {
     let mut games = Vec::new();
 
     // 1. Locate Steam Base Directory (Linux Standard)
+    #[cfg(not(target_arch = "wasm32"))]
     let home = std::env::var("HOME").unwrap_or_else(|_| "/".into());
+    #[cfg(target_arch = "wasm32")]
+    let home = "/".to_string();
+
     let steam_base = PathBuf::from(format!("{}/.steam/steam", home));
 
     // 2. Find Library Folders (Valve Logic)

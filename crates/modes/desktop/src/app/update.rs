@@ -454,18 +454,24 @@ impl PeakNative {
                 // to avoid freezing the main thread with osascript.
 
                 if self.last_monitor_update.elapsed() > std::time::Duration::from_secs(5) {
-                    self.last_monitor_update = std::time::Instant::now();
-                    self.system.refresh_all();
+                    self.last_monitor_update = instant::Instant::now();
 
-                    let cpu = self.system.global_cpu_info().cpu_usage();
-                    let mem_used =
-                        self.system.used_memory() as f32 / self.system.total_memory() as f32;
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        self.system.refresh_all();
 
-                    self.cortex_state.push_data(cpu, mem_used);
+                        let cpu = self.system.global_cpu_info().cpu_usage();
+                        let mem_used =
+                            self.system.used_memory() as f32 / self.system.total_memory() as f32;
+
+                        self.cortex_state.push_data(cpu, mem_used);
+                    }
 
                     // Periodic app scanning
                     self.scanned_apps = {
+                        #[allow(unused_mut)]
                         let mut apps = peak_core::registry::AppInfo::all_as_media();
+                        #[cfg(not(target_arch = "wasm32"))]
                         apps.extend(peak_core::models::MediaItem::scan_system());
                         apps
                     };
@@ -476,7 +482,10 @@ impl PeakNative {
             Message::Exit => Task::none(),
             Message::LaunchBrowser(url) => {
                 // Use system browser (Firefox on PeakOS ISO)
+                #[cfg(not(target_arch = "wasm32"))]
                 let _ = opener::open(&url);
+                #[cfg(target_arch = "wasm32")]
+                let _ = url;
                 Task::none()
             }
             Message::CloseBrowser => {
@@ -499,39 +508,44 @@ impl PeakNative {
                 Task::none()
             }
             Message::LaunchGame(cmd) => {
-                #[cfg(target_os = "macos")]
+                #[cfg(not(target_arch = "wasm32"))]
                 {
-                    if cmd.starts_with("steam://") {
-                        std::process::Command::new("open").arg(&cmd).spawn().ok();
-                    } else {
-                        std::process::Command::new("sh")
-                            .arg("-c")
-                            .arg(&cmd)
-                            .spawn()
-                            .ok();
+                    #[cfg(target_os = "macos")]
+                    {
+                        if cmd.starts_with("steam://") {
+                            std::process::Command::new("open").arg(&cmd).spawn().ok();
+                        } else {
+                            std::process::Command::new("sh")
+                                .arg("-c")
+                                .arg(&cmd)
+                                .spawn()
+                                .ok();
+                        }
+                    }
+                    #[cfg(not(target_os = "macos"))]
+                    {
+                        let mut process_cmd = if cmd.starts_with("steam://") {
+                            let mut c = std::process::Command::new("xdg-open");
+                            c.arg(&cmd);
+                            c
+                        } else {
+                            let mut c = std::process::Command::new("sh");
+                            c.arg("-c").arg(&cmd);
+                            c
+                        };
+                        // Propagate Wayland environment
+                        if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
+                            process_cmd.env("WAYLAND_DISPLAY", display);
+                        }
+                        if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+                            process_cmd.env("XDG_RUNTIME_DIR", runtime_dir);
+                        }
+                        process_cmd.env("GDK_BACKEND", "wayland");
+                        process_cmd.spawn().ok();
                     }
                 }
-                #[cfg(not(target_os = "macos"))]
-                {
-                    let mut process_cmd = if cmd.starts_with("steam://") {
-                        let mut c = std::process::Command::new("xdg-open");
-                        c.arg(&cmd);
-                        c
-                    } else {
-                        let mut c = std::process::Command::new("sh");
-                        c.arg("-c").arg(&cmd);
-                        c
-                    };
-                    // Propagate Wayland environment
-                    if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
-                        process_cmd.env("WAYLAND_DISPLAY", display);
-                    }
-                    if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
-                        process_cmd.env("XDG_RUNTIME_DIR", runtime_dir);
-                    }
-                    process_cmd.env("GDK_BACKEND", "wayland");
-                    process_cmd.spawn().ok();
-                }
+                #[cfg(target_arch = "wasm32")]
+                let _ = cmd;
                 Task::none()
             }
             Message::ToggleTheme => {
@@ -557,31 +571,36 @@ impl PeakNative {
                         self.is_desktop_revealed = false;
 
                         let command = item.launch_command.clone();
-                        #[cfg(target_os = "macos")]
+                        #[cfg(not(target_arch = "wasm32"))]
                         {
-                            if command.contains("/Applications/") || command.contains("open ") {
-                                std::process::Command::new("sh")
-                                    .arg("-c")
-                                    .arg(&command)
-                                    .spawn()
-                                    .ok();
-                            } else {
-                                std::process::Command::new(command).spawn().ok();
+                            #[cfg(target_os = "macos")]
+                            {
+                                if command.contains("/Applications/") || command.contains("open ") {
+                                    std::process::Command::new("sh")
+                                        .arg("-c")
+                                        .arg(&command)
+                                        .spawn()
+                                        .ok();
+                                } else {
+                                    std::process::Command::new(command).spawn().ok();
+                                }
+                            }
+                            #[cfg(not(target_os = "macos"))]
+                            {
+                                let mut cmd = std::process::Command::new(&command);
+                                // Propagate Wayland environment
+                                if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
+                                    cmd.env("WAYLAND_DISPLAY", display);
+                                }
+                                if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+                                    cmd.env("XDG_RUNTIME_DIR", runtime_dir);
+                                }
+                                cmd.env("GDK_BACKEND", "wayland");
+                                cmd.spawn().ok();
                             }
                         }
-                        #[cfg(not(target_os = "macos"))]
-                        {
-                            let mut cmd = std::process::Command::new(&command);
-                            // Propagate Wayland environment
-                            if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
-                                cmd.env("WAYLAND_DISPLAY", display);
-                            }
-                            if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
-                                cmd.env("XDG_RUNTIME_DIR", runtime_dir);
-                            }
-                            cmd.env("GDK_BACKEND", "wayland");
-                            cmd.spawn().ok();
-                        }
+                        #[cfg(target_arch = "wasm32")]
+                        let _ = command;
                     }
                     dock::DockMessage::Launch(app_id) => {
                         self.show_app_grid = false;
@@ -628,13 +647,16 @@ impl PeakNative {
                                 return Task::done(Message::ToggleAppGrid);
                             }
                             peak_core::registry::AppId::Spotify => {
-                                if cfg!(target_os = "macos") {
-                                    std::process::Command::new("open")
-                                        .arg("/Applications/Spotify.app")
-                                        .spawn()
-                                        .ok();
-                                } else {
-                                    std::process::Command::new("spotify").spawn().ok();
+                                #[cfg(not(target_arch = "wasm32"))]
+                                {
+                                    if cfg!(target_os = "macos") {
+                                        std::process::Command::new("open")
+                                            .arg("/Applications/Spotify.app")
+                                            .spawn()
+                                            .ok();
+                                    } else {
+                                        std::process::Command::new("spotify").spawn().ok();
+                                    }
                                 }
                             }
                             peak_core::registry::AppId::Editor => {
@@ -727,26 +749,30 @@ impl PeakNative {
 
                 // Sync available models when opening Inspector
                 if self.inspector.is_visible {
-                    let models_dir = peak_intelligence::brain::model::Directory::default();
-                    let mut available_models = Vec::new();
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        let models_dir = peak_intelligence::brain::model::Directory::default();
+                        let mut available_models = Vec::new();
 
-                    if let Ok(entries) = std::fs::read_dir(models_dir.path()) {
-                        for entry in entries.flatten() {
-                            if let Ok(file_name) = entry.file_name().into_string() {
-                                if file_name.ends_with(".gguf") {
-                                    // Extract model ID from filename (remove .gguf extension)
-                                    let model_id = file_name.trim_end_matches(".gguf").to_string();
-                                    available_models.push(model_id);
+                        if let Ok(entries) = std::fs::read_dir(models_dir.path()) {
+                            for entry in entries.flatten() {
+                                if let Ok(file_name) = entry.file_name().into_string() {
+                                    if file_name.ends_with(".gguf") {
+                                        // Extract model ID from filename (remove .gguf extension)
+                                        let model_id =
+                                            file_name.trim_end_matches(".gguf").to_string();
+                                        available_models.push(model_id);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    return Task::done(Message::Inspector(
-                        crate::components::inspector::InspectorMessage::SyncAvailableModels(
-                            available_models,
-                        ),
-                    ));
+                        return Task::done(Message::Inspector(
+                            crate::components::inspector::InspectorMessage::SyncAvailableModels(
+                                available_models,
+                            ),
+                        ));
+                    }
                 }
 
                 Task::none()
@@ -1025,9 +1051,13 @@ impl PeakNative {
                 match &msg {
                     peak_apps::jukebox::JukeboxMessage::PlayTrack(item) => {
                         let cmd = item.launch_command.replace("play ", "").replace("\"", "");
+                        #[cfg(not(target_arch = "wasm32"))]
                         crate::audio::play_track(cmd);
+                        #[cfg(target_arch = "wasm32")]
+                        let _ = cmd;
                     }
                     peak_apps::jukebox::JukeboxMessage::TogglePlayback => {
+                        #[cfg(not(target_arch = "wasm32"))]
                         crate::audio::toggle_playback();
                     }
                     _ => {}
@@ -1161,17 +1191,25 @@ impl PeakNative {
                     OmnibarMessage::SelectApk(pkg_name) => {
                         self.show_omnibar = false;
                         let cmd = format!("sudo apk add {}", pkg_name);
-                        Task::batch(vec![
-                            Task::done(Message::DockInteraction(dock::DockMessage::Launch(
-                                AppId::Terminal,
-                            ))),
-                            self.forward_to_app(
-                                AppId::Terminal,
-                                Message::Terminal(
-                                    peak_core::apps::terminal::TerminalMessage::RunCommand(cmd),
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            Task::batch(vec![
+                                Task::done(Message::DockInteraction(dock::DockMessage::Launch(
+                                    AppId::Terminal,
+                                ))),
+                                self.forward_to_app(
+                                    AppId::Terminal,
+                                    Message::Terminal(
+                                        peak_core::apps::terminal::TerminalMessage::RunCommand(cmd),
+                                    ),
                                 ),
-                            ),
-                        ])
+                            ])
+                        }
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            let _ = cmd;
+                            Task::none()
+                        }
                     }
                     _ => Task::none(),
                 };
@@ -1272,25 +1310,36 @@ impl PeakNative {
                         let cmd = format!("sudo apk add {}", pkg_name.to_lowercase());
                         // Forward to Store so it updates UI state (even if its internal install fails)
                         // And launch Terminal for the actual sudo work
-                        return Task::batch(vec![
-                            self.forward_to_app(AppId::Store, Message::Store(msg.clone())),
-                            Task::done(Message::DockInteraction(dock::DockMessage::Launch(
-                                AppId::Terminal,
-                            ))),
-                            self.forward_to_app(
-                                AppId::Terminal,
-                                Message::Terminal(
-                                    peak_core::apps::terminal::TerminalMessage::RunCommand(cmd),
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            return Task::batch(vec![
+                                self.forward_to_app(AppId::Store, Message::Store(msg.clone())),
+                                Task::done(Message::DockInteraction(dock::DockMessage::Launch(
+                                    AppId::Terminal,
+                                ))),
+                                self.forward_to_app(
+                                    AppId::Terminal,
+                                    Message::Terminal(
+                                        peak_core::apps::terminal::TerminalMessage::RunCommand(cmd),
+                                    ),
                                 ),
-                            ),
-                        ]);
+                            ]);
+                        }
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            let _ = cmd;
+                            return self.forward_to_app(AppId::Store, Message::Store(msg.clone()));
+                        }
                     }
                     _ => {}
                 }
                 self.forward_to_app(AppId::Store, Message::Store(msg))
             }
             Message::Restart => {
+                #[cfg(not(target_arch = "wasm32"))]
                 std::process::exit(0);
+                #[cfg(target_arch = "wasm32")]
+                Task::none()
             }
             Message::LogOut => {
                 // Keep the user profile loaded so we can show their name/avatar
@@ -1305,9 +1354,12 @@ impl PeakNative {
             }
             Message::FactoryReset => {
                 // Delete user config
-                let config_path = peak_apps::auth::get_config_dir().join("user.json");
-                if config_path.exists() {
-                    let _ = std::fs::remove_file(config_path);
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    let config_path = peak_apps::auth::get_config_dir().join("user.json");
+                    if config_path.exists() {
+                        let _ = std::fs::remove_file(config_path);
+                    }
                 }
                 // Reset state
                 self.user = None;
@@ -1316,7 +1368,13 @@ impl PeakNative {
                 self.theme = peak_core::theme::Theme::Light;
                 Task::none()
             }
-            Message::ToggleTerminal => self.toggle_app(AppId::Terminal, 640.0, 480.0),
+            Message::ToggleTerminal => {
+                #[cfg(not(target_arch = "wasm32"))]
+                return self.toggle_app(AppId::Terminal, 640.0, 480.0);
+                #[cfg(target_arch = "wasm32")]
+                Task::none()
+            }
+            #[cfg(not(target_arch = "wasm32"))]
             Message::Terminal(msg) => self.forward_to_app(AppId::Terminal, Message::Terminal(msg)),
             Message::ToggleAppGrid => {
                 self.show_app_grid = !self.show_app_grid;
@@ -1386,7 +1444,10 @@ impl PeakNative {
             Message::ConsoleGame(msg) => {
                 // Handle Console game selection/launch
                 if let peak_shell::console::game_rail::GameRailMessage::SelectGame(cmd) = msg {
+                    #[cfg(not(target_arch = "wasm32"))]
                     opener::open(cmd).ok();
+                    #[cfg(target_arch = "wasm32")]
+                    let _ = cmd;
                 }
                 Task::none()
             }

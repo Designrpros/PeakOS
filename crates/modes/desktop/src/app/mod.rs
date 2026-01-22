@@ -10,6 +10,7 @@ use peak_shell::app_switcher::AppSwitcher;
 
 use peak_core::models::MediaItem;
 use peak_core::registry::ShellMode;
+#[cfg(not(target_arch = "wasm32"))]
 use sysinfo::System;
 
 // Sub-modules
@@ -58,12 +59,14 @@ pub struct PeakNative {
     pub omnibar: Omnibar,
     pub show_omnibar: bool,
     // Neural Link (System Monitoring)
+    #[cfg(not(target_arch = "wasm32"))]
     pub system: System,
-    pub last_monitor_update: std::time::Instant,
+    pub last_monitor_update: instant::Instant,
     pub show_spaces_selector: bool,
     pub current_desktop: usize,
     pub switcher: AppSwitcher,
     pub show_switcher: bool,
+    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) _stream: Option<rodio::OutputStream>, // Must keep alive (if audio available)
 
     // Registry & Window Management

@@ -549,60 +549,68 @@ impl Omnibar {
 }
 
 async fn search_apk_packages(query: String) -> Vec<ApkPackage> {
-    // Check if apk command exists
-    let apk_exists = tokio::process::Command::new("which")
-        .arg("apk")
-        .output()
-        .await
-        .map(|output| output.status.success())
-        .unwrap_or(false);
-
-    if !apk_exists {
-        // Fallback for development on macOS - return mock data
-        return vec![
-            ApkPackage {
-                name: format!("{}-example", query),
-                description: "Example package (apk not available on this system)".to_string(),
-            },
-            ApkPackage {
-                name: format!("{}-dev", query),
-                description: "Development package (mock data)".to_string(),
-            },
-            ApkPackage {
-                name: format!("{}-docs", query),
-                description: "Documentation package (mock data)".to_string(),
-            },
-        ];
-    }
-
-    // Run apk search
-    match tokio::process::Command::new("apk")
-        .arg("search")
-        .arg(&query)
-        .output()
-        .await
+    #[cfg(not(target_arch = "wasm32"))]
     {
-        Ok(output) => {
-            if output.status.success() {
-                String::from_utf8_lossy(&output.stdout)
-                    .lines()
-                    .take(10)
-                    .filter_map(|line| {
-                        let parts: Vec<&str> = line.splitn(2, " - ").collect();
-                        if parts.len() == 2 {
-                            Some(ApkPackage {
-                                name: parts[0].trim().to_string(),
-                                description: parts[1].trim().to_string(),
-                            })
-                        } else {
-                            None
-                        }
-                    })
-                    .collect()
-            } else {
-                Vec::new()
-            }
+        // Check if apk command exists
+        let apk_exists = tokio::process::Command::new("which")
+            .arg("apk")
+            .output()
+            .await
+            .map(|output| output.status.success())
+            .unwrap_or(false);
+
+        if !apk_exists {
+            // Fallback for development on macOS - return mock data
+            return vec![
+                ApkPackage {
+                    name: format!("{}-example", query),
+                    description: "Example package (apk not available on this system)".to_string(),
+                },
+                ApkPackage {
+                    name: format!("{}-dev", query),
+                    description: "Development package (mock data)".to_string(),
+                },
+                ApkPackage {
+                    name: format!("{}-docs", query),
+                    description: "Documentation package (mock data)".to_string(),
+                },
+            ];
         }
-        Err(_) => Vec::new(),
+
+        // Run apk search
+        match tokio::process::Command::new("apk")
+            .arg("search")
+            .arg(&query)
+            .output()
+            .await
+        {
+            Ok(output) => {
+                if output.status.success() {
+                    String::from_utf8_lossy(&output.stdout)
+                        .lines()
+                        .take(10)
+                        .filter_map(|line| {
+                            let parts: Vec<&str> = line.splitn(2, " - ").collect();
+                            if parts.len() == 2 {
+                                Some(ApkPackage {
+                                    name: parts[0].trim().to_string(),
+                                    description: parts[1].trim().to_string(),
+                                })
+                            } else {
+                                None
+                            }
+                        })
+                        .collect()
+                } else {
+                    Vec::new()
+                }
+            }
+            Err(_) => Vec::new(),
+        }
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = query;
+        Vec::new()
     }
 }

@@ -440,7 +440,7 @@ impl Catalog {
                                         .push(Text::new(item.description).caption1().secondary()),
                                 )
                                 .push(
-                                    Button::new("Inspector")
+                                    Button::label("Inspector")
                                         .icon("layout_sidebar_right")
                                         .variant(Variant::Ghost)
                                         .on_press(CatalogMessage::ToggleInspector),
@@ -485,7 +485,7 @@ fn render_category(
         .map(|item| {
             let is_selected = Some(item.id) == selected_id;
 
-            Button::new(item.title)
+            Button::label(item.title)
                 .width(Length::Fill)
                 .size(Size::Small)
                 .intent(if is_selected {
@@ -815,7 +815,7 @@ fn render_views(_context: &Context) -> Box<dyn View<CatalogMessage>> {
             .push(Text::new("System Views").title1())
             .push(Text::new("Alerts").title2())
             .push(
-                Button::new("Show Alert")
+                Button::label("Show Alert")
                     .intent(Intent::Primary)
                     .on_press(CatalogMessage::ToggleAlert(true)),
             )
@@ -865,7 +865,7 @@ fn render_themes(
                             ),
                     )
                     .push(
-                        Button::new(theme.display_name())
+                        Button::label(theme.display_name())
                             .width(Length::Fill)
                             .intent(if is_selected {
                                 Intent::Primary

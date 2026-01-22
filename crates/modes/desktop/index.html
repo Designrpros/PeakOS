@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>PeakOS Desktop</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+    <link data-trunk rel="rust" data-bin="peak-desktop" data-cargo-no-default-features data-cargo-features="wasm" />
+    <link data-trunk rel="copy-dir" href="assets" />
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+    </style>
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            console.log("Global Error: " + msg + " at " + url + ":" + line + ":" + col);
+            if (error && error.stack) console.log(error.stack);
+        };
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>

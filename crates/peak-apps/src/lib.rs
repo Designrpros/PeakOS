@@ -8,5 +8,6 @@ pub mod library;
 pub mod peak_ui;
 pub mod settings;
 pub mod store;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod terminal;
 pub mod wizard;

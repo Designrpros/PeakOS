@@ -1,19 +1,27 @@
 mod app;
+#[cfg(not(target_arch = "wasm32"))]
 mod audio;
 mod components;
 #[cfg(target_os = "linux")]
 mod layer_app;
 mod pages;
+#[cfg(not(target_arch = "wasm32"))]
 mod recorder;
+
+#[cfg(not(target_arch = "wasm32"))]
 mod systems;
+#[cfg(target_arch = "wasm32")]
+mod systems {
+    pub mod registry;
+    pub mod window_manager;
+}
 
 use app::PeakNative;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Simple manual parsing to avoid heavy dependencies
     let args: Vec<String> = std::env::args().collect();
-
-    // NOTE: Standalone browser mode removed - using Firefox instead
 
     let mode_arg = args
         .iter()
@@ -80,8 +88,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(|e| e.into());
     }
 
-    let _is_game_mode = args.contains(&"--game".to_string());
-
     iced::application(PeakNative::title, PeakNative::update, PeakNative::view)
         .theme(PeakNative::theme)
         .subscription(PeakNative::subscription)
@@ -103,4 +109,31 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .run_with(move || PeakNative::new(flags))
         .map_err(|e| e.into())
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn main() {}
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::wasm_bindgen;
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(start)]
+pub fn run() {
+    console_error_panic_hook::set_once();
+    console_log::init_with_level(log::Level::Debug).expect("Console log failed");
+
+    log::info!("PeakOS WASM entry point started");
+
+    let flags = app::PeakNativeFlags {
+        mode: "game".to_string(),
+        launch_mode: app::LaunchMode::Desktop,
+        style: None,
+    };
+
+    log::info!("Launching iced application...");
+    let _ = iced::application(PeakNative::title, PeakNative::update, PeakNative::view)
+        .theme(PeakNative::theme)
+        .subscription(PeakNative::subscription)
+        .run_with(move || PeakNative::new(flags));
 }

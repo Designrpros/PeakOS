@@ -2,7 +2,7 @@
 use iced::mouse::Cursor;
 use iced::widget::canvas::{self, Cache, Canvas, Geometry, Path, Stroke};
 use iced::{Color, Element, Length, Point, Rectangle, Size, Theme};
-use std::time::Instant;
+use instant::Instant;
 
 pub struct VaporGrid {
     start_time: Instant,

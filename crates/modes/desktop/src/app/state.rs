@@ -62,6 +62,7 @@ pub enum Message {
     Maximize(peak_core::registry::AppId),
     WindowPositionFound(Option<iced::Point>),
     CloseAlert,
+    #[cfg(not(target_arch = "wasm32"))]
     Terminal(peak_apps::terminal::TerminalMessage),
     PeakUI(peak_apps::peak_ui::Message),
     Restart,

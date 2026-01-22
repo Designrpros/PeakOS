@@ -147,9 +147,18 @@ impl StoreApp {
                 let is_flatpak = name.contains('.');
 
                 // Spawn async installation task
-                Task::perform(install_package(pkg_name, is_flatpak), move |success| {
-                    StoreMessage::InstallationComplete(name.clone(), success)
-                })
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    Task::perform(install_package(pkg_name, is_flatpak), move |success| {
+                        StoreMessage::InstallationComplete(name.clone(), success)
+                    })
+                }
+                #[cfg(target_arch = "wasm32")]
+                {
+                    let _ = pkg_name;
+                    let _ = is_flatpak;
+                    Task::none()
+                }
             }
             StoreMessage::InstallationComplete(name, success) => {
                 // Remove from installing list
@@ -185,24 +194,30 @@ impl StoreApp {
                     }
 
                     // Spawn detached process with Wayland environment
-                    std::thread::spawn(move || {
-                        let mut cmd = std::process::Command::new(&bin_name);
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        std::thread::spawn(move || {
+                            let mut cmd = std::process::Command::new(&bin_name);
 
-                        // Propagate Wayland environment variables
-                        if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
-                            cmd.env("WAYLAND_DISPLAY", display);
-                        }
-                        if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
-                            cmd.env("XDG_RUNTIME_DIR", runtime_dir);
-                        }
+                            // Propagate Wayland environment variables
+                            if let Ok(display) = std::env::var("WAYLAND_DISPLAY") {
+                                cmd.env("WAYLAND_DISPLAY", display);
+                            }
+                            if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+                                cmd.env("XDG_RUNTIME_DIR", runtime_dir);
+                            }
 
-                        // Ensure the app can find its libraries
-                        cmd.env("GDK_BACKEND", "wayland");
+                            // Ensure the app can find its libraries
+                            cmd.env("GDK_BACKEND", "wayland");
 
-                        let _ = cmd
-                            .spawn()
-                            .map_err(|e| eprintln!("Failed to launch {}: {}", bin_name, e));
-                    });
+                            let _ = cmd
+                                .spawn()
+                                .map_err(|e| eprintln!("Failed to launch {}: {}", bin_name, e));
+                        });
+                    }
+                    #[cfg(target_arch = "wasm32")]
+                    let _ = bin_name;
+
                     Task::none()
                 }
             }
@@ -212,16 +227,21 @@ impl StoreApp {
             }
             StoreMessage::InstallAppImage => {
                 // Open file picker for .AppImage files
-                Task::perform(
-                    async {
-                        rfd::AsyncFileDialog::new()
-                            .add_filter("AppImage", &["AppImage"])
-                            .pick_file()
-                            .await
-                            .map(|handle| handle.path().to_path_buf())
-                    },
-                    StoreMessage::AppImageSelected,
-                )
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    Task::perform(
+                        async {
+                            rfd::AsyncFileDialog::new()
+                                .add_filter("AppImage", &["AppImage"])
+                                .pick_file()
+                                .await
+                                .map(|handle| handle.path().to_path_buf())
+                        },
+                        StoreMessage::AppImageSelected,
+                    )
+                }
+                #[cfg(target_arch = "wasm32")]
+                Task::none()
             }
             StoreMessage::AppImageSelected(path) => {
                 if let Some(path) = path {
@@ -505,32 +525,41 @@ fn view_app_card<'a>(
 }
 
 fn check_installed(name: &str) -> bool {
-    // Special case for Antigravity (Peak Intelligence)
-    if name == "Antigravity" {
-        return true;
-    }
-
-    // Check path for common apps
-    let linux_path = format!("/usr/bin/{}", name.to_lowercase());
-    if std::path::Path::new(&linux_path).exists() {
-        return true;
-    }
-
-    // Mac Check
-    let mac_app = format!("/Applications/{}.app", name);
-    if std::path::Path::new(&mac_app).exists() {
-        return true;
-    }
-
-    // Check via 'which' command as fallback
-    if let Ok(output) = std::process::Command::new("which")
-        .arg(name.to_lowercase())
-        .output()
+    #[cfg(not(target_arch = "wasm32"))]
     {
-        return output.status.success();
+        // Special case for Antigravity (Peak Intelligence)
+        if name == "Antigravity" {
+            return true;
+        }
+
+        // Check path for common apps
+        let linux_path = format!("/usr/bin/{}", name.to_lowercase());
+        if std::path::Path::new(&linux_path).exists() {
+            return true;
+        }
+
+        // Mac Check
+        let mac_app = format!("/Applications/{}.app", name);
+        if std::path::Path::new(&mac_app).exists() {
+            return true;
+        }
+
+        // Check via 'which' command as fallback
+        if let Ok(output) = std::process::Command::new("which")
+            .arg(name.to_lowercase())
+            .output()
+        {
+            return output.status.success();
+        }
+
+        false
     }
 
-    false
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = name;
+        false
+    }
 }
 
 pub fn get_initial_apps() -> Vec<AppPackage> {
@@ -632,84 +661,104 @@ async fn search_apk(query: String) -> Vec<AppPackage> {
         return Vec::new();
     }
 
-    // Run 'apk search -v -d [query]' for names, versions, and descriptions
-    let output = match std::process::Command::new("apk")
-        .arg("search")
-        .arg("-v")
-        .arg("-d")
-        .arg(&query)
-        .output()
+    #[cfg(not(target_arch = "wasm32"))]
     {
-        Ok(o) => String::from_utf8_lossy(&o.stdout).to_string(),
-        Err(_) => return Vec::new(),
-    };
+        // Run 'apk search -v -d [query]' for names, versions, and descriptions
+        let output = match std::process::Command::new("apk")
+            .arg("search")
+            .arg("-v")
+            .arg("-d")
+            .arg(&query)
+            .output()
+        {
+            Ok(o) => String::from_utf8_lossy(&o.stdout).to_string(),
+            Err(_) => return Vec::new(),
+        };
 
-    output
-        .lines()
-        .map(|line| {
-            // line format: "name-version - description"
-            let parts: Vec<&str> = line.splitn(2, " - ").collect();
-            let name_ver = parts[0];
-            let description = parts
-                .get(1)
-                .unwrap_or(&"No description available.")
-                .to_string();
+        output
+            .lines()
+            .map(|line| {
+                // line format: "name-version - description"
+                let parts: Vec<&str> = line.splitn(2, " - ").collect();
+                let name_ver = parts[0];
+                let description = parts
+                    .get(1)
+                    .unwrap_or(&"No description available.")
+                    .to_string();
 
-            // Try to split name and version (last hyphen usually)
-            let last_hyphen = name_ver.rfind('-');
-            let (name, version) = if let Some(idx) = last_hyphen {
-                (name_ver[..idx].to_string(), name_ver[idx + 1..].to_string())
-            } else {
-                (name_ver.to_string(), "unknown".to_string())
-            };
+                // Try to split name and version (last hyphen usually)
+                let last_hyphen = name_ver.rfind('-');
+                let (name, version) = if let Some(idx) = last_hyphen {
+                    (name_ver[..idx].to_string(), name_ver[idx + 1..].to_string())
+                } else {
+                    (name_ver.to_string(), "unknown".to_string())
+                };
 
-            AppPackage {
-                name,
-                description,
-                category: AppCategory::Utility, // default for search
-                version,
-                is_installed: false, // will check on status update if we want more detail
-            }
-        })
-        .collect()
+                AppPackage {
+                    name,
+                    description,
+                    category: AppCategory::Utility, // default for search
+                    version,
+                    is_installed: false, // will check on status update if we want more detail
+                }
+            })
+            .collect()
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = query;
+        Vec::new()
+    }
 }
 
 async fn install_package(name: String, is_flatpak: bool) -> bool {
     let cmd_name = if is_flatpak { "flatpak" } else { "apk" };
 
-    // Check if command exists
-    let cmd_exists = tokio::process::Command::new("which")
-        .arg(cmd_name)
-        .output()
-        .await
-        .map(|output| output.status.success())
-        .unwrap_or(false);
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        // Check if command exists
+        let cmd_exists = tokio::process::Command::new("which")
+            .arg(cmd_name)
+            .output()
+            .await
+            .map(|output| output.status.success())
+            .unwrap_or(false);
 
-    if !cmd_exists {
-        eprintln!("⚠️  {} installation not available", cmd_name);
-        return false;
-    }
+        if !cmd_exists {
+            eprintln!("⚠️  {} installation not available", cmd_name);
+            return false;
+        }
 
-    let mut cmd = tokio::process::Command::new(cmd_name);
-    if is_flatpak {
-        cmd.arg("install").arg("-y").arg("flathub").arg(&name);
-    } else {
-        cmd.arg("add").arg(&name.to_lowercase());
-    }
+        let mut cmd = tokio::process::Command::new(cmd_name);
+        if is_flatpak {
+            cmd.arg("install").arg("-y").arg("flathub").arg(&name);
+        } else {
+            cmd.arg("add").arg(&name.to_lowercase());
+        }
 
-    match cmd.status().await {
-        Ok(status) => {
-            if status.success() {
-                println!("✓ Successfully installed {}", name);
-                true
-            } else {
-                eprintln!("✗ Installation failed for {}", name);
+        match cmd.status().await {
+            Ok(status) => {
+                if status.success() {
+                    println!("✓ Successfully installed {}", name);
+                    true
+                } else {
+                    eprintln!("✗ Installation failed for {}", name);
+                    false
+                }
+            }
+            Err(e) => {
+                eprintln!("✗ Failed to run {}: {}", cmd_name, e);
                 false
             }
         }
-        Err(e) => {
-            eprintln!("✗ Failed to run {}: {}", cmd_name, e);
-            false
-        }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = name;
+        let _ = is_flatpak;
+        let _ = cmd_name;
+        false
     }
 }

@@ -1,6 +1,9 @@
+#[cfg(not(target_arch = "wasm32"))]
 use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
+#[cfg(not(target_arch = "wasm32"))]
 use std::io::Cursor;
 use std::sync::atomic::{AtomicU32, Ordering};
+#[cfg(not(target_arch = "wasm32"))]
 use std::sync::OnceLock;
 
 // Embed the sound into the binary so it's portable
@@ -8,7 +11,9 @@ use std::sync::OnceLock;
 static CLICK_BYTES: &[u8] = include_bytes!("../../../../assets/sounds/click.wav");
 
 // Keep the handle globally accessible (it is Send + Sync)
+#[cfg(not(target_arch = "wasm32"))]
 static AUDIO_HANDLE: OnceLock<OutputStreamHandle> = OnceLock::new();
+#[cfg(not(target_arch = "wasm32"))]
 static MUSIC_SINK: OnceLock<Sink> = OnceLock::new();
 
 // Global Volume State (f32 bits, default 1.0)
@@ -16,6 +21,7 @@ static GLOBAL_VOLUME: AtomicU32 = AtomicU32::new(1065353216);
 
 // Must be called once. Returns the Stream which MUST be kept alive by the caller (App).
 // Returns None if no audio device is available.
+#[cfg(not(target_arch = "wasm32"))]
 pub fn init() -> Option<OutputStream> {
     match OutputStream::try_default() {
         Ok((stream, handle)) => {
@@ -44,6 +50,7 @@ pub fn get_volume() -> f32 {
 #[allow(dead_code)]
 pub fn play_click() {
     // Fire and forget sound
+    #[cfg(not(target_arch = "wasm32"))]
     std::thread::spawn(|| {
         if let Some(handle) = AUDIO_HANDLE.get() {
             if let Ok(sink) = Sink::try_new(handle) {
@@ -59,6 +66,7 @@ pub fn play_click() {
 }
 
 pub fn play_track(path: String) {
+    #[cfg(not(target_arch = "wasm32"))]
     if let Some(handle) = AUDIO_HANDLE.get() {
         // Ensure sink exists
         let sink =
@@ -77,9 +85,12 @@ pub fn play_track(path: String) {
             }
         }
     }
+    #[cfg(target_arch = "wasm32")]
+    let _ = path;
 }
 
 pub fn toggle_playback() {
+    #[cfg(not(target_arch = "wasm32"))]
     if let Some(sink) = MUSIC_SINK.get() {
         if sink.is_paused() {
             sink.play();
@@ -91,6 +102,7 @@ pub fn toggle_playback() {
 
 #[allow(dead_code)]
 pub fn stop_playback() {
+    #[cfg(not(target_arch = "wasm32"))]
     if let Some(sink) = MUSIC_SINK.get() {
         sink.stop();
     }

@@ -1,6 +1,7 @@
 // Initialization logic for PeakNative
 
 use super::{AppState, Message, PeakNative};
+#[cfg(not(target_arch = "wasm32"))]
 use crate::audio;
 use crate::components::inspector::Inspector;
 use crate::components::omnibar::Omnibar;
@@ -10,6 +11,7 @@ use peak_apps::library::LibraryMessage;
 use peak_core::models::MediaItem;
 use peak_core::registry::ShellMode;
 use peak_shell::app_switcher::AppSwitcher;
+#[cfg(not(target_arch = "wasm32"))]
 use sysinfo::System;
 
 impl PeakNative {
@@ -23,12 +25,14 @@ impl PeakNative {
 
         // Initialize Audio (One-time)
         // ONLY valid for Desktop mode to avoid fighting for audio device
+        #[cfg(not(target_arch = "wasm32"))]
         let stream = if launch_mode == crate::app::LaunchMode::Desktop {
             audio::init()
         } else {
             None
         };
 
+        #[cfg(not(target_arch = "wasm32"))]
         if stream.is_some() {
             audio::set_volume(0.5);
         }
@@ -119,10 +123,12 @@ impl PeakNative {
             current_desktop: 0,
             omnibar: Omnibar::new(),
             show_omnibar: false,
+            #[cfg(not(target_arch = "wasm32"))]
             system: System::new_all(),
-            last_monitor_update: std::time::Instant::now(),
+            last_monitor_update: instant::Instant::now(),
             switcher: AppSwitcher::new(),
             show_switcher: false,
+            #[cfg(not(target_arch = "wasm32"))]
             _stream: stream,
             show_settings: false,
             show_spaces_selector: false,
@@ -198,18 +204,21 @@ impl PeakNative {
         // NOTE: Browser removed - using Firefox via `opener::open` instead
 
         // Terminal (with Desktop Wrapper)
-        let terminal = peak_apps::terminal::DesktopTerminalApp::new();
-        shell.registry.register(
-            peak_core::registry::AppId::Terminal,
-            Box::new(crate::systems::registry::AppWrapper {
-                app: terminal,
-                map_msg: Message::Terminal,
-                try_unmap: |msg| match msg {
-                    Message::Terminal(t) => Some(t),
-                    _ => None,
-                },
-            }),
-        );
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let terminal = peak_apps::terminal::DesktopTerminalApp::new();
+            shell.registry.register(
+                peak_core::registry::AppId::Terminal,
+                Box::new(crate::systems::registry::AppWrapper {
+                    app: terminal,
+                    map_msg: Message::Terminal,
+                    try_unmap: |msg| match msg {
+                        Message::Terminal(t) => Some(t),
+                        _ => None,
+                    },
+                }),
+            );
+        }
 
         // PeakUI Reference App
         let peak_ui = peak_apps::peak_ui::PeakUIApp::new();

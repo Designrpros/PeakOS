@@ -5,15 +5,14 @@ use iced::{Alignment, Color, Element, Length, Renderer, Theme};
 use peak_core::icons;
 use std::sync::Arc;
 
-pub struct Button<'a, Message> {
-    label: String,
+pub struct Button<Message> {
+    content: Box<dyn View<Message>>,
     icon: Option<String>,
     on_press: Option<Message>,
     intent: Intent,
     variant: Variant,
     size: Size,
     width: Length,
-    _phantom: std::marker::PhantomData<&'a ()>,
 }
 
 #[derive(Clone, Copy, Default)]
@@ -25,18 +24,21 @@ pub enum ButtonStyle {
     Ghost,
 }
 
-impl<'a, Message> Button<'a, Message> {
-    pub fn new(label: impl Into<String>) -> Self {
+impl<Message: 'static> Button<Message> {
+    pub fn new(content: impl View<Message> + 'static) -> Self {
         Self {
-            label: label.into(),
+            content: Box::new(content),
             icon: None,
             on_press: None,
             intent: Intent::Primary,
             variant: Variant::Solid,
             size: Size::Medium,
             width: Length::Shrink,
-            _phantom: std::marker::PhantomData,
         }
+    }
+
+    pub fn label(text: impl Into<String>) -> Self {
+        Self::new(crate::atoms::Text::new(text))
     }
 
     pub fn icon(mut self, name: impl Into<String>) -> Self {
@@ -93,7 +95,7 @@ impl<'a, Message> Button<'a, Message> {
     }
 }
 
-impl<'a, Message: Clone + 'static> View<Message> for Button<'a, Message> {
+impl<Message: Clone + 'static> View<Message> for Button<Message> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let theme = context.theme;
         let intent = self.intent;
@@ -133,8 +135,7 @@ impl<'a, Message: Clone + 'static> View<Message> for Button<'a, Message> {
             );
         }
 
-        // Font size based on Size modifier
-        let font_size = match size {
+        let _font_size = match size {
             Size::Small => 12.0,
             Size::Medium => 14.0,
             Size::Large => 16.0,
@@ -149,7 +150,7 @@ impl<'a, Message: Clone + 'static> View<Message> for Button<'a, Message> {
             Size::XLarge => [16, 32],
         };
 
-        content = content.push(text(self.label.clone()).size(font_size));
+        content = content.push(self.content.view(context));
 
         button(content)
             .on_press_maybe(self.on_press.clone())

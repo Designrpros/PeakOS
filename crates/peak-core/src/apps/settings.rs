@@ -70,6 +70,7 @@ pub enum SettingsMessage {
     ShellStyleChanged(crate::registry::ShellStyle),
 }
 
+#[derive(Debug, Clone)]
 pub struct SettingsApp {
     pub theme_mode: ThemeMode,
     pub current_tab: SettingsTab,

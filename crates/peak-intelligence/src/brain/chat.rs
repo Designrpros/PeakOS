@@ -1,6 +1,7 @@
 mod schema;
 
 use crate::brain::assistant::{self, Assistant, Reply, Token};
+#[cfg(not(target_arch = "wasm32"))]
 use crate::brain::directory;
 use crate::brain::model;
 use crate::brain::plan::{self, Plan};
@@ -8,7 +9,9 @@ use crate::brain::Error;
 
 use serde::{Deserialize, Serialize};
 use sipper::{sipper, Sipper, Straw};
+#[cfg(feature = "native")]
 use tokio::fs;
+#[cfg(feature = "native")]
 use tokio::task;
 use uuid::Uuid;
 
@@ -43,11 +46,19 @@ impl Chat {
     }
 
     pub async fn fetch(id: Id) -> Result<Self, Error> {
-        let json = fs::read_to_string(Self::path(&id).await?).await?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let json = fs::read_to_string(Self::path(&id).await?).await?;
 
-        let _ = LastOpened::update(id).await;
+            let _ = LastOpened::update(id).await;
 
-        task::spawn_blocking(move || schema::decode(&json)).await?
+            task::spawn_blocking(move || schema::decode(&json)).await?
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = id;
+            Err(Error::WasmError("Storage not supported".to_string()))
+        }
     }
 
     pub async fn fetch_last_opened() -> Result<Self, Error> {
@@ -67,61 +78,81 @@ impl Chat {
             file,
             title,
             history,
+        };
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let chat = chat.save().await?;
+            LastOpened::update(chat.id).await?;
+
+            List::push(Entry {
+                id: chat.id,
+                file: chat.file.clone(),
+                title: chat.title.clone(),
+            })
+            .await?;
+            Ok(chat)
         }
-        .save()
-        .await?;
 
-        LastOpened::update(chat.id).await?;
-
-        List::push(Entry {
-            id: chat.id,
-            file: chat.file.clone(),
-            title: chat.title.clone(),
-        })
-        .await?;
-
-        Ok(chat)
+        #[cfg(target_arch = "wasm32")]
+        {
+            Ok(chat)
+        }
     }
 
     pub async fn save(self) -> Result<Self, Error> {
-        if let Ok(current) = Self::fetch(self.id).await {
-            if current.title != self.title {
-                let mut list = List::fetch().await?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            if let Ok(current) = Self::fetch(self.id).await {
+                if current.title != self.title {
+                    let mut list = List::fetch().await?;
 
-                if let Some(entry) = list.entries.iter_mut().find(|entry| entry.id == self.id) {
-                    entry.title = self.title.clone();
+                    if let Some(entry) = list.entries.iter_mut().find(|entry| entry.id == self.id) {
+                        entry.title = self.title.clone();
+                    }
+
+                    list.save().await?;
                 }
-
-                list.save().await?;
             }
+
+            let (bytes, chat) = task::spawn_blocking(move || (schema::encode(&self), self)).await?;
+
+            fs::write(Self::path(&chat.id).await?, bytes?).await?;
+
+            Ok(chat)
         }
-
-        let (bytes, chat) = task::spawn_blocking(move || (schema::encode(&self), self)).await?;
-
-        fs::write(Self::path(&chat.id).await?, bytes?).await?;
-
-        Ok(chat)
+        #[cfg(target_arch = "wasm32")]
+        {
+            Ok(self)
+        }
     }
 
     pub async fn delete(id: Id) -> Result<(), Error> {
-        fs::remove_file(Self::path(&id).await?).await?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            fs::remove_file(Self::path(&id).await?).await?;
 
-        let _ = List::remove(&id).await;
+            let _ = List::remove(&id).await;
 
-        match LastOpened::fetch().await {
-            Ok(LastOpened(last_opened)) if id == last_opened => {
-                let list = List::fetch().await.ok();
+            match LastOpened::fetch().await {
+                Ok(LastOpened(last_opened)) if id == last_opened => {
+                    let list = List::fetch().await.ok();
 
-                match list.as_ref().and_then(|list| list.entries.first()) {
-                    Some(entry) => {
-                        LastOpened::update(entry.id).await?;
-                    }
-                    None => {
-                        LastOpened::delete().await?;
+                    match list.as_ref().and_then(|list| list.entries.first()) {
+                        Some(entry) => {
+                            LastOpened::update(entry.id).await?;
+                        }
+                        None => {
+                            LastOpened::delete().await?;
+                        }
                     }
                 }
+                _ => {}
             }
-            _ => {}
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = id;
         }
 
         Ok(())
@@ -275,19 +306,24 @@ impl List {
     }
 
     async fn fetch() -> Result<Self, Error> {
-        let path = Self::path().await?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let path = Self::path().await?;
+            let bytes = fs::read(&path).await;
 
-        let bytes = fs::read(&path).await;
+            let Ok(bytes) = bytes else {
+                return Ok(List::default());
+            };
 
-        let Ok(bytes) = bytes else {
-            return Ok(List::default());
-        };
+            Ok(
+                task::spawn_blocking(move || serde_json::from_slice(&bytes).ok())
+                    .await?
+                    .unwrap_or_default(),
+            )
+        }
 
-        let list: Self =
-            { task::spawn_blocking(move || serde_json::from_slice(&bytes).ok()).await? }
-                .unwrap_or_default();
-
-        Ok(list)
+        #[cfg(target_arch = "wasm32")]
+        Ok(List::default())
     }
 
     async fn push(entry: Entry) -> Result<(), Error> {
@@ -305,9 +341,12 @@ impl List {
     }
 
     async fn save(self) -> Result<(), Error> {
-        let json = task::spawn_blocking(move || serde_json::to_vec_pretty(&self)).await?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let json = task::spawn_blocking(move || serde_json::to_vec_pretty(&self)).await?;
 
-        fs::write(Self::path().await?, json?).await?;
+            fs::write(Self::path().await?, json?).await?;
+        }
 
         Ok(())
     }
@@ -323,20 +362,35 @@ impl LastOpened {
 
     async fn fetch() -> Result<Self, Error> {
         let path = Self::path().await?;
-        let bytes = fs::read(path).await?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let bytes = fs::read(path).await?;
+            Ok(serde_json::from_slice(&bytes)?)
+        }
 
-        Ok(serde_json::from_slice(&bytes)?)
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = path;
+            Err(Error::WasmError("Storage not supported".to_string()))
+        }
     }
 
     async fn update(id: Id) -> Result<(), Error> {
-        let json = serde_json::to_vec(&LastOpened(id))?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let json = serde_json::to_vec(&LastOpened(id))?;
 
-        fs::write(Self::path().await?, json).await?;
+            fs::write(Self::path().await?, json).await?;
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        let _ = id;
 
         Ok(())
     }
 
     async fn delete() -> Result<(), Error> {
+        #[cfg(not(target_arch = "wasm32"))]
         fs::remove_file(Self::path().await?).await?;
 
         Ok(())
@@ -344,11 +398,22 @@ impl LastOpened {
 }
 
 async fn storage_dir() -> Result<PathBuf, io::Error> {
-    let directory = directory::data().join("chats");
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let directory = directory::data().join("chats");
 
-    fs::create_dir_all(&directory).await?;
+        fs::create_dir_all(&directory).await?;
 
-    Ok(directory)
+        return Ok(directory);
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        Err(io::Error::new(
+            io::ErrorKind::Other,
+            "WASM storage not supported",
+        ))
+    }
 }
 
 fn history(items: &[Item]) -> Vec<assistant::Message> {

@@ -1,10 +1,17 @@
 use anyhow::Result;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
+
+#[cfg(feature = "native")]
 use std::fs;
-use sysinfo::System;
+#[allow(unused_imports)]
+#[cfg(feature = "native")]
+use std::process::Command;
+#[cfg(feature = "native")]
+use sysinfo::{Pid, System};
+#[cfg(feature = "native")]
+use walkdir::WalkDir;
 
-use sysinfo::Pid;
-
+#[cfg(feature = "native")]
 pub fn list_processes() -> Result<Value> {
     let mut sys = System::new_all();
     sys.refresh_all();
@@ -31,6 +38,12 @@ pub fn list_processes() -> Result<Value> {
     Ok(json!(top_processes))
 }
 
+#[cfg(not(feature = "native"))]
+pub fn list_processes() -> Result<Value> {
+    Ok(json!([]))
+}
+
+#[cfg(feature = "native")]
 pub fn kill_process(pid_str: &str) -> Result<Value> {
     let mut sys = System::new_all();
     sys.refresh_all();
@@ -53,53 +66,78 @@ pub fn kill_process(pid_str: &str) -> Result<Value> {
     }
 }
 
+#[cfg(not(feature = "native"))]
+pub fn kill_process(_pid_str: &str) -> Result<Value> {
+    Err(anyhow::anyhow!("Process management not supported on web"))
+}
+
 pub fn read_file(path: &str) -> Result<Value> {
-    // Basic sandboxing check (prevent escaping too easily, though weak)
-    // In production this needs proper validation
-    let content = fs::read_to_string(path)?;
-    Ok(json!(content))
+    #[cfg(feature = "native")]
+    {
+        let content = fs::read_to_string(path)?;
+        Ok(json!(content))
+    }
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = path;
+        Err(anyhow::anyhow!("File system access not supported on web"))
+    }
 }
 
 pub fn write_file(path: &str, content: &str) -> Result<Value> {
-    fs::write(path, content)?;
-    Ok(json!("Successfully wrote file"))
+    #[cfg(feature = "native")]
+    {
+        fs::write(path, content)?;
+        Ok(json!("Successfully wrote file"))
+    }
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = (path, content);
+        Err(anyhow::anyhow!("File system access not supported on web"))
+    }
 }
 
 pub fn read_dir(path: &str) -> Result<Value> {
-    let mut entries = Vec::new();
-    for entry in fs::read_dir(path)? {
-        let entry = entry?;
-        let metadata = entry.metadata()?;
-        entries.push(json!({
-            "name": entry.file_name().to_string_lossy(),
-            "is_dir": metadata.is_dir(),
-            "size": metadata.len(),
-            "path": entry.path().to_string_lossy()
-        }));
-    }
-
-    // Sort: Directories first, then alphabetical
-    entries.sort_by(|a, b| {
-        let a_dir = a["is_dir"].as_bool().unwrap_or(false);
-        let b_dir = b["is_dir"].as_bool().unwrap_or(false);
-        if a_dir == b_dir {
-            a["name"]
-                .as_str()
-                .unwrap_or("")
-                .cmp(b["name"].as_str().unwrap_or(""))
-        } else {
-            b_dir.cmp(&a_dir)
+    #[cfg(feature = "native")]
+    {
+        let mut entries = Vec::new();
+        for entry in fs::read_dir(path)? {
+            let entry = entry?;
+            let metadata = entry.metadata()?;
+            entries.push(json!({
+                "name": entry.file_name().to_string_lossy(),
+                "is_dir": metadata.is_dir(),
+                "size": metadata.len(),
+                "path": entry.path().to_string_lossy()
+            }));
         }
-    });
 
-    Ok(json!(entries))
+        // Sort: Directories first, then alphabetical
+        entries.sort_by(|a, b| {
+            let a_dir = a["is_dir"].as_bool().unwrap_or(false);
+            let b_dir = b["is_dir"].as_bool().unwrap_or(false);
+            if a_dir == b_dir {
+                a["name"]
+                    .as_str()
+                    .unwrap_or("")
+                    .cmp(b["name"].as_str().unwrap_or(""))
+            } else {
+                b_dir.cmp(&a_dir)
+            }
+        });
+
+        Ok(json!(entries))
+    }
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = path;
+        Ok(json!([]))
+    }
 }
 
 pub fn scan_wifi() -> Result<Value> {
-    use std::process::Command;
-
-    // Check if we are on Linux and have nmcli
-    if cfg!(target_os = "linux") {
+    #[cfg(all(feature = "native", target_os = "linux"))]
+    {
         let output = Command::new("nmcli")
             .args(["-t", "-f", "SSID,SIGNAL,SECURITY", "dev", "wifi", "list"])
             .output();
@@ -124,50 +162,62 @@ pub fn scan_wifi() -> Result<Value> {
         }
     }
 
-    // Fallback/Mock for Dev/macOS
-    eprintln!("WiFi: nmcli not found or not on Linux, providing mock data");
-    let mock_networks = vec![
-        json!({ "ssid": "PeakOS_Internal", "signal": 98, "security": "WPA2" }),
-        json!({ "ssid": "Coffee_Shop_Free", "signal": 45, "security": "" }),
-        json!({ "ssid": "Starlink_999", "signal": 72, "security": "WPA3" }),
-        json!({ "ssid": "Hidden_Network", "signal": 20, "security": "WEP" }),
-    ];
-    Ok(json!(mock_networks))
+    #[cfg(feature = "native")]
+    {
+        // Fallback/Mock for Dev/macOS
+        let mock_networks = vec![
+            json!({ "ssid": "PeakOS_Internal", "signal": 98, "security": "WPA2" }),
+            json!({ "ssid": "Coffee_Shop_Free", "signal": 45, "security": "" }),
+            json!({ "ssid": "Starlink_999", "signal": 72, "security": "WPA3" }),
+            json!({ "ssid": "Hidden_Network", "signal": 20, "security": "WEP" }),
+        ];
+        Ok(json!(mock_networks))
+    }
+    #[cfg(not(feature = "native"))]
+    {
+        Ok(json!([]))
+    }
 }
 
 pub fn search_files(query: &str, base_path: &str) -> Result<Value> {
-    use walkdir::WalkDir;
-    let mut results = Vec::new();
-    let max_results = 20;
-    let query_lower = query.to_lowercase();
-
-    for entry in WalkDir::new(base_path)
-        .max_depth(3) // Stay shallow for performance
-        .into_iter()
-        .filter_map(|e| e.ok())
+    #[cfg(feature = "native")]
     {
-        let name = entry.file_name().to_string_lossy();
-        if name.to_lowercase().contains(&query_lower) {
-            let metadata = entry.metadata()?;
-            results.push(json!({
-                "name": name,
-                "path": entry.path().to_string_lossy(),
-                "is_dir": metadata.is_dir(),
-                "size": metadata.len()
-            }));
-            if results.len() >= max_results {
-                break;
+        let mut results = Vec::new();
+        let max_results = 20;
+        let query_lower = query.to_lowercase();
+
+        for entry in WalkDir::new(base_path)
+            .max_depth(3) // Stay shallow for performance
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
+            let name = entry.file_name().to_string_lossy();
+            if name.to_lowercase().contains(&query_lower) {
+                let metadata = entry.metadata()?;
+                results.push(json!({
+                    "name": name,
+                    "path": entry.path().to_string_lossy(),
+                    "is_dir": metadata.is_dir(),
+                    "size": metadata.len()
+                }));
+                if results.len() >= max_results {
+                    break;
+                }
             }
         }
-    }
 
-    Ok(json!(results))
+        Ok(json!(results))
+    }
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = (query, base_path);
+        Ok(json!([]))
+    }
 }
 
-pub fn connect_wifi(ssid: &str, password: &str) -> Result<Value> {
-    use std::process::Command;
-
-    if cfg!(target_os = "linux") {
+pub fn connect_wifi(ssid: &str, _password: &str) -> Result<Value> {
+    #[cfg(all(feature = "native", target_os = "linux"))]
+    {
         let output = Command::new("nmcli")
             .args(["dev", "wifi", "connect", ssid, "password", password])
             .output();
@@ -184,6 +234,14 @@ pub fn connect_wifi(ssid: &str, password: &str) -> Result<Value> {
         }
     }
 
-    // Mock connection
-    Ok(json!({ "status": "success", "message": format!("[MOCK] Connected to {}", ssid) }))
+    #[cfg(feature = "native")]
+    {
+        // Mock connection
+        Ok(json!({ "status": "success", "message": format!("[MOCK] Connected to {}", ssid) }))
+    }
+    #[cfg(not(feature = "native"))]
+    {
+        let _ = (ssid, password);
+        Err(anyhow::anyhow!("WiFi management not supported on web"))
+    }
 }

@@ -5,9 +5,24 @@ edition = "2021"
 
 [dependencies]
 iced = { version = "0.13", features = ["image", "svg", "advanced"] }
-peak-core = { path = "../peak-core" }
-peak-ui = { path = "../peak-ui" }
-peak-theme = { path = "../peak-theme" }
-peak-system = { path = "../peak-system" }
+peak-core = { path = "../peak-core", default-features = false }
+peak-ui = { path = "../peak-ui", default-features = false }
+peak-theme = { path = "../peak-theme", default-features = false }
+peak-system = { path = "../peak-system", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 chrono = "0.4"
+
+[features]
+default = ["native"]
+native = [
+    "peak-core/native",
+    "peak-ui/tokio",
+    "peak-theme/native",
+    "peak-system/native",
+]
+wasm = [
+    "peak-core/wasm",
+    "peak-ui/wasm",
+    "peak-theme/wasm",
+    "peak-system/wasm",
+]

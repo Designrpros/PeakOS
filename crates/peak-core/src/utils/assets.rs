@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+#[cfg(feature = "native")]
 pub fn get_asset_path(relative_path: &str) -> PathBuf {
     // 1. Check environment variable for production/custom paths
     if let Ok(assets_root) = std::env::var("PEAK_ASSETS") {
@@ -24,4 +25,10 @@ pub fn get_asset_path(relative_path: &str) -> PathBuf {
     let mut path = PathBuf::from("/usr/share/peakos/assets");
     path.push(relative_path);
     path
+}
+
+#[cfg(not(feature = "native"))]
+pub fn get_asset_path(relative_path: &str) -> PathBuf {
+    // Root-relative path for consistent browser resolution
+    PathBuf::from("/assets").join(relative_path)
 }

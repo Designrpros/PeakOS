@@ -17,7 +17,6 @@ pub struct LlmClient {
     provider: ModelProvider,
     model: String,
     api_key: Option<String>,
-    client: reqwest::Client,
 }
 
 impl LlmClient {
@@ -26,7 +25,6 @@ impl LlmClient {
             provider,
             model,
             api_key,
-            client: reqwest::Client::new(),
         }
     }
 
@@ -45,19 +43,15 @@ impl LlmClient {
             "stream": false
         });
 
-        let res = self
-            .client
-            .post(url)
-            .json(&body)
-            .send()
+        let res = crate::http::HttpClient::post_json(url, &body)
             .await
             .map_err(|e| e.to_string())?;
 
-        if !res.status().is_success() {
-            return Err(format!("Ollama error: {}", res.status()));
+        if res.status != 200 {
+            return Err(format!("Ollama error: {}", res.status));
         }
 
-        let json: Value = res.json().await.map_err(|e| e.to_string())?;
+        let json: Value = res.json().map_err(|e| e.to_string())?;
 
         json["message"]["content"]
             .as_str()
@@ -74,21 +68,19 @@ impl LlmClient {
             "messages": messages
         });
 
-        let res = self
-            .client
-            .post(url)
-            .header("Authorization", format!("Bearer {}", api_key))
-            .header("Content-Type", "application/json")
-            .json(&body)
-            .send()
+        let mut headers = std::collections::HashMap::new();
+        headers.insert("Authorization".to_string(), format!("Bearer {}", api_key));
+        headers.insert("Content-Type".to_string(), "application/json".to_string());
+
+        let res = crate::http::HttpClient::post_json_with_headers(url, &body, headers)
             .await
             .map_err(|e| e.to_string())?;
 
-        if !res.status().is_success() {
-            return Err(format!("OpenRouter error: {}", res.status()));
+        if res.status != 200 {
+            return Err(format!("OpenRouter error: {}", res.status));
         }
 
-        let json: Value = res.json().await.map_err(|e| e.to_string())?;
+        let json: Value = res.json().map_err(|e| e.to_string())?;
 
         json["choices"][0]["message"]["content"]
             .as_str()

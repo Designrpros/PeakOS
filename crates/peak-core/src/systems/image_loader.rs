@@ -1,8 +1,10 @@
 use iced::widget::image;
+#[cfg(feature = "native")]
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Mutex;
+#[cfg(feature = "native")]
 use tokio::io::AsyncWriteExt;
 
 // Global Cache State
@@ -15,13 +17,22 @@ pub struct ImageLoader;
 impl ImageLoader {
     // 1. Get the local cache path for a URL
     fn get_cache_path(url: &str) -> PathBuf {
-        let hash = hex::encode(Sha256::digest(url.as_bytes()));
-        // Use directories crate to find a proper cache location
-        let dirs = directories::ProjectDirs::from("com", "peak", "os").unwrap();
-        let cache_dir = dirs.cache_dir();
-        // Ensure dir exists
-        let _ = std::fs::create_dir_all(cache_dir);
-        cache_dir.join(format!("{}.jpg", hash))
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let hash = hex::encode(Sha256::digest(url.as_bytes()));
+            // Use directories crate to find a proper cache location
+            let dirs = directories::ProjectDirs::from("com", "peak", "os").unwrap();
+            let cache_dir = dirs.cache_dir();
+            // Ensure dir exists
+            let _ = std::fs::create_dir_all(cache_dir);
+            cache_dir.join(format!("{}.jpg", hash))
+        }
+
+        #[cfg(not(feature = "native"))]
+        {
+            let _ = url;
+            PathBuf::from("/tmp/cache")
+        }
     }
 
     // 2. Load image (Check Memory -> Check Disk -> Download)
@@ -37,15 +48,18 @@ impl ImageLoader {
             }
         }
 
-        let path = Self::get_cache_path(&url);
+        let _path = Self::get_cache_path(&url);
 
-        // B. Check Disk (Fast)
-        if path.exists() {
-            let handle = image::Handle::from_path(path);
-            if let Ok(mut cache) = MEMORY_CACHE.lock() {
-                cache.insert(url.clone(), handle.clone());
+        // B. Check Disk (Fast) - Only on native
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            if _path.exists() {
+                let handle = image::Handle::from_path(_path);
+                if let Ok(mut cache) = MEMORY_CACHE.lock() {
+                    cache.insert(url.clone(), handle.clone());
+                }
+                return Some(handle);
             }
-            return Some(handle);
         }
 
         // C. Download from Network (Slow)
@@ -55,21 +69,23 @@ impl ImageLoader {
         }
 
         println!("⬇️ Downloading cover: {}", url);
-        if let Ok(response) = reqwest::get(&url).await {
-            if let Ok(bytes) = response.bytes().await {
-                let bytes_vec = bytes.to_vec();
+        if let Ok(response) = peak_intelligence::http::HttpClient::get(&url).await {
+            let bytes_vec = response.bytes().to_vec();
+
+            #[cfg(not(target_arch = "wasm32"))]
+            {
                 // Save to Disk
-                if let Ok(mut file) = tokio::fs::File::create(&path).await {
+                if let Ok(mut file) = tokio::fs::File::create(&_path).await {
                     let _ = file.write_all(&bytes_vec).await;
                 }
-
-                // Return Handle
-                let handle = image::Handle::from_bytes(bytes_vec); // Corrected from from_memory
-                if let Ok(mut cache) = MEMORY_CACHE.lock() {
-                    cache.insert(url, handle.clone());
-                }
-                return Some(handle);
             }
+
+            // Return Handle
+            let handle = image::Handle::from_bytes(bytes_vec); // Corrected from from_memory
+            if let Ok(mut cache) = MEMORY_CACHE.lock() {
+                cache.insert(url, handle.clone());
+            }
+            return Some(handle);
         }
 
         None

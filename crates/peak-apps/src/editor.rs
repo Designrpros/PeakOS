@@ -63,7 +63,9 @@ impl EditorApp {
                 self.content.perform(action);
                 self.is_dirty = true;
             }
-            EditorMessage::Save => {
+            EditorMessage::Save =>
+            {
+                #[cfg(not(target_arch = "wasm32"))]
                 if let Some(path) = &self.path {
                     let text = self.content.text();
                     std::fs::write(path, text).ok();
@@ -74,10 +76,15 @@ impl EditorApp {
                 // Handled by main app
             }
             EditorMessage::Open(path) => {
-                let content_str = std::fs::read_to_string(&path).unwrap_or_default();
-                self.path = Some(path);
-                self.content = text_editor::Content::with_text(&content_str);
-                self.is_dirty = false;
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    let content_str = std::fs::read_to_string(&path).unwrap_or_default();
+                    self.path = Some(path);
+                    self.content = text_editor::Content::with_text(&content_str);
+                    self.is_dirty = false;
+                }
+                #[cfg(target_arch = "wasm32")]
+                let _ = path;
             }
         }
     }

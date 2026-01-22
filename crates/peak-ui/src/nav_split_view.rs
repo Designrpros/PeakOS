@@ -72,7 +72,7 @@ impl<Message: Clone + 'static> View<Message> for NavigationSplitView<Message> {
                     .height(Length::Fill);
 
                 if let Some(back_msg) = self.on_back.clone() {
-                    let back_button = crate::controls::Button::new("Back")
+                    let back_button = crate::controls::Button::label("Back")
                         .icon("chevron_left")
                         .variant(crate::modifiers::Variant::Ghost)
                         .on_press(back_msg)

@@ -165,7 +165,7 @@ fn execute<'a>(
 
     #[derive(Debug)]
     enum Output {
-        Links(Vec<reqwest::Url>),
+        Links(Vec<Url>),
         Text(Vec<String>),
         Answer,
     }

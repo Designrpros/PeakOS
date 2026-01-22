@@ -1,11 +1,13 @@
 use crate::brain::Error;
 
-use reqwest::IntoUrl;
 use sipper::{sipper, Straw};
+#[cfg(feature = "native")]
 use tokio::fs;
+#[cfg(feature = "native")]
 use tokio::io::{self, AsyncWriteExt};
 
 use std::path::Path;
+#[cfg(not(target_arch = "wasm32"))]
 use std::time::Instant;
 
 #[derive(Debug, Clone, Copy)]
@@ -27,43 +29,45 @@ impl Progress {
 }
 
 pub fn download_file<'a>(
-    url: impl IntoUrl + Send + 'a,
+    url: impl AsRef<str> + Send + 'a,
     destination: impl AsRef<Path> + Send + 'a,
 ) -> impl Straw<(), Progress, Error> + 'a {
-    sipper(move |mut progress| async move {
-        let destination = destination.as_ref();
-        let mut file = io::BufWriter::new(fs::File::create(destination).await?);
+    sipper(
+        move |#[cfg_attr(target_arch = "wasm32", allow(unused_mut))] mut progress| async move {
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let url = url.as_ref();
+                let destination = destination.as_ref();
+                let mut file = io::BufWriter::new(fs::File::create(destination).await?);
 
-        let mut download = reqwest::get(url).await?;
-        let start = Instant::now();
-        let total = download.content_length();
-        let mut downloaded = 0;
+                // For now, we use HttpClient which reads the whole body.
+                // In a future update, we can add streaming to HttpClient.
+                let response = crate::http::HttpClient::get(url).await?;
+                let body = response.bytes();
+                let total = Some(body.len() as u64);
+                let start = Instant::now();
 
-        progress
-            .send(Progress {
-                total,
-                downloaded,
-                speed: 0,
-            })
-            .await;
+                progress
+                    .send(Progress {
+                        total,
+                        downloaded: body.len() as u64,
+                        speed: (body.len() as f32 / start.elapsed().as_secs_f32()) as u64,
+                    })
+                    .await;
 
-        while let Some(chunk) = download.chunk().await? {
-            downloaded += chunk.len() as u64;
-            let speed = (downloaded as f32 / start.elapsed().as_secs_f32()) as u64;
+                file.write_all(body).await?;
+                file.flush().await?;
 
-            progress
-                .send(Progress {
-                    total,
-                    downloaded,
-                    speed,
-                })
-                .await;
+                Ok(())
+            }
 
-            file.write_all(&chunk).await?;
-        }
-
-        file.flush().await?;
-
-        Ok(())
-    })
+            #[cfg(target_arch = "wasm32")]
+            {
+                let _ = (url, destination, progress);
+                Err(Error::WasmError(
+                    "File download not supported on web".to_string(),
+                ))
+            }
+        },
+    )
 }

@@ -50,6 +50,13 @@ impl Context {
 /// A View describes *what* to render, given a Context.
 pub trait View<Message> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer>;
+
+    fn into_box(self) -> Box<dyn View<Message>>
+    where
+        Self: Sized + 'static,
+    {
+        Box::new(self)
+    }
 }
 
 impl<Message> View<Message> for Box<dyn View<Message>> {
@@ -72,4 +79,27 @@ where
         f(context)
     })
     .into()
+}
+
+/// A bridge between the View trait and iced's Element.
+/// Useful for wrapping existing native elements or complex custom logic.
+pub struct ProxyView<Message> {
+    view_fn: Box<dyn Fn(&Context) -> Element<'static, Message, Theme, Renderer>>,
+}
+
+impl<Message> ProxyView<Message> {
+    pub fn new<F>(view_fn: F) -> Self
+    where
+        F: Fn(&Context) -> Element<'static, Message, Theme, Renderer> + 'static,
+    {
+        Self {
+            view_fn: Box::new(view_fn),
+        }
+    }
+}
+
+impl<Message> View<Message> for ProxyView<Message> {
+    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
+        (self.view_fn)(context)
+    }
 }

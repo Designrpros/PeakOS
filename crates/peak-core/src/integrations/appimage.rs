@@ -1,9 +1,12 @@
 // AppImage integration for PeakOS
 // Enables running self-contained Linux applications
 
+#[cfg(not(target_arch = "wasm32"))]
 use std::fs;
+#[cfg(not(target_arch = "wasm32"))]
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
+#[cfg(not(target_arch = "wasm32"))]
 use std::process::{Child, Command};
 
 #[derive(Debug, Clone)]
@@ -27,15 +30,23 @@ impl Default for AppImageManager {
 
 impl AppImageManager {
     pub fn new() -> Self {
-        let install_dir = dirs::home_dir()
-            .unwrap_or_else(|| PathBuf::from("."))
-            .join(".peak")
-            .join("appimages");
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let install_dir = dirs::home_dir()
+                .unwrap_or_else(|| PathBuf::from("."))
+                .join(".peak")
+                .join("appimages");
 
-        // Create directory if it doesn't exist
-        let _ = fs::create_dir_all(&install_dir);
+            // Create directory if it doesn't exist
+            let _ = fs::create_dir_all(&install_dir);
 
-        Self { install_dir }
+            Self { install_dir }
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        Self {
+            install_dir: PathBuf::from("/tmp/appimages"),
+        }
     }
 
     /// Check if a file is an AppImage
@@ -72,15 +83,20 @@ impl AppImageManager {
 
         // Copy to install directory
         let dest_path = self.install_dir.join(&filename);
-        fs::copy(source_path, &dest_path).map_err(|e| format!("Failed to copy AppImage: {}", e))?;
 
-        // Make executable
-        let mut perms = fs::metadata(&dest_path)
-            .map_err(|e| format!("Failed to get permissions: {}", e))?
-            .permissions();
-        perms.set_mode(0o755);
-        fs::set_permissions(&dest_path, perms)
-            .map_err(|e| format!("Failed to set permissions: {}", e))?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            fs::copy(source_path, &dest_path)
+                .map_err(|e| format!("Failed to copy AppImage: {}", e))?;
+
+            // Make executable
+            let mut perms = fs::metadata(&dest_path)
+                .map_err(|e| format!("Failed to get permissions: {}", e))?
+                .permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions(&dest_path, perms)
+                .map_err(|e| format!("Failed to set permissions: {}", e))?;
+        }
 
         Ok(AppImageInfo {
             path: dest_path,
@@ -90,6 +106,7 @@ impl AppImageManager {
     }
 
     /// Run an AppImage
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn run(&self, info: &AppImageInfo) -> Result<Child, String> {
         if !info.path.exists() {
             return Err("AppImage not found".to_string());
@@ -100,10 +117,17 @@ impl AppImageManager {
             .map_err(|e| format!("Failed to launch AppImage: {}", e))
     }
 
+    /// Run an AppImage (WASM Stub)
+    #[cfg(target_arch = "wasm32")]
+    pub fn run(&self, _info: &AppImageInfo) -> Result<(), String> {
+        Err("AppImages are not supported on the web".to_string())
+    }
+
     /// List installed AppImages
     pub fn list_installed(&self) -> Vec<AppImageInfo> {
         let mut appimages = Vec::new();
 
+        #[cfg(not(target_arch = "wasm32"))]
         if let Ok(entries) = fs::read_dir(&self.install_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
@@ -127,7 +151,16 @@ impl AppImageManager {
     /// Remove an installed AppImage
     #[allow(dead_code)]
     pub fn uninstall(&self, info: &AppImageInfo) -> Result<(), String> {
-        fs::remove_file(&info.path).map_err(|e| format!("Failed to remove AppImage: {}", e))
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            fs::remove_file(&info.path).map_err(|e| format!("Failed to remove AppImage: {}", e))
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = info;
+            Ok(())
+        }
     }
 }
 

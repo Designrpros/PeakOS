@@ -1,9 +1,16 @@
 use crate::app_traits::{PeakApp, ShellContext};
 use crate::theme::Theme;
 use iced::{Element, Task};
+#[cfg(feature = "native")]
 use portable_pty::{CommandBuilder, NativePtySystem, PtySize, PtySystem};
+
+#[cfg(feature = "native")]
 use std::io::{Read, Write};
+
+#[cfg(feature = "native")]
 use std::sync::{Arc, Mutex};
+
+#[cfg(feature = "native")]
 use tokio::sync::mpsc;
 
 #[derive(Debug, Clone)]
@@ -17,7 +24,9 @@ pub enum TerminalMessage {
 pub struct TerminalApp {
     pub content: String,
     pub input_buffer: String,
+    #[cfg(feature = "native")]
     writer: Arc<Mutex<Box<dyn Write + Send>>>,
+    #[cfg(feature = "native")]
     receiver: Arc<tokio::sync::Mutex<mpsc::UnboundedReceiver<String>>>,
     pub is_open: bool,
 }
@@ -30,52 +39,62 @@ impl Default for TerminalApp {
 
 impl TerminalApp {
     pub fn new() -> Self {
-        let pty_system = NativePtySystem::default();
-        let pair = pty_system
-            .openpty(PtySize {
-                rows: 24,
-                cols: 80,
-                pixel_width: 0,
-                pixel_height: 0,
-            })
-            .expect("Failed to create PTY");
+        #[cfg(feature = "native")]
+        {
+            let pty_system = NativePtySystem::default();
+            let pair = pty_system
+                .openpty(PtySize {
+                    rows: 24,
+                    cols: 80,
+                    pixel_width: 0,
+                    pixel_height: 0,
+                })
+                .expect("Failed to create PTY");
 
-        let shell = if std::path::Path::new("/bin/bash").exists() {
-            "bash"
-        } else {
-            "sh"
-        };
-        let cmd = CommandBuilder::new(shell);
-        let _child = pair
-            .slave
-            .spawn_command(cmd)
-            .expect("Failed to spawn shell");
+            let shell = if std::path::Path::new("/bin/bash").exists() {
+                "bash"
+            } else {
+                "sh"
+            };
+            let cmd = CommandBuilder::new(shell);
+            let _child = pair
+                .slave
+                .spawn_command(cmd)
+                .expect("Failed to spawn shell");
 
-        let mut reader = pair.master.try_clone_reader().unwrap();
-        let writer = pair.master.take_writer().unwrap();
+            let mut reader = pair.master.try_clone_reader().unwrap();
+            let writer = pair.master.take_writer().unwrap();
 
-        let (tx, rx) = mpsc::unbounded_channel();
+            let (tx, rx) = mpsc::unbounded_channel();
 
-        std::thread::spawn(move || {
-            let mut buf = [0u8; 1024];
-            loop {
-                match reader.read(&mut buf) {
-                    Ok(n) if n > 0 => {
-                        let text = String::from_utf8_lossy(&buf[..n]).to_string();
-                        if tx.send(text).is_err() {
-                            break;
+            std::thread::spawn(move || {
+                let mut buf = [0u8; 1024];
+                loop {
+                    match reader.read(&mut buf) {
+                        Ok(n) if n > 0 => {
+                            let text = String::from_utf8_lossy(&buf[..n]).to_string();
+                            if tx.send(text).is_err() {
+                                break;
+                            }
                         }
+                        _ => break,
                     }
-                    _ => break,
                 }
-            }
-        });
+            });
 
+            Self {
+                content: String::from("PeakOS Terminal v0.1\n> "),
+                input_buffer: String::new(),
+                writer: Arc::new(Mutex::new(writer)),
+                receiver: Arc::new(tokio::sync::Mutex::new(rx)),
+                is_open: false,
+            }
+        }
+
+        #[cfg(target_arch = "wasm32")]
         Self {
-            content: String::from("PeakOS Terminal v0.1\n> "),
+            content: String::from("Terminal is not supported on WASM"),
             input_buffer: String::new(),
-            writer: Arc::new(Mutex::new(writer)),
-            receiver: Arc::new(tokio::sync::Mutex::new(rx)),
             is_open: false,
         }
     }
@@ -107,17 +126,25 @@ impl PeakApp for TerminalApp {
                 self.input_buffer = val;
             }
             TerminalMessage::InputSubmitted => {
-                let cmd = format!("{}\n", self.input_buffer);
-                self.input_buffer.clear();
-                if let Ok(mut writer) = self.writer.lock() {
-                    let _ = write!(writer, "{}", cmd);
+                #[cfg(feature = "native")]
+                {
+                    let cmd = format!("{}\n", self.input_buffer);
+                    if let Ok(mut writer) = self.writer.lock() {
+                        let _ = write!(writer, "{}", cmd);
+                    }
                 }
+                self.input_buffer.clear();
             }
             TerminalMessage::RunCommand(cmd) => {
                 // Execute external command by writing to PTY
-                if let Ok(mut writer) = self.writer.lock() {
-                    let _ = writeln!(writer, "{}", cmd);
+                #[cfg(feature = "native")]
+                {
+                    if let Ok(mut writer) = self.writer.lock() {
+                        let _ = writeln!(writer, "{}", cmd);
+                    }
                 }
+                #[cfg(target_arch = "wasm32")]
+                let _ = cmd;
             }
         }
         Task::none()
@@ -130,15 +157,21 @@ impl PeakApp for TerminalApp {
     }
 
     fn subscription(&self) -> iced::Subscription<Self::Message> {
-        iced::Subscription::run_with_id(
-            "terminal_listener",
-            iced::futures::stream::unfold(self.receiver.clone(), |receiver| async move {
-                let mut rx = receiver.lock().await;
-                rx.recv()
-                    .await
-                    .map(|text| (TerminalMessage::OutputReceived(text), receiver.clone()))
-            }),
-        )
+        #[cfg(feature = "native")]
+        {
+            iced::Subscription::run_with_id(
+                "terminal_listener",
+                iced::futures::stream::unfold(self.receiver.clone(), |receiver| async move {
+                    let mut rx = receiver.lock().await;
+                    rx.recv()
+                        .await
+                        .map(|text| (TerminalMessage::OutputReceived(text), receiver.clone()))
+                }),
+            )
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        iced::Subscription::none()
     }
 }
 

@@ -16,7 +16,7 @@ pub enum DesktopMessage {
 pub struct Desktop {
     pub items: Vec<DesktopItem>,
     pub selected: Vec<PathBuf>,
-    pub last_click: Option<(PathBuf, std::time::Instant)>,
+    pub last_click: Option<(PathBuf, instant::Instant)>,
     pub selection_rect: Option<iced::Rectangle>,
     pub drag_start: Option<Point>,
 }
@@ -42,35 +42,38 @@ impl Desktop {
     }
 
     pub fn refresh(&mut self) {
-        let desktop_path = dirs::home_dir()
-            .map(|h| h.join("Desktop"))
-            .unwrap_or_else(|| PathBuf::from("/Users/vegarberentsen/Desktop"));
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let desktop_path = dirs::home_dir()
+                .map(|h| h.join("Desktop"))
+                .unwrap_or_else(|| PathBuf::from("/Users/vegarberentsen/Desktop"));
 
-        self.items.clear();
+            self.items.clear();
 
-        if let Ok(entries) = std::fs::read_dir(&desktop_path) {
-            let mut x = 20.0;
-            let mut y = 50.0; // Start below menubar (32px)
-            let spacing = 100.0;
+            if let Ok(entries) = std::fs::read_dir(&desktop_path) {
+                let mut x = 20.0;
+                let mut y = 50.0; // Start below menubar (32px)
+                let spacing = 100.0;
 
-            for entry in entries.flatten() {
-                let path = entry.path();
-                let name = path
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_string();
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    let name = path
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        .to_string();
 
-                self.items.push(DesktopItem {
-                    path,
-                    name,
-                    position: Point::new(x, y),
-                });
+                    self.items.push(DesktopItem {
+                        path,
+                        name,
+                        position: Point::new(x, y),
+                    });
 
-                y += spacing;
-                if y > 700.0 {
-                    y = 50.0;
-                    x += spacing;
+                    y += spacing;
+                    if y > 700.0 {
+                        y = 50.0;
+                        x += spacing;
+                    }
                 }
             }
         }
@@ -164,7 +167,7 @@ impl Desktop {
     pub fn update(&mut self, message: DesktopMessage) -> Option<DesktopMessage> {
         match message {
             DesktopMessage::Select(path, is_multi) => {
-                let now = std::time::Instant::now();
+                let now = instant::Instant::now();
                 if let Some((last_path, last_time)) = &self.last_click {
                     if last_path == &path
                         && now.duration_since(*last_time) < std::time::Duration::from_millis(500)

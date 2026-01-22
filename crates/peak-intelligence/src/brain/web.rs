@@ -2,7 +2,6 @@ use crate::brain::assistant::Message;
 use crate::brain::{Assistant, Error, Url};
 
 use sipper::{sipper, Sipper, Straw};
-use std::sync::LazyLock;
 
 pub struct Search {
     pub results: Vec<Url>,
@@ -23,14 +22,22 @@ impl Summary {
 pub async fn search(query: &str) -> Result<Search, Error> {
     log::info!("Searching on DuckDuckGo: {query}");
 
-    let search_results = CLIENT
-        .get("https://html.duckduckgo.com/html/")
-        .query(&[("q", query)])
-        .send()
-        .await?
-        .error_for_status()?
+    let mut headers = std::collections::HashMap::new();
+    headers.insert(
+        "User-Agent".to_string(),
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36".to_string(),
+    );
+    headers.insert("Accept".to_string(), "*/*".to_string());
+
+    let url = format!(
+        "https://html.duckduckgo.com/html/?q={}",
+        urlencoding::encode(query)
+    );
+
+    let response = crate::http::HttpClient::get_with_headers(&url, headers).await?;
+    let search_results = response
         .text()
-        .await?;
+        .map_err(|e| Error::WasmError(format!("Invalid text response: {}", e)))?;
 
     let html = scraper::Html::parse_document(&search_results);
     let selector = scraper::Selector::parse(".result__a").unwrap();
@@ -44,7 +51,13 @@ pub async fn search(query: &str) -> Result<Search, Error> {
                 return None;
             }
 
-            reqwest::Url::parse(&url::form_urlencoded::parse(encoded.as_bytes()).next()?.1).ok()
+            let query_pairs = url::form_urlencoded::parse(encoded.as_bytes());
+            for (_key, value) in query_pairs {
+                if let Ok(url) = url::Url::parse(&value) {
+                    return Some(url);
+                }
+            }
+            None
         })
         .take(5)
         .collect();
@@ -94,13 +107,16 @@ async fn scrape(url: Url) -> Result<String, Error> {
 
     let candidates = scraper::Selector::parse("p, a").unwrap();
 
-    let html = CLIENT
-        .get(url.clone())
-        .send()
-        .await?
-        .error_for_status()?
+    let mut headers = std::collections::HashMap::new();
+    headers.insert(
+        "User-Agent".to_string(),
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36".to_string(),
+    );
+
+    let response = crate::http::HttpClient::get_with_headers(url.as_str(), headers).await?;
+    let html = response
         .text()
-        .await?;
+        .map_err(|e| Error::WasmError(format!("Invalid text response: {}", e)))?;
 
     log::info!("-- HTML retrieved ({} chars)", html.len());
     log::trace!("{html}");
@@ -118,26 +134,3 @@ async fn scrape(url: Url) -> Result<String, Error> {
 
     Ok(lines.join("\n"))
 }
-
-static CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
-    let headers = reqwest::header::HeaderMap::from_iter([
-        (
-            reqwest::header::USER_AGENT,
-            reqwest::header::HeaderValue::from_static(
-                "Mozilla/5.0 (X11; Linux x86_64) \
-                    AppleWebKit/537.36 (KHTML, like Gecko) \
-                    Chrome/132.0.0.0 Safari/537.36",
-            ),
-        ),
-        (
-            reqwest::header::ACCEPT,
-            reqwest::header::HeaderValue::from_static("*/*"),
-        ),
-    ]);
-
-    reqwest::Client::builder()
-        .use_rustls_tls()
-        .default_headers(headers)
-        .build()
-        .expect("Build reqwest client")
-});

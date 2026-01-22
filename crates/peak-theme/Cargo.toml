@@ -6,4 +6,9 @@ edition = "2021"
 [dependencies]
 iced = { version = "0.13", features = ["advanced"] }
 serde = { version = "1.0", features = ["derive"] }
-peak-core = { path = "../peak-core" }
+peak-core = { path = "../peak-core", default-features = false }
+
+[features]
+default = ["native"]
+native = ["peak-core/native"]
+wasm = ["peak-core/wasm"]

@@ -17,12 +17,13 @@ mod request;
 
 use std::io;
 use std::sync::Arc;
+#[cfg(not(target_arch = "wasm32"))]
 use tokio::task;
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum Error {
     #[error("request failed: {0}")]
-    RequestFailed(Arc<reqwest::Error>),
+    RequestFailed(String),
     #[error("io operation failed: {0}")]
     IOFailed(Arc<io::Error>),
     #[error("docker operation failed: {0}")]
@@ -38,15 +39,25 @@ pub enum Error {
     ImpossibleToml(Arc<toml::ser::Error>),
     #[error("deserialization failed")]
     DecoderFailed(Arc<decoder::Error>),
+    #[cfg(feature = "native")]
     #[error("task join failed: {0}")]
     JoinFailed(Arc<task::JoinError>),
     #[error("no suitable executor was found: neither llama-server nor docker are installed")]
     NoExecutorAvailable,
+    #[error("operation not supported on WASM: {0}")]
+    WasmError(String),
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl From<reqwest::Error> for Error {
     fn from(error: reqwest::Error) -> Self {
-        Self::RequestFailed(Arc::new(error))
+        Self::RequestFailed(error.to_string())
+    }
+}
+
+impl From<crate::http::HttpError> for Error {
+    fn from(error: crate::http::HttpError) -> Self {
+        Self::RequestFailed(error.to_string())
     }
 }
 
@@ -80,6 +91,7 @@ impl From<decoder::Error> for Error {
     }
 }
 
+#[cfg(feature = "native")]
 impl From<task::JoinError> for Error {
     fn from(error: task::JoinError) -> Self {
         Self::JoinFailed(Arc::new(error))

@@ -2,6 +2,7 @@
 
 use iced::widget::{container, scrollable, text, text_input, Column};
 use iced::{Background, Color, Element, Length, Task};
+use peak_core::app_traits::{PeakApp, ShellContext};
 pub use peak_core::apps::terminal::{TerminalApp, TerminalMessage};
 use peak_core::theme::Theme;
 
@@ -87,7 +88,7 @@ impl DesktopTerminalApp {
     }
 }
 
-use peak_core::app_traits::{PeakApp, ShellContext};
+use peak_ui::prelude::*;
 
 impl PeakApp for DesktopTerminalApp {
     type Message = TerminalMessage;
@@ -105,7 +106,28 @@ impl PeakApp for DesktopTerminalApp {
     }
 
     fn view(&self, theme: &Theme) -> Element<'_, Self::Message> {
-        TerminalDesktopView::view(&self.0, theme)
+        let tone = match theme {
+            Theme::Dark => peak_theme::ThemeTone::Dark,
+            Theme::Light => peak_theme::ThemeTone::Light,
+            _ => peak_theme::ThemeTone::Dark,
+        };
+
+        let mode = peak_core::registry::ShellMode::Desktop;
+        let tokens = peak_theme::ThemeTokens::get(mode, tone);
+
+        let content = self.0.content.clone();
+        let input_buffer = self.0.input_buffer.clone();
+
+        responsive(mode, tokens, move |ctx| {
+            let input = TextInput::new(input_buffer.clone(), TerminalMessage::InputChanged)
+                .placeholder("Type a command...")
+                .on_submit(TerminalMessage::InputSubmitted)
+                .font(iced::Font::MONOSPACE);
+
+            let console = Console::new(content.clone()).input(input);
+
+            console.view(&ctx)
+        })
     }
 
     fn subscription(&self) -> iced::Subscription<Self::Message> {

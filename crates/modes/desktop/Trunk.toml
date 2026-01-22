@@ -1,0 +1,3 @@
+
+[build]
+cargo_args = ["--no-default-features", "--features", "wasm"]

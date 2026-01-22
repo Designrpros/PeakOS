@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+#[cfg(not(target_arch = "wasm32"))]
 use std::fs;
 use std::path::PathBuf;
 
@@ -26,26 +27,44 @@ impl Default for UserProfile {
 }
 
 pub fn get_config_dir() -> PathBuf {
-    let mut path = dirs::config_dir().unwrap_or(PathBuf::from("."));
-    path.push("peakos");
-    fs::create_dir_all(&path).ok();
-    path
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let mut path = dirs::config_dir().unwrap_or(PathBuf::from("."));
+        path.push("peakos");
+        fs::create_dir_all(&path).ok();
+        path
+    }
+    #[cfg(target_arch = "wasm32")]
+    PathBuf::from("/")
 }
 
 pub fn load_user() -> Option<UserProfile> {
-    let path = get_config_dir().join("user.json");
-    if let Ok(content) = fs::read_to_string(path) {
-        serde_json::from_str(&content).ok()
-    } else {
-        None
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let path = get_config_dir().join("user.json");
+        if let Ok(content) = fs::read_to_string(path) {
+            serde_json::from_str(&content).ok()
+        } else {
+            None
+        }
     }
+    #[cfg(target_arch = "wasm32")]
+    None
 }
 
 pub fn save_user(profile: &UserProfile) -> bool {
-    let path = get_config_dir().join("user.json");
-    if let Ok(content) = serde_json::to_string_pretty(profile) {
-        fs::write(path, content).is_ok()
-    } else {
-        false
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let path = get_config_dir().join("user.json");
+        if let Ok(content) = serde_json::to_string_pretty(profile) {
+            fs::write(path, content).is_ok()
+        } else {
+            false
+        }
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = profile;
+        true
     }
 }

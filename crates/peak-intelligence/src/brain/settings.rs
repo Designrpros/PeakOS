@@ -3,6 +3,7 @@ use crate::brain::model;
 use crate::brain::Error;
 
 use decoder::{decode, encode, Value};
+#[cfg(feature = "native")]
 use tokio::fs;
 
 use std::path::PathBuf;
@@ -15,24 +16,33 @@ pub struct Settings {
 
 impl Settings {
     pub fn fetch() -> Result<Self, Error> {
-        use std::fs;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            use std::fs;
 
-        let config = fs::read_to_string(Self::path())?;
-        let config: Value = toml::from_str(&config)?;
+            let config = fs::read_to_string(Self::path())?;
+            let config: Value = toml::from_str(&config)?;
 
-        Ok(Self::decode(config)?)
+            Ok(Self::decode(config)?)
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        Ok(Self::default())
     }
 
     pub async fn save(self) -> Result<(), Error> {
-        let toml = toml::to_string_pretty(&self.encode())?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let toml = toml::to_string_pretty(&self.encode())?;
 
-        let path = Self::path();
+            let path = Self::path();
 
-        if let Some(directory) = path.parent() {
-            fs::create_dir_all(directory).await?;
+            if let Some(directory) = path.parent() {
+                fs::create_dir_all(directory).await?;
+            }
+
+            fs::write(path, toml).await?;
         }
-
-        fs::write(path, toml).await?;
 
         Ok(())
     }

@@ -22,8 +22,14 @@ impl Default for ExplorerApp {
 
 impl ExplorerApp {
     pub fn new() -> Self {
+        #[cfg(not(target_arch = "wasm32"))]
+        let path = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/"));
+
+        #[cfg(target_arch = "wasm32")]
+        let path = PathBuf::from("/");
+
         Self {
-            current_path: dirs::home_dir().unwrap_or_else(|| PathBuf::from("/")),
+            current_path: path,
             history: Vec::new(),
         }
     }
@@ -44,8 +50,17 @@ impl ExplorerApp {
 
         let mut items = column![].spacing(2);
 
-        if let Ok(entries) = std::fs::read_dir(&self.current_path) {
-            for entry in entries.flatten() {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let mut entries_found = Vec::new();
+
+            if let Ok(entries) = std::fs::read_dir(&self.current_path) {
+                for entry in entries.flatten() {
+                    entries_found.push(entry);
+                }
+            }
+
+            for entry in entries_found {
                 let name = entry.file_name().to_string_lossy().to_string();
                 let path = entry.path();
 
@@ -78,33 +93,45 @@ impl ExplorerApp {
             }
         }
 
-        let mut sidebar = column![].spacing(8).width(Length::Fixed(120.0));
-        let shortcuts = [
-            ("Home", dirs::home_dir()),
-            ("Desktop", dirs::desktop_dir()),
-            ("Documents", dirs::document_dir()),
-            ("Downloads", dirs::download_dir()),
-        ];
+        #[cfg(target_arch = "wasm32")]
+        {
+            items = items.push(
+                text("File system not available on web")
+                    .size(14)
+                    .color(text_color),
+            );
+        }
 
-        for (name, path_opt) in shortcuts {
-            if let Some(path) = path_opt {
-                sidebar = sidebar.push(
-                    button(text(name).size(12))
-                        .on_press(ExplorerMessage::Navigate(path.clone()))
-                        .style(move |_, status| button::Style {
-                            background: if self.current_path == path {
-                                Some(iced::Color::from_rgba(0.5, 0.5, 0.5, 0.2).into())
-                            } else if status == iced::widget::button::Status::Hovered {
-                                Some(iced::Color::from_rgba(0.5, 0.5, 0.5, 0.1).into())
-                            } else {
-                                None
-                            },
-                            text_color,
-                            ..Default::default()
-                        })
-                        .padding(4)
-                        .width(Length::Fill),
-                );
+        let mut sidebar = column![].spacing(8).width(Length::Fixed(120.0));
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let shortcuts = [
+                ("Home", dirs::home_dir()),
+                ("Desktop", dirs::desktop_dir()),
+                ("Documents", dirs::document_dir()),
+                ("Downloads", dirs::download_dir()),
+            ];
+
+            for (name, path_opt) in shortcuts {
+                if let Some(path) = path_opt {
+                    sidebar = sidebar.push(
+                        button(text(name).size(12))
+                            .on_press(ExplorerMessage::Navigate(path.clone()))
+                            .style(move |_, status| button::Style {
+                                background: if self.current_path == path {
+                                    Some(iced::Color::from_rgba(0.5, 0.5, 0.5, 0.2).into())
+                                } else if status == iced::widget::button::Status::Hovered {
+                                    Some(iced::Color::from_rgba(0.5, 0.5, 0.5, 0.1).into())
+                                } else {
+                                    None
+                                },
+                                text_color,
+                                ..Default::default()
+                            })
+                            .padding(4)
+                            .width(Length::Fill),
+                    );
+                }
             }
         }
 

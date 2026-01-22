@@ -5,6 +5,7 @@ use crate::brain::Error;
 use decoder::{decode, encode, Value};
 use serde::{Deserialize, Serialize};
 use sipper::{sipper, Sipper, Straw};
+#[cfg(feature = "native")]
 use tokio::fs;
 
 use std::collections::BTreeMap;
@@ -28,14 +29,10 @@ impl Model {
     }
 
     pub async fn search(query: String) -> Result<Vec<Self>, Error> {
-        let client = reqwest::Client::new();
-
-        let request = client.get(format!("{API_URL}/models")).query(&[
-            ("search", query.as_ref()),
-            ("filter", "gguf"),
-            ("limit", "100"),
-            ("full", "true"),
-        ]);
+        let url = format!(
+            "{API_URL}/models?search={query}&filter=gguf&limit=100&full=true",
+            query = urlencoding::encode(&query)
+        );
 
         #[derive(Deserialize)]
         struct Response {
@@ -54,8 +51,8 @@ impl Model {
             Other(String),
         }
 
-        let response = request.send().await?;
-        let mut models: Vec<Response> = response.json().await?;
+        let response = crate::http::HttpClient::get(&url).await?;
+        let mut models: Vec<Response> = response.json()?;
 
         models.retain(|model| model.gated == Gated::Bool(false));
 
@@ -123,10 +120,9 @@ impl Details {
             total: u64,
         }
 
-        let client = reqwest::Client::new();
-        let request = client.get(format!("{}/models/{}", API_URL, id.0));
-
-        let response: Response = request.send().await?.error_for_status()?.json().await?;
+        let url = format!("{}/models/{}", API_URL, id.0);
+        let response = crate::http::HttpClient::get(&url).await?;
+        let response: Response = response.json()?;
 
         Ok(Self {
             last_modified: response.last_modified,
@@ -191,8 +187,8 @@ pub struct File {
 
 impl File {
     pub async fn list(id: Id) -> Result<Files, Error> {
-        let client = reqwest::Client::new();
-        let request = client.get(format!("{}/models/{}/tree/main", API_URL, id.0));
+        let url = format!("{}/models/{}/tree/main", API_URL, id.0);
+        let response = crate::http::HttpClient::get(&url).await?;
 
         #[derive(Debug, Deserialize)]
         struct Entry {
@@ -201,7 +197,7 @@ impl File {
             size: u64,
         }
 
-        let entries: Vec<Entry> = request.send().await?.error_for_status()?.json().await?;
+        let entries: Vec<Entry> = response.json()?;
         let mut files: BTreeMap<Bits, Vec<File>> = BTreeMap::new();
 
         for entry in entries {
@@ -240,44 +236,54 @@ impl File {
 
     pub fn download<'a>(
         &'a self,
-        directory: &'a Directory,
+        #[cfg_attr(target_arch = "wasm32", allow(unused_variables))] directory: &'a Directory,
     ) -> impl Straw<PathBuf, request::Progress, Error> + 'a {
-        sipper(async move |sender| {
-            let old_path = Directory::old().0.join(&self.name);
-            let directory = directory.0.join(&self.model.0);
-            let model_path = directory.join(&self.name);
+        sipper(
+            async move |#[cfg_attr(target_arch = "wasm32", allow(unused_variables))] sender| {
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    let old_path = Directory::old().0.join(&self.name);
+                    let directory = directory.0.join(&self.model.0);
+                    let model_path = directory.join(&self.name);
 
-            fs::create_dir_all(&directory).await?;
+                    fs::create_dir_all(&directory).await?;
 
-            if fs::try_exists(&model_path).await? {
-                let file_metadata = fs::metadata(&model_path).await?;
+                    if fs::try_exists(&model_path).await? {
+                        let file_metadata = fs::metadata(&model_path).await?;
 
-                if self.size.is_none_or(|size| size == file_metadata.len()) {
-                    return Ok(model_path);
+                        if self.size.is_none_or(|size| size == file_metadata.len()) {
+                            return Ok(model_path);
+                        }
+
+                        fs::remove_file(&model_path).await?;
+                    }
+
+                    if fs::copy(&old_path, &model_path).await.is_ok() {
+                        let _ = fs::remove_file(old_path).await;
+                        return Ok(model_path);
+                    }
+
+                    let url = format!(
+                        "{}/{id}/resolve/main/{filename}?download=true",
+                        HF_URL,
+                        id = self.model.0,
+                        filename = self.name
+                    );
+
+                    let temp_path = model_path.with_extension("tmp");
+
+                    request::download_file(url, &temp_path).run(sender).await?;
+                    fs::rename(temp_path, &model_path).await?;
+
+                    Ok(model_path)
                 }
 
-                fs::remove_file(&model_path).await?;
-            }
-
-            if fs::copy(&old_path, &model_path).await.is_ok() {
-                let _ = fs::remove_file(old_path).await;
-                return Ok(model_path);
-            }
-
-            let url = format!(
-                "{}/{id}/resolve/main/{filename}?download=true",
-                HF_URL,
-                id = self.model.0,
-                filename = self.name
-            );
-
-            let temp_path = model_path.with_extension("tmp");
-
-            request::download_file(url, &temp_path).run(sender).await?;
-            fs::rename(temp_path, &model_path).await?;
-
-            Ok(model_path)
-        })
+                #[cfg(target_arch = "wasm32")]
+                Err(Error::WasmError(
+                    "Model downloads are not supported on WASM".into(),
+                ))
+            },
+        )
     }
 
     pub fn decode(value: decoder::Value) -> decoder::Result<Self> {
@@ -355,15 +361,13 @@ pub struct Readme {
 
 impl Readme {
     pub async fn fetch(id: Id) -> Result<Self, Error> {
-        let response = reqwest::get(format!(
-            "{url}/{id}/raw/main/README.md",
-            url = HF_URL,
-            id = id.0
-        ))
-        .await?;
+        let url = format!("{url}/{id}/raw/main/README.md", url = HF_URL, id = id.0);
+        let response = crate::http::HttpClient::get(&url).await?;
 
         Ok(Self {
-            markdown: response.text().await?,
+            markdown: response
+                .text()
+                .map_err(|e| Error::WasmError(format!("Invalid text response: {}", e)))?,
         })
     }
 }
@@ -376,54 +380,63 @@ pub struct Library {
 
 impl Library {
     pub async fn scan(directory: impl AsRef<Path>) -> Result<Self, Error> {
-        let mut files = Vec::new();
-        let directory = directory.as_ref();
-        let mut list = fs::read_dir(directory).await?;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let mut files = Vec::new();
+            let directory = directory.as_ref();
+            let mut list = fs::read_dir(directory).await?;
 
-        while let Some(author) = list.next_entry().await? {
-            if !author.file_type().await?.is_dir() {
-                continue;
-            }
-
-            let mut directory = fs::read_dir(author.path()).await?;
-
-            while let Some(model) = directory.next_entry().await? {
-                if !model.file_type().await?.is_dir() {
+            while let Some(author) = list.next_entry().await? {
+                if !author.file_type().await?.is_dir() {
                     continue;
                 }
 
-                let mut directory = fs::read_dir(model.path()).await?;
+                let mut directory = fs::read_dir(author.path()).await?;
 
-                while let Some(file) = directory.next_entry().await? {
-                    if !file.file_type().await?.is_file()
-                        || file.path().extension().unwrap_or_default() != "gguf"
-                    {
+                while let Some(model) = directory.next_entry().await? {
+                    if !model.file_type().await?.is_dir() {
                         continue;
                     }
 
-                    let name = file.file_name().display().to_string();
+                    let mut directory = fs::read_dir(model.path()).await?;
 
-                    // If it's a sharded model, only register the first shard as the model entry
-                    if name.contains("-of-") && !name.contains("-00001-of-") {
-                        continue;
+                    while let Some(file) = directory.next_entry().await? {
+                        if !file.file_type().await?.is_file()
+                            || file.path().extension().unwrap_or_default() != "gguf"
+                        {
+                            continue;
+                        }
+
+                        let name = file.file_name().display().to_string();
+
+                        // If it's a sharded model, only register the first shard as the model entry
+                        if name.contains("-of-") && !name.contains("-00001-of-") {
+                            continue;
+                        }
+
+                        files.push(File {
+                            model: Id(format!(
+                                "{}/{}",
+                                author.file_name().display(),
+                                model.file_name().display(),
+                            )),
+                            name,
+                            size: Some(Size(file.metadata().await?.len())),
+                        });
                     }
-
-                    files.push(File {
-                        model: Id(format!(
-                            "{}/{}",
-                            author.file_name().display(),
-                            model.file_name().display(),
-                        )),
-                        name,
-                        size: Some(Size(file.metadata().await?.len())),
-                    });
                 }
             }
+
+            Ok(Self {
+                directory: Directory(directory.to_path_buf()),
+                files,
+            })
         }
 
+        #[cfg(target_arch = "wasm32")]
         Ok(Self {
-            directory: Directory(directory.to_path_buf()),
-            files,
+            directory: Directory(directory.as_ref().to_path_buf()),
+            files: Vec::new(),
         })
     }
 

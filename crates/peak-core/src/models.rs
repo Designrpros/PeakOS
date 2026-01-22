@@ -54,9 +54,11 @@ impl MediaItem {
         }
 
         // 2. Scan Apps (Stremio/VLC)
+        #[cfg(not(target_arch = "wasm32"))]
         library.extend(crate::systems::scanner::AppScanner::scan());
 
         // 3. Scan Music
+        #[cfg(not(target_arch = "wasm32"))]
         library.extend(crate::systems::scanner::MusicScanner::scan());
 
         // If empty, maybe fallback to mock? Or just return empty.
