@@ -45,7 +45,7 @@ impl Context {
 }
 
 /// A Backend defines the output type and composition logic for a View.
-pub trait Backend: Sized + 'static {
+pub trait Backend: Sized + Clone + 'static {
     type AnyView<Message: 'static>: 'static;
 
     fn vstack<Message: 'static>(
@@ -111,6 +111,46 @@ pub trait Backend: Sized + 'static {
         icon: String,
         is_selected: bool,
         context: &Context,
+    ) -> Self::AnyView<Message>;
+
+    fn text_input<Message: Clone + 'static>(
+        value: String,
+        placeholder: String,
+        on_change: impl Fn(String) -> Message + 'static,
+        context: &Context,
+    ) -> Self::AnyView<Message>;
+
+    fn slider<Message: Clone + 'static>(
+        range: std::ops::RangeInclusive<f32>,
+        value: f32,
+        on_change: impl Fn(f32) -> Message + 'static,
+        context: &Context,
+    ) -> Self::AnyView<Message>;
+
+    fn toggle<Message: Clone + 'static>(
+        label: String,
+        is_active: bool,
+        on_toggle: impl Fn(bool) -> Message + 'static,
+        context: &Context,
+    ) -> Self::AnyView<Message>;
+
+    fn zstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        width: Length,
+        height: Length,
+    ) -> Self::AnyView<Message>;
+
+    fn grid<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        columns: usize,
+        spacing: f32,
+    ) -> Self::AnyView<Message>;
+
+    fn image<Message: 'static>(
+        path: std::path::PathBuf,
+        width: Length,
+        height: Length,
+        radius: f32,
     ) -> Self::AnyView<Message>;
 }
 
@@ -224,8 +264,19 @@ impl Backend for IcedBackend {
             (color.b * 255.0) as u8
         );
 
-        let handle = peak_core::icons::get_ui_icon(&name, &hex_color);
+        // Try embedded icons first
+        if let Some(svg_data) = peak_icons::get_icon(&name) {
+            let colored_svg = svg_data.replace("currentColor", &hex_color);
+            return iced::widget::svg(iced::widget::svg::Handle::from_memory(
+                colored_svg.into_bytes(),
+            ))
+            .width(size)
+            .height(size)
+            .into();
+        }
 
+        // Fallback to core (file-based or category logic)
+        let handle = peak_core::icons::get_ui_icon(&name, &hex_color);
         iced::widget::svg(handle).width(size).height(size).into()
     }
 
@@ -316,6 +367,85 @@ impl Backend for IcedBackend {
         } else {
             content.view(context)
         }
+    }
+
+    fn text_input<Message: Clone + 'static>(
+        value: String,
+        placeholder: String,
+        on_change: impl Fn(String) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        iced::widget::text_input(&placeholder, &value)
+            .on_input(on_change)
+            .padding(10)
+            .into()
+    }
+
+    fn slider<Message: Clone + 'static>(
+        range: std::ops::RangeInclusive<f32>,
+        value: f32,
+        on_change: impl Fn(f32) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        iced::widget::slider(range, value, on_change).into()
+    }
+
+    fn toggle<Message: Clone + 'static>(
+        label: String,
+        is_active: bool,
+        on_toggle: impl Fn(bool) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        iced::widget::toggler(is_active)
+            .label(label)
+            .on_toggle(on_toggle)
+            .into()
+    }
+
+    fn zstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        width: Length,
+        height: Length,
+    ) -> Self::AnyView<Message> {
+        let s = iced::widget::stack(children).width(width).height(height);
+        s.into()
+    }
+
+    fn grid<Message: 'static>(
+        mut children: Vec<Self::AnyView<Message>>,
+        columns: usize,
+        spacing: f32,
+    ) -> Self::AnyView<Message> {
+        let mut rows = Vec::new();
+        while !children.is_empty() {
+            let chunk: Vec<_> = children
+                .drain(0..std::cmp::min(columns, children.len()))
+                .collect();
+            rows.push(iced::widget::row(chunk).spacing(spacing).into());
+        }
+        iced::widget::column(rows).spacing(spacing).into()
+    }
+
+    fn image<Message: 'static>(
+        path: std::path::PathBuf,
+        width: Length,
+        height: Length,
+        radius: f32,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::container;
+        let img = iced::widget::image(path).width(width).height(height);
+
+        container(img)
+            .width(width)
+            .height(height)
+            .style(move |_| container::Style {
+                border: iced::Border {
+                    radius: radius.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .into()
     }
 }
 
@@ -436,11 +566,74 @@ impl Backend for TermBackend {
             format!("  {}", title)
         }
     }
+
+    fn text_input<Message: Clone + 'static>(
+        value: String,
+        placeholder: String,
+        _on_change: impl Fn(String) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        format!("[ {} ] (Placeholder: {})", value, placeholder)
+    }
+
+    fn slider<Message: Clone + 'static>(
+        _range: std::ops::RangeInclusive<f32>,
+        value: f32,
+        _on_change: impl Fn(f32) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        format!("[---X---] {:.2}", value)
+    }
+
+    fn toggle<Message: Clone + 'static>(
+        label: String,
+        is_active: bool,
+        _on_toggle: impl Fn(bool) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        format!("{} [{}]", label, if is_active { "ON" } else { "OFF" })
+    }
+
+    fn zstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _width: Length,
+        _height: Length,
+    ) -> Self::AnyView<Message> {
+        children.join("\n")
+    }
+
+    fn grid<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _columns: usize,
+        _spacing: f32,
+    ) -> Self::AnyView<Message> {
+        children.join(" | ")
+    }
+
+    fn image<Message: 'static>(
+        path: std::path::PathBuf,
+        _width: Length,
+        _height: Length,
+        _radius: f32,
+    ) -> Self::AnyView<Message> {
+        format!("[IMG: {:?}]", path)
+    }
 }
 
 /// A View describes *what* to render, given a Context.
 pub trait View<Message: 'static, B: Backend = IcedBackend> {
     fn view(&self, context: &Context) -> B::AnyView<Message>;
+
+    /// Generates a semantic description of the view for AI agents.
+    fn describe(&self, _context: &Context) -> SemanticNode {
+        // Default implementation for basic views
+        SemanticNode {
+            role: "view".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
 
     fn into_box(self) -> Box<dyn View<Message, B>>
     where
@@ -453,6 +646,242 @@ pub trait View<Message: 'static, B: Backend = IcedBackend> {
 impl<Message: 'static, B: Backend> View<Message, B> for Box<dyn View<Message, B>> {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
         self.as_ref().view(context)
+    }
+
+    fn describe(&self, context: &Context) -> SemanticNode {
+        self.as_ref().describe(context)
+    }
+}
+
+/// A semantic representation of a UI component for AI agents.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct SemanticNode {
+    pub role: String,
+    pub label: Option<String>,
+    pub content: Option<String>,
+    pub children: Vec<SemanticNode>,
+}
+
+/// An AI-focused backend that renders UIs into semantic data.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct AIBackend;
+
+impl Backend for AIBackend {
+    type AnyView<Message: 'static> = SemanticNode;
+
+    fn vstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _spacing: f32,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _align_x: Alignment,
+        _scale: f32,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "vstack".to_string(),
+            label: None,
+            content: None,
+            children,
+        }
+    }
+
+    fn hstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _spacing: f32,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _align_y: Alignment,
+        _scale: f32,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "hstack".to_string(),
+            label: None,
+            content: None,
+            children,
+        }
+    }
+
+    fn text<Message: 'static>(
+        content: String,
+        _size: f32,
+        _color: Option<Color>,
+        _is_bold: bool,
+        _is_dim: bool,
+        _intent: Option<Intent>,
+        _font: Option<iced::Font>,
+        _alignment: Alignment,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "text".to_string(),
+            label: None,
+            content: Some(content),
+            children: Vec::new(),
+        }
+    }
+
+    fn icon<Message: 'static>(
+        name: String,
+        _size: f32,
+        _color: Option<Color>,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "icon".to_string(),
+            label: Some(name),
+            content: None,
+            children: Vec::new(),
+        }
+    }
+
+    fn divider<Message: 'static>(_context: &Context) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "divider".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
+
+    fn space<Message: 'static>(_width: Length, _height: Length) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "space".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
+
+    fn rectangle<Message: 'static>(
+        _width: Length,
+        _height: Length,
+        _color: Option<Color>,
+        _radius: f32,
+        _border_width: f32,
+        _border_color: Option<Color>,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "rectangle".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
+
+    fn button<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        _on_press: Option<Message>,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "button".to_string(),
+            label: None,
+            content: None,
+            children: vec![content],
+        }
+    }
+
+    fn sidebar_item<Message: 'static>(
+        title: String,
+        icon: String,
+        is_selected: bool,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "sidebar_item".to_string(),
+            label: Some(title),
+            content: Some(icon),
+            children: vec![SemanticNode {
+                role: "state".to_string(),
+                label: Some("selected".to_string()),
+                content: Some(is_selected.to_string()),
+                children: Vec::new(),
+            }],
+        }
+    }
+
+    fn text_input<Message: Clone + 'static>(
+        value: String,
+        placeholder: String,
+        _on_change: impl Fn(String) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "text_input".to_string(),
+            label: Some(placeholder),
+            content: Some(value),
+            children: Vec::new(),
+        }
+    }
+
+    fn slider<Message: Clone + 'static>(
+        _range: std::ops::RangeInclusive<f32>,
+        value: f32,
+        _on_change: impl Fn(f32) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "slider".to_string(),
+            label: None,
+            content: Some(value.to_string()),
+            children: Vec::new(),
+        }
+    }
+
+    fn toggle<Message: Clone + 'static>(
+        label: String,
+        is_active: bool,
+        _on_toggle: impl Fn(bool) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "toggle".to_string(),
+            label: Some(label),
+            content: Some(is_active.to_string()),
+            children: Vec::new(),
+        }
+    }
+
+    fn zstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _width: Length,
+        _height: Length,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "zstack".to_string(),
+            label: None,
+            content: None,
+            children,
+        }
+    }
+
+    fn grid<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        columns: usize,
+        _spacing: f32,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "grid".to_string(),
+            label: Some(format!("columns: {}", columns)),
+            content: None,
+            children,
+        }
+    }
+
+    fn image<Message: 'static>(
+        path: std::path::PathBuf,
+        _width: Length,
+        _height: Length,
+        _radius: f32,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "image".to_string(),
+            label: Some(path.to_string_lossy().into_owned()),
+            content: None,
+            children: Vec::new(),
+        }
     }
 }
 

@@ -1,7 +1,7 @@
 use iced::Size;
 use peak_core::registry::ShellMode;
 use peak_theme::ThemeTokens;
-use peak_ui::catalog::{Catalog, CatalogItem, CatalogMessage};
+use peak_ui::catalog::Catalog;
 use peak_ui::core::{Context, TermBackend};
 use peak_ui::prelude::*;
 

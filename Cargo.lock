@@ -5222,6 +5222,7 @@ dependencies = [
  "js-sys",
  "lazy_static",
  "opener",
+ "peak-icons",
  "peak-intelligence",
  "portable-pty",
  "regex",
@@ -5304,6 +5305,10 @@ dependencies = [
  "peak-core",
  "peak-ui",
 ]
+
+[[package]]
+name = "peak-icons"
+version = "0.1.0"
 
 [[package]]
 name = "peak-installer"
@@ -5453,7 +5458,10 @@ dependencies = [
  "js-sys",
  "log",
  "peak-core",
+ "peak-icons",
  "peak-theme",
+ "serde",
+ "serde_json",
  "tiny-skia",
  "wasm-bindgen",
  "wasm-bindgen-futures",

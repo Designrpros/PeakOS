@@ -1,18 +1,27 @@
-use iced::{Element, Task, Theme};
-use peak_core::registry::ShellMode;
-use peak_theme::{ThemeTokens, ThemeTone};
-use peak_ui::prelude::*;
-
-#[cfg(not(target_arch = "wasm32"))]
-pub fn main() -> iced::Result {
-    iced::application("PeakUI Showcase", App::update, App::view).run()
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn main() {}
+use iced::Result;
+use peak_ui::reference;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::wasm_bindgen;
+
+fn main() -> Result {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        iced::application(
+            "PeakUI Showcase",
+            reference::App::update,
+            reference::App::view,
+        )
+        .run()
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        // This will be called by #[wasm_bindgen(start)] below,
+        // but adding a dummy return for the compiler.
+        Ok(())
+    }
+}
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(start)]
@@ -21,44 +30,10 @@ pub fn run() {
     console_log::init_with_level(log::Level::Debug).expect("Console log failed");
     log::info!("PeakUI Showcase WASM started");
 
-    let _ = iced::application("PeakUI Showcase", App::update, App::view).run();
-}
-
-struct App {
-    catalog: Catalog<IcedBackend>,
-}
-
-#[derive(Debug, Clone)]
-enum Message {
-    Catalog(CatalogMessage),
-}
-
-impl Default for App {
-    fn default() -> Self {
-        Self {
-            catalog: Catalog::<IcedBackend>::new(),
-        }
-    }
-}
-
-impl App {
-    fn update(&mut self, message: Message) -> Task<Message> {
-        match message {
-            Message::Catalog(msg) => self.catalog.update(msg).map(Message::Catalog),
-        }
-    }
-
-    fn view(&self) -> Element<'_, Message, Theme, iced::Renderer> {
-        // Hardcode mode/tone for standalone example, or make them adjustable
-        let mode = ShellMode::Desktop;
-        let tone = ThemeTone::Light;
-        let tokens = ThemeTokens::get(mode, tone);
-
-        // Clone for closure capture
-        let catalog = self.catalog.clone();
-
-        responsive(mode, tokens, move |context| {
-            catalog.view(&context).map(Message::Catalog)
-        })
-    }
+    let _ = iced::application(
+        "PeakUI Showcase",
+        reference::App::update,
+        reference::App::view,
+    )
+    .run();
 }

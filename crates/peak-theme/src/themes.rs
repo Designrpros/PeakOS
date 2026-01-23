@@ -29,6 +29,8 @@ pub enum PeakTheme {
     Fluent,
     /// High contrast for accessibility
     HighContrast,
+    /// Cinematic mountain aesthetic
+    Mountain,
 }
 
 impl PeakTheme {
@@ -45,13 +47,14 @@ impl PeakTheme {
             PeakTheme::Material => Self::material_colors(tone),
             PeakTheme::Fluent => Self::fluent_colors(tone),
             PeakTheme::HighContrast => Self::high_contrast_colors(tone),
+            PeakTheme::Mountain => Self::mountain_colors(tone),
         }
     }
 
     /// Get the recommended default theme for a shell mode
     pub fn default_for_mode(mode: ShellMode) -> Self {
         match mode {
-            ShellMode::Desktop => PeakTheme::Cupertino,
+            ShellMode::Desktop => PeakTheme::Mountain,
             ShellMode::Mobile => PeakTheme::Cupertino,
             ShellMode::Console => PeakTheme::Gaming,
             ShellMode::TV => PeakTheme::MediaCenter,
@@ -77,6 +80,7 @@ impl PeakTheme {
             PeakTheme::Material => "Material",
             PeakTheme::Fluent => "Fluent",
             PeakTheme::HighContrast => "High Contrast",
+            PeakTheme::Mountain => "Mountain",
         }
     }
 
@@ -93,6 +97,7 @@ impl PeakTheme {
             PeakTheme::Material,
             PeakTheme::Fluent,
             PeakTheme::HighContrast,
+            PeakTheme::Mountain,
         ]
     }
 
@@ -717,6 +722,83 @@ impl PeakTheme {
                 text_secondary: Color::from_rgb8(200, 200, 200),
                 text_tertiary: Color::from_rgb8(150, 150, 150),
                 text_disabled: Color::from_rgb8(100, 100, 100),
+            },
+        }
+    }
+
+    fn mountain_colors(tone: ThemeTone) -> PeakColors {
+        match tone {
+            ThemeTone::Light => PeakColors {
+                primary: Color::from_rgb8(0, 162, 255), // Bright mountain blue
+                on_primary: Color::WHITE,
+                primary_container: Color::from_rgb8(220, 240, 255),
+                on_primary_container: Color::from_rgb8(0, 80, 150),
+
+                secondary: Color::from_rgb8(150, 160, 180), // Slate gray
+                on_secondary: Color::WHITE,
+                secondary_container: Color::from_rgb8(240, 242, 245),
+                on_secondary_container: Color::from_rgb8(60, 70, 90),
+
+                accent: Color::from_rgb8(255, 120, 0), // Sunset orange
+                on_accent: Color::WHITE,
+
+                success: Color::from_rgb8(34, 197, 94),
+                warning: Color::from_rgb8(245, 158, 11),
+                danger: Color::from_rgb8(239, 68, 68),
+                info: Color::from_rgb8(59, 130, 246),
+
+                surface: Color::WHITE,
+                on_surface: Color::from_rgb8(15, 23, 42),
+                surface_variant: Color::from_rgb8(241, 245, 249),
+                on_surface_variant: Color::from_rgb8(71, 85, 105),
+
+                background: Color::from_rgb8(248, 250, 252),
+                on_background: Color::from_rgb8(15, 23, 42),
+
+                border: Color::from_rgba(0.0, 0.0, 0.0, 0.1),
+                divider: Color::from_rgba(0.0, 0.0, 0.0, 0.05),
+                overlay: Color::from_rgba(0.0, 0.0, 0.0, 0.4),
+
+                text_primary: Color::from_rgb8(15, 23, 42),
+                text_secondary: Color::from_rgb8(71, 85, 105),
+                text_tertiary: Color::from_rgb8(148, 163, 184),
+                text_disabled: Color::from_rgb8(203, 213, 225),
+            },
+            ThemeTone::Dark => PeakColors {
+                primary: Color::from_rgb8(56, 189, 248), // Sky blue
+                on_primary: Color::BLACK,
+                primary_container: Color::from_rgb8(12, 74, 110),
+                on_primary_container: Color::from_rgb8(186, 230, 253),
+
+                secondary: Color::from_rgb8(148, 163, 184), // Slate
+                on_secondary: Color::WHITE,
+                secondary_container: Color::from_rgb8(30, 41, 59),
+                on_secondary_container: Color::from_rgb8(226, 232, 240),
+
+                accent: Color::from_rgb8(251, 146, 60), // Sunset glow
+                on_accent: Color::BLACK,
+
+                success: Color::from_rgb8(74, 222, 128),
+                warning: Color::from_rgb8(251, 191, 36),
+                danger: Color::from_rgb8(248, 113, 113),
+                info: Color::from_rgb8(96, 165, 250),
+
+                surface: Color::from_rgba8(15, 23, 42, 0.8), // Glass surface
+                on_surface: Color::WHITE,
+                surface_variant: Color::from_rgba8(30, 41, 59, 0.6),
+                on_surface_variant: Color::from_rgb8(203, 213, 225),
+
+                background: Color::from_rgb8(2, 6, 23),
+                on_background: Color::WHITE,
+
+                border: Color::from_rgba(1.0, 1.0, 1.0, 0.1),
+                divider: Color::from_rgba(1.0, 1.0, 1.0, 0.05),
+                overlay: Color::from_rgba(0.0, 0.0, 0.0, 0.6),
+
+                text_primary: Color::WHITE,
+                text_secondary: Color::from_rgb8(203, 213, 225),
+                text_tertiary: Color::from_rgb8(148, 163, 184),
+                text_disabled: Color::from_rgb8(71, 85, 105),
             },
         }
     }

@@ -1,8 +1,10 @@
-use crate::core::{Backend, Context, IcedBackend, View};
+use crate::core::{Backend, Context, IcedBackend, ProxyView, View};
 use crate::modifiers::Intent;
 use iced::{Alignment, Color, Length};
 use std::marker::PhantomData;
+use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct Text<B: Backend = IcedBackend> {
     content: String,
     size: f32,
@@ -149,8 +151,18 @@ impl<Message: 'static, B: Backend> View<Message, B> for Text<B> {
             context,
         )
     }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "text".to_string(),
+            label: None,
+            content: Some(self.content.clone()),
+            children: Vec::new(),
+        }
+    }
 }
 
+#[derive(Clone, Copy)]
 pub struct Rectangle<B: Backend = IcedBackend> {
     width: Length,
     height: Length,
@@ -202,8 +214,18 @@ impl<Message: 'static, B: Backend> View<Message, B> for Rectangle<B> {
             self.border_color,
         )
     }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "rectangle".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
 }
 
+#[derive(Clone, Copy)]
 pub struct Space<B: Backend = IcedBackend> {
     width: Length,
     height: Length,
@@ -224,8 +246,18 @@ impl<Message: 'static, B: Backend> View<Message, B> for Space<B> {
     fn view(&self, _context: &Context) -> B::AnyView<Message> {
         B::space(self.width, self.height)
     }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "space".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
 }
 
+#[derive(Clone, Copy)]
 pub struct Divider<B: Backend = IcedBackend> {
     _phantom: PhantomData<B>,
 }
@@ -242,9 +274,19 @@ impl<Message: 'static, B: Backend> View<Message, B> for Divider<B> {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
         B::divider(context)
     }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "divider".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
 }
 
-pub struct Icon<B: Backend = IcedBackend> {
+#[derive(Clone)]
+pub struct Icon<B: Backend + Clone = IcedBackend> {
     name: String,
     size: f32,
     color: Option<Color>,
@@ -270,11 +312,31 @@ impl<B: Backend> Icon<B> {
         self.color = Some(color);
         self
     }
+
+    pub fn secondary<M>(self) -> ProxyView<M, B>
+    where
+        M: 'static,
+    {
+        ProxyView::new(move |ctx| {
+            let mut icon = self.clone();
+            icon.color = Some(ctx.theme.colors.text_secondary);
+            icon.view(ctx)
+        })
+    }
 }
 
 impl<Message: 'static, B: Backend> View<Message, B> for Icon<B> {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
         B::icon(self.name.clone(), self.size, self.color, context)
+    }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "icon".to_string(),
+            label: Some(self.name.clone()),
+            content: None,
+            children: Vec::new(),
+        }
     }
 }
 
@@ -314,18 +376,136 @@ impl<B: Backend> Image<B> {
 }
 
 impl<Message: 'static, B: Backend> View<Message, B> for Image<B> {
+    fn view(&self, _context: &Context) -> B::AnyView<Message> {
+        B::image(self.path.clone(), self.width, self.height, self.radius)
+    }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "image".to_string(),
+            label: Some(format!("{:?}", self.path)),
+            content: None,
+            children: Vec::new(),
+        }
+    }
+}
+
+pub struct TextField<Message: Clone + 'static, B: Backend = IcedBackend> {
+    value: String,
+    placeholder: String,
+    on_change: Arc<dyn Fn(String) -> Message + Send + Sync>,
+    _phantom: PhantomData<B>,
+}
+
+impl<Message: Clone + 'static, B: Backend> TextField<Message, B> {
+    pub fn new(
+        value: impl Into<String>,
+        placeholder: impl Into<String>,
+        on_change: impl Fn(String) -> Message + Send + Sync + 'static,
+    ) -> Self {
+        Self {
+            value: value.into(),
+            placeholder: placeholder.into(),
+            on_change: Arc::new(on_change),
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<Message: Clone + 'static, B: Backend> View<Message, B> for TextField<Message, B> {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
-        // Image is complex, stub for TUI
-        B::text(
-            format!("[IMG: {:?}]", self.path),
-            12.0,
-            None,
-            false,
-            true,
-            None,
-            None,
-            Alignment::Center,
-            context,
-        )
+        let val = self.value.clone();
+        let placeholder = self.placeholder.clone();
+        let on_change = self.on_change.clone();
+        B::text_input(val, placeholder, move |s| (on_change)(s), context)
+    }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "text_input".to_string(),
+            label: Some(self.placeholder.clone()),
+            content: Some(self.value.clone()),
+            children: Vec::new(),
+        }
+    }
+}
+
+pub struct Slider<Message: Clone + 'static, B: Backend = IcedBackend> {
+    range: std::ops::RangeInclusive<f32>,
+    value: f32,
+    on_change: Arc<dyn Fn(f32) -> Message + Send + Sync>,
+    _phantom: PhantomData<B>,
+}
+
+impl<Message: Clone + 'static, B: Backend> Slider<Message, B> {
+    pub fn new(
+        range: std::ops::RangeInclusive<f32>,
+        value: f32,
+        on_change: impl Fn(f32) -> Message + Send + Sync + 'static,
+    ) -> Self {
+        Self {
+            range,
+            value,
+            on_change: Arc::new(on_change),
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<Message: Clone + 'static, B: Backend> View<Message, B> for Slider<Message, B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        let range = self.range.clone();
+        let val = self.value;
+        let on_change = self.on_change.clone();
+        B::slider(range, val, move |v| (on_change)(v), context)
+    }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "slider".to_string(),
+            label: None,
+            content: Some(self.value.to_string()),
+            children: Vec::new(),
+        }
+    }
+}
+
+pub struct Toggle<Message: Clone + 'static, B: Backend = IcedBackend> {
+    label: String,
+    is_active: bool,
+    on_toggle: Arc<dyn Fn(bool) -> Message + Send + Sync>,
+    _phantom: PhantomData<B>,
+}
+
+impl<Message: Clone + 'static, B: Backend> Toggle<Message, B> {
+    pub fn new(
+        label: impl Into<String>,
+        is_active: bool,
+        on_toggle: impl Fn(bool) -> Message + Send + Sync + 'static,
+    ) -> Self {
+        Self {
+            label: label.into(),
+            is_active,
+            on_toggle: Arc::new(on_toggle),
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<Message: Clone + 'static, B: Backend> View<Message, B> for Toggle<Message, B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        let label = self.label.clone();
+        let active = self.is_active;
+        let on_toggle = self.on_toggle.clone();
+        B::toggle(label, active, move |b| (on_toggle)(b), context)
+    }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "toggle".to_string(),
+            label: Some(self.label.clone()),
+            content: Some(self.is_active.to_string()),
+            children: Vec::new(),
+        }
     }
 }

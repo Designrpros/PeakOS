@@ -1,6 +1,5 @@
 use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
-use iced::widget::stack;
-use iced::{Length, Renderer, Theme};
+use iced::Length;
 
 pub struct VStack<Message: 'static, B: Backend = IcedBackend> {
     children: Vec<Box<dyn View<Message, B>>>,
@@ -29,7 +28,7 @@ impl<Message: 'static, B: Backend> VStack<Message, B> {
             children: Vec::new(),
             spacing: 0.0,
             padding: iced::Padding::from(0.0),
-            width: Length::Fill,
+            width: Length::Shrink,
             height: Length::Shrink,
             align_x: iced::Alignment::Start,
         }
@@ -64,6 +63,17 @@ impl<Message: 'static, B: Backend> VStack<Message, B> {
         self.children.push(Box::new(view));
         self
     }
+
+    pub fn extend<I, V>(mut self, iter: I) -> Self
+    where
+        I: IntoIterator<Item = V>,
+        V: View<Message, B> + 'static,
+    {
+        for child in iter {
+            self.children.push(Box::new(child));
+        }
+        self
+    }
 }
 
 impl<Message: 'static, B: Backend> View<Message, B> for VStack<Message, B> {
@@ -78,6 +88,16 @@ impl<Message: 'static, B: Backend> View<Message, B> for VStack<Message, B> {
             self.align_x,
             context.theme.scaling,
         )
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        let children = self.children.iter().map(|c| c.describe(context)).collect();
+        crate::core::SemanticNode {
+            role: "vstack".to_string(),
+            label: None,
+            content: None,
+            children,
+        }
     }
 }
 
@@ -108,7 +128,7 @@ impl<Message: 'static, B: Backend> HStack<Message, B> {
             children: Vec::new(),
             spacing: 0.0,
             padding: iced::Padding::from(0.0),
-            width: Length::Fill,
+            width: Length::Shrink,
             height: Length::Shrink,
             align_y: iced::Alignment::Start,
         }
@@ -143,6 +163,17 @@ impl<Message: 'static, B: Backend> HStack<Message, B> {
         self.children.push(Box::new(view));
         self
     }
+
+    pub fn extend<I, V>(mut self, iter: I) -> Self
+    where
+        I: IntoIterator<Item = V>,
+        V: View<Message, B> + 'static,
+    {
+        for child in iter {
+            self.children.push(Box::new(child));
+        }
+        self
+    }
 }
 
 impl<Message: 'static, B: Backend> View<Message, B> for HStack<Message, B> {
@@ -157,6 +188,16 @@ impl<Message: 'static, B: Backend> View<Message, B> for HStack<Message, B> {
             self.align_y,
             context.theme.scaling,
         )
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        let children = self.children.iter().map(|c| c.describe(context)).collect();
+        crate::core::SemanticNode {
+            role: "hstack".to_string(),
+            label: None,
+            content: None,
+            children,
+        }
     }
 }
 
@@ -182,7 +223,7 @@ impl<Message: 'static, B: Backend> ZStack<Message, B> {
     pub fn new_generic() -> Self {
         Self {
             children: Vec::new(),
-            width: Length::Fill,
+            width: Length::Shrink,
             height: Length::Shrink,
         }
     }
@@ -203,25 +244,20 @@ impl<Message: 'static, B: Backend> ZStack<Message, B> {
     }
 }
 
-impl<Message: 'static> View<Message, IcedBackend> for ZStack<Message, IcedBackend> {
-    fn view(&self, context: &Context) -> iced::Element<'static, Message, Theme, Renderer> {
-        let mut s = stack(Vec::new()).width(self.width).height(self.height);
-
-        for child in &self.children {
-            s = s.push(child.view(context));
-        }
-
-        s.into()
+impl<Message: 'static, B: Backend> View<Message, B> for ZStack<Message, B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        let child_views = self.children.iter().map(|c| c.view(context)).collect();
+        B::zstack(child_views, self.width, self.height)
     }
-}
 
-impl<Message: 'static> View<Message, TermBackend> for ZStack<Message, TermBackend> {
-    fn view(&self, context: &Context) -> String {
-        self.children
-            .iter()
-            .map(|c| c.view(context))
-            .collect::<Vec<_>>()
-            .join("\n")
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        let children = self.children.iter().map(|c| c.describe(context)).collect();
+        crate::core::SemanticNode {
+            role: "zstack".to_string(),
+            label: None,
+            content: None,
+            children,
+        }
     }
 }
 
@@ -261,11 +297,8 @@ impl<Message: 'static, B: Backend> ResponsiveGrid<Message, B> {
     }
 }
 
-impl<Message: 'static> View<Message, IcedBackend> for ResponsiveGrid<Message, IcedBackend> {
-    fn view(&self, context: &Context) -> iced::Element<'static, Message, Theme, Renderer> {
-        use iced::widget::{column, container, row};
-        let children: Vec<_> = self.children.iter().map(|c| c.view(context)).collect();
-
+impl<Message: 'static, B: Backend> View<Message, B> for ResponsiveGrid<Message, B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
         let items_per_row = if context.size.width < 600.0 {
             1
         } else if context.size.width < 900.0 {
@@ -278,59 +311,29 @@ impl<Message: 'static> View<Message, IcedBackend> for ResponsiveGrid<Message, Ic
             5
         };
 
-        let scale = context.theme.scaling;
-        let scaled_spacing = self.spacing * scale;
-
-        let mut rows = Vec::new();
-        let mut current_row = Vec::new();
-        let mut count = 0;
-
-        for child in children {
-            current_row.push(container(child).width(Length::FillPortion(1)).into());
-            count += 1;
-
-            if count == items_per_row {
-                rows.push(
-                    row(current_row)
-                        .spacing(scaled_spacing)
-                        .width(Length::Fill)
-                        .into(),
-                );
-                current_row = Vec::new();
-                count = 0;
-            }
-        }
-
-        if !current_row.is_empty() {
-            for _ in count..items_per_row {
-                current_row.push(
-                    container(iced::widget::Space::new(
-                        Length::FillPortion(1),
-                        Length::Shrink,
-                    ))
-                    .into(),
-                );
-            }
-            rows.push(
-                row(current_row)
-                    .spacing(scaled_spacing)
-                    .width(Length::Fill)
-                    .into(),
-            );
-        }
-
-        container(column(rows).spacing(scaled_spacing).width(Length::Fill))
-            .width(Length::Fill)
-            .into()
+        let child_views = self.children.iter().map(|c| c.view(context)).collect();
+        B::grid(child_views, items_per_row, self.spacing)
     }
-}
 
-impl<Message: 'static> View<Message, TermBackend> for ResponsiveGrid<Message, TermBackend> {
-    fn view(&self, context: &Context) -> String {
-        self.children
-            .iter()
-            .map(|c| c.view(context))
-            .collect::<Vec<_>>()
-            .join("\n")
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        let items_per_row = if context.size.width < 600.0 {
+            1
+        } else if context.size.width < 900.0 {
+            2
+        } else if context.size.width < 1200.0 {
+            3
+        } else if context.size.width < 1600.0 {
+            4
+        } else {
+            5
+        };
+
+        let children = self.children.iter().map(|c| c.describe(context)).collect();
+        crate::core::SemanticNode {
+            role: "grid".to_string(),
+            label: Some(format!("responsive_columns: {}", items_per_row)),
+            content: None,
+            children,
+        }
     }
 }

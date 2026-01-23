@@ -6,10 +6,10 @@ use peak_ui::prelude::*;
 
 fn main() {
     let tokens = ThemeTokens::get(ShellMode::Desktop, peak_theme::ThemeTone::Dark);
-    let context = Context::new(ShellMode::Desktop, tokens, Size::new(800.0, 600.0));
+    let _context = Context::new(ShellMode::Desktop, tokens, Size::new(800.0, 600.0));
 
     // Define a UI using the SAME components as the TUI app
-    let ui: VStack<(), IcedBackend> = VStack::new()
+    let _ui: VStack<(), IcedBackend> = VStack::new()
         .spacing(10.0)
         .push(Text::new("PeakOS Desktop Link").title1())
         .push(Divider::new())

@@ -11,6 +11,14 @@ impl<Message: 'static> ScrollView<Message, IcedBackend> {
     pub fn new(content: impl View<Message, IcedBackend> + 'static) -> Self {
         Self::new_generic(content)
     }
+
+    pub fn from_boxed(content: Box<dyn View<Message, IcedBackend>>) -> Self {
+        Self {
+            content,
+            width: Length::Fill,
+            height: Length::Fill,
+        }
+    }
 }
 
 impl<Message: 'static> ScrollView<Message, TermBackend> {

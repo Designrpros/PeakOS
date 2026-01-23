@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::brain::directory;
 use crate::brain::model;
 use crate::brain::Error;

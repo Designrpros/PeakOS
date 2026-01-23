@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum Size {
+pub enum ControlSize {
     Small,
     #[default]
     Medium,

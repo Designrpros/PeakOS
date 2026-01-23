@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 mod schema;
 
 use crate::brain::assistant::{self, Assistant, Reply, Token};
@@ -35,6 +36,7 @@ pub enum Item {
 }
 
 impl Chat {
+    #[cfg(feature = "native")]
     async fn path(id: &Id) -> Result<PathBuf, Error> {
         Ok(storage_dir().await?.join(format!("{}.json", id.0.simple())))
     }
@@ -333,6 +335,7 @@ impl List {
         list.save().await
     }
 
+    #[cfg(feature = "native")]
     async fn remove(id: &Id) -> Result<(), Error> {
         let mut list = List::fetch().await?;
         list.entries.retain(|entry| &entry.id != id);
@@ -389,6 +392,7 @@ impl LastOpened {
         Ok(())
     }
 
+    #[cfg(feature = "native")]
     async fn delete() -> Result<(), Error> {
         #[cfg(feature = "native")]
         fs::remove_file(Self::path().await?).await?;

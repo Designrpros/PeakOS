@@ -1,5 +1,5 @@
 use crate::core::{Context, View};
-use crate::modifiers::{Intent, Size, Variant};
+use crate::modifiers::{ControlSize, Intent, Variant};
 use iced::widget::{button, container, row, slider, svg, text, toggler};
 use iced::{Alignment, Color, Element, Length, Renderer, Theme};
 use peak_core::icons;
@@ -11,7 +11,7 @@ pub struct Button<Message> {
     on_press: Option<Message>,
     intent: Intent,
     variant: Variant,
-    size: Size,
+    size: ControlSize,
     width: Length,
 }
 
@@ -32,7 +32,7 @@ impl<Message: 'static> Button<Message> {
             on_press: None,
             intent: Intent::Primary,
             variant: Variant::Solid,
-            size: Size::Medium,
+            size: ControlSize::Medium,
             width: Length::Shrink,
         }
     }
@@ -51,6 +51,11 @@ impl<Message: 'static> Button<Message> {
         self
     }
 
+    pub fn on_press_maybe(mut self, msg: Option<Message>) -> Self {
+        self.on_press = msg;
+        self
+    }
+
     pub fn intent(mut self, intent: Intent) -> Self {
         self.intent = intent;
         self
@@ -61,7 +66,7 @@ impl<Message: 'static> Button<Message> {
         self
     }
 
-    pub fn size(mut self, size: Size) -> Self {
+    pub fn size(mut self, size: ControlSize) -> Self {
         self.size = size;
         self
     }
@@ -136,18 +141,18 @@ impl<Message: Clone + 'static> View<Message> for Button<Message> {
         }
 
         let _font_size = match size {
-            Size::Small => 12.0,
-            Size::Medium => 14.0,
-            Size::Large => 16.0,
-            Size::XLarge => 20.0,
+            ControlSize::Small => 12.0,
+            ControlSize::Medium => 14.0,
+            ControlSize::Large => 16.0,
+            ControlSize::XLarge => 20.0,
         };
 
-        // Padding based on Size modifier
+        // Padding based on ControlSize modifier
         let padding = match size {
-            Size::Small => [4, 8],
-            Size::Medium => [8, 16],
-            Size::Large => [12, 24],
-            Size::XLarge => [16, 32],
+            ControlSize::Small => [4, 8],
+            ControlSize::Medium => [8, 16],
+            ControlSize::Large => [12, 24],
+            ControlSize::XLarge => [16, 32],
         };
 
         content = content.push(self.content.view(context));

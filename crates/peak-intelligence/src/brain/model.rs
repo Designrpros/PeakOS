@@ -4,7 +4,9 @@ use crate::brain::Error;
 
 use decoder::{decode, encode, Value};
 use serde::{Deserialize, Serialize};
-use sipper::{sipper, Sipper, Straw};
+#[allow(unused_imports)]
+use sipper::Sipper;
+use sipper::{sipper, Straw};
 #[cfg(feature = "native")]
 use tokio::fs;
 
@@ -239,7 +241,7 @@ impl File {
         #[cfg_attr(not(feature = "native"), allow(unused_variables))] directory: &'a Directory,
     ) -> impl Straw<PathBuf, request::Progress, Error> + 'a {
         sipper(
-            async move |#[cfg_attr(not(feature = "native"), allow(unused_variables))] sender| {
+            move |#[cfg_attr(not(feature = "native"), allow(unused_variables))] sender| async move {
                 #[cfg(feature = "native")]
                 {
                     let old_path = Directory::old().0.join(&self.name);
@@ -466,6 +468,7 @@ impl Directory {
         &self.0
     }
 
+    #[cfg(feature = "native")]
     fn old() -> Self {
         Directory(PathBuf::from("./models"))
     }

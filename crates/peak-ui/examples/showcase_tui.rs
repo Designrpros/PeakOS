@@ -20,10 +20,10 @@ fn main() {
 
     // Simulate some interaction for the showcase
     println!("\n\n--- Simulating selection: Colors ---\n");
-    catalog.update(CatalogMessage::ItemSelected("colors"));
+    let _ = catalog.update(CatalogMessage::ItemSelected("colors"));
     println!("{}", catalog.view(&context));
 
     println!("\n\n--- Simulating selection: Icons ---\n");
-    catalog.update(CatalogMessage::ItemSelected("icons"));
+    let _ = catalog.update(CatalogMessage::ItemSelected("icons"));
     println!("{}", catalog.view(&context));
 }

@@ -17,6 +17,7 @@ members = [
     "crates/peak-shell",
     "crates/peak-installer",
     "crates/peak-drop",
+    "crates/peak-icons",
 ]
 resolver = "2"
 

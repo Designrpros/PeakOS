@@ -70,7 +70,7 @@ def analyze_wasm(path):
         print("\n[✓] No 'env' imports found.")
 
 if __name__ == "__main__":
-    dist_dir = "/Users/vegarberentsen/Documents/PeakOS/crates/modes/desktop/dist"
+    dist_dir = "/Users/vegarberentsen/Documents/PeakOS/crates/peak-ui/dist"
     wasm_files = glob.glob(os.path.join(dist_dir, "*.wasm"))
     if not wasm_files:
         print(f"No WASM files found in {dist_dir}")

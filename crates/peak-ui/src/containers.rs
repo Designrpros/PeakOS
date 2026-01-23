@@ -1,6 +1,6 @@
 use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
 use iced::widget::{column, container, text};
-use iced::{Element, Length, Padding, Renderer, Theme};
+use iced::{Color, Element, Length, Padding, Renderer, Theme};
 
 pub struct Card<Message: 'static, B: Backend = IcedBackend> {
     content: Box<dyn View<Message, B>>,
@@ -79,6 +79,15 @@ impl<Message: 'static> View<Message, IcedBackend> for Card<Message, IcedBackend>
         })
         .into()
     }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "card".to_string(),
+            label: None,
+            content: None,
+            children: vec![self.content.describe(context)],
+        }
+    }
 }
 
 impl<Message: 'static> View<Message, TermBackend> for Card<Message, TermBackend> {
@@ -103,6 +112,15 @@ impl<Message: 'static> View<Message, TermBackend> for Card<Message, TermBackend>
         out.push_str(&"─".repeat(width - 2));
         out.push_str("┘");
         out
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "card".to_string(),
+            label: None,
+            content: None,
+            children: vec![self.content.describe(context)],
+        }
     }
 }
 
@@ -176,5 +194,125 @@ impl<Message: 'static> View<Message, TermBackend> for Section<Message, TermBacke
             self.title.to_uppercase(),
             self.content.view(context)
         )
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "section".to_string(),
+            label: Some(self.title.clone()),
+            content: None,
+            children: vec![self.content.describe(context)],
+        }
+    }
+}
+
+pub struct GlassCard<Message: 'static, B: Backend = IcedBackend> {
+    content: Box<dyn View<Message, B>>,
+    padding: Padding,
+    width: Length,
+    height: Length,
+}
+
+impl<Message: 'static, B: Backend> GlassCard<Message, B> {
+    pub fn new(content: impl View<Message, B> + 'static) -> Self {
+        Self {
+            content: Box::new(content),
+            padding: Padding::from(20),
+            width: Length::Shrink,
+            height: Length::Shrink,
+        }
+    }
+
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
+        self
+    }
+
+    pub fn height(mut self, height: Length) -> Self {
+        self.height = height;
+        self
+    }
+}
+
+impl<Message: 'static> View<Message, IcedBackend> for GlassCard<Message, IcedBackend> {
+    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
+        let theme = context.theme;
+        let mut bg = theme.colors.surface;
+        bg.a = theme.glass_opacity;
+
+        let glass_color = if theme.tone == peak_theme::ThemeTone::Dark {
+            Color::from_rgba(1.0, 1.0, 1.0, 0.03)
+        } else {
+            Color::from_rgba(1.0, 1.0, 1.0, 0.05)
+        };
+
+        container(iced::widget::stack![
+            // Base Glass Layer
+            container(iced::widget::Space::new(Length::Fill, Length::Fill))
+                .width(self.width)
+                .height(self.height)
+                .style(move |_| container::Style {
+                    background: Some(bg.into()),
+                    ..Default::default()
+                }),
+            // Refraction / Shine Layer
+            container(iced::widget::Space::new(Length::Fill, Length::Fill))
+                .width(self.width)
+                .height(self.height)
+                .style(move |_| container::Style {
+                    background: Some(iced::Background::Gradient(
+                        iced::gradient::Linear::new(iced::Degrees(135.0))
+                            .add_stop(0.0, glass_color)
+                            .add_stop(0.5, Color::TRANSPARENT)
+                            .into()
+                    )),
+                    ..Default::default()
+                }),
+            // Content Layer
+            container(self.content.view(context))
+                .padding(self.padding)
+                .width(self.width)
+                .height(self.height)
+        ])
+        .width(self.width)
+        .height(self.height)
+        .style(move |_| container::Style {
+            border: iced::Border {
+                radius: theme.radius.into(),
+                color: Color::from_rgba(1.0, 1.0, 1.0, 0.15),
+                width: 1.0,
+            },
+            shadow: iced::Shadow {
+                color: theme.shadow_color,
+                offset: iced::Vector::new(theme.shadow_offset[0], theme.shadow_offset[1]),
+                blur_radius: theme.shadow_blur,
+            },
+            ..Default::default()
+        })
+        .into()
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "glass_card".to_string(),
+            label: None,
+            content: None,
+            children: vec![self.content.describe(context)],
+        }
+    }
+}
+
+impl<Message: 'static> View<Message, TermBackend> for GlassCard<Message, TermBackend> {
+    fn view(&self, context: &Context) -> String {
+        format!("(GLASS)\n{}", self.content.view(context))
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "glass_card".to_string(),
+            label: None,
+            content: None,
+            children: vec![self.content.describe(context)],
+        }
     }
 }
