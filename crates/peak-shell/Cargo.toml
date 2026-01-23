@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-iced = { version = "0.13", features = ["image", "svg", "advanced"] }
+iced = { version = "0.13", default-features = false, features = ["image", "svg", "advanced"] }
 peak-core = { path = "../peak-core", default-features = false }
 peak-ui = { path = "../peak-ui", default-features = false }
 peak-theme = { path = "../peak-theme", default-features = false }

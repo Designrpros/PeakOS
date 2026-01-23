@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-iced = "0.13"
-peak-core = { path = "../../peak-core" }
-peak-ui = { path = "../../peak-ui" }
+iced = { version = "0.13", default-features = false, features = ["advanced"] }
+peak-core = { path = "../../peak-core", default-features = false }
+peak-ui = { path = "../../peak-ui", default-features = false }
+
+[features]
+default = ["native"]
+native = ["iced/wgpu", "peak-core/native", "peak-ui/native"]
+wasm = ["peak-core/wasm", "peak-ui/wasm"]

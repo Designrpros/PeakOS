@@ -1,4 +1,6 @@
+#[cfg(feature = "native")]
 use regex::Regex;
+#[cfg(feature = "native")]
 use std::fs;
 use std::path::PathBuf;
 
@@ -14,31 +16,27 @@ pub struct SteamScanner;
 
 impl SteamScanner {
     // 1. Locate the Steam Directory based on OS
+    #[cfg(feature = "native")]
     fn locate_steam_dir() -> Option<PathBuf> {
-        #[cfg(feature = "native")]
-        {
-            let home = dirs::home_dir()?;
+        let home = dirs::home_dir()?;
 
-            // This is a rough heuristic. A production app might check registry (Windows) or more paths.
-            let paths = vec![
-                // MacOS
-                home.join("Library/Application Support/Steam/steamapps"),
-                // Linux
-                home.join(".local/share/Steam/steamapps"),
-                home.join(".steam/steam/steamapps"),
-                // Windows
-                PathBuf::from(r"C:\Program Files (x86)\Steam\steamapps"),
-            ];
+        // This is a rough heuristic. A production app might check registry (Windows) or more paths.
+        let paths = vec![
+            // MacOS
+            home.join("Library/Application Support/Steam/steamapps"),
+            // Linux
+            home.join(".local/share/Steam/steamapps"),
+            home.join(".steam/steam/steamapps"),
+            // Windows
+            PathBuf::from(r"C:\Program Files (x86)\Steam\steamapps"),
+        ];
 
-            paths.into_iter().find(|p| p.exists())
-        }
-
-        #[cfg(not(feature = "native"))]
-        None
+        paths.into_iter().find(|p| p.exists())
     }
 
     // 2. Scan for Manifest Files
     pub fn scan() -> Vec<SteamGame> {
+        #[allow(unused_mut)]
         let mut games = Vec::new();
 
         #[cfg(feature = "native")]

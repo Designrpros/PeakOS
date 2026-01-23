@@ -125,6 +125,7 @@ impl AppImageManager {
 
     /// List installed AppImages
     pub fn list_installed(&self) -> Vec<AppImageInfo> {
+        #[allow(unused_mut)]
         let mut appimages = Vec::new();
 
         #[cfg(not(target_arch = "wasm32"))]

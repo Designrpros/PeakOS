@@ -7,6 +7,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Headers, Request, RequestInit, RequestMode, Response};
 
+#[allow(dead_code)]
 pub async fn get(url: &str) -> Result<HttpResponse, HttpError> {
     get_with_headers(url, std::collections::HashMap::new()).await
 }
@@ -29,7 +30,7 @@ pub async fn get_with_headers(
             .set(&key, &value)
             .map_err(|e| HttpError::WasmError(format!("Failed to set header {}: {:?}", key, e)))?;
     }
-    opts.headers(&headers);
+    opts.set_headers(&headers);
 
     let request = Request::new_with_str_and_init(url, &opts)
         .map_err(|e| HttpError::WasmError(format!("Failed to create request: {:?}", e)))?;
@@ -57,6 +58,7 @@ pub async fn get_with_headers(
     Ok(HttpResponse { status, body })
 }
 
+#[allow(dead_code)]
 pub async fn post_json<T: Serialize>(url: &str, body: &T) -> Result<HttpResponse, HttpError> {
     post_json_with_headers(url, body, std::collections::HashMap::new()).await
 }
@@ -88,7 +90,7 @@ pub async fn post_json_with_headers<T: Serialize>(
             .set(&key, &value)
             .map_err(|e| HttpError::WasmError(format!("Failed to set header {}: {:?}", key, e)))?;
     }
-    opts.headers(&headers);
+    opts.set_headers(&headers);
 
     let request = Request::new_with_str_and_init(url, &opts)
         .map_err(|e| HttpError::WasmError(format!("Failed to create request: {:?}", e)))?;

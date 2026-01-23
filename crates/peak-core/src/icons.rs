@@ -20,17 +20,14 @@ pub fn load_system_svg(
         let rel_path = format!("icons/system/{}/{}.svg", category, name);
         let path = crate::utils::assets::get_asset_path(&rel_path);
 
-        match std::fs::read_to_string(&path) {
-            Ok(content) => {
-                let colored_svg = content
-                    .replace("currentColor", color)
-                    .replace("stroke=\"white\"", &format!("stroke=\"{}\"", color))
-                    .replace("stroke=\"black\"", &format!("stroke=\"{}\"", color))
-                    .replace("fill=\"white\"", &format!("fill=\"{}\"", color))
-                    .replace("fill=\"black\"", &format!("fill=\"{}\"", color));
-                return SvgHandle::from_memory(colored_svg.into_bytes());
-            }
-            Err(_) => {}
+        if let Ok(content) = std::fs::read_to_string(&path) {
+            let colored_svg = content
+                .replace("currentColor", color)
+                .replace("stroke=\"white\"", &format!("stroke=\"{}\"", color))
+                .replace("stroke=\"black\"", &format!("stroke=\"{}\"", color))
+                .replace("fill=\"white\"", &format!("fill=\"{}\"", color))
+                .replace("fill=\"black\"", &format!("fill=\"{}\"", color));
+            return SvgHandle::from_memory(colored_svg.into_bytes());
         }
     }
 
@@ -43,7 +40,7 @@ pub fn load_system_svg(
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        // Fallback: A simple circle if the icon is missing
+        // Fallback: A simple circle if the icon is missing or not supported natively
         SvgHandle::from_memory(
             format!(
                 r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="{}" /></svg>"#,
@@ -111,15 +108,27 @@ impl IconResolver {
         let category_name = metadata.category.icon_name();
         let rel_path = format!("icons/system/categories/{}.svg", category_name);
         let path = crate::utils::assets::get_asset_path(&rel_path);
+        #[cfg(target_arch = "wasm32")]
+        {
+            return AppIcon::Svg(SvgHandle::from_path(path));
+        }
+
         #[cfg(not(target_arch = "wasm32"))]
         if path.exists() {
             return AppIcon::Svg(load_system_svg("categories", category_name, color));
         }
-        #[cfg(target_arch = "wasm32")]
-        return AppIcon::Svg(SvgHandle::from_path(path));
 
-        // 5. Ultimate Fallback (Generic System Icon) or WASM path
-        AppIcon::Svg(load_system_svg("system", "utilities", color))
+        // 5. Ultimate Fallback (Generic System Icon)
+        #[cfg(not(target_arch = "wasm32"))]
+        return AppIcon::Svg(load_system_svg("system", "utilities", color));
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            // This is actually redundant because of the return above,
+            // but we keep it to satisfy the compiler's path analysis
+            // in a clean way without warning.
+            AppIcon::Svg(SvgHandle::from_memory(Vec::new()))
+        }
     }
 }
 

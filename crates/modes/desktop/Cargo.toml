@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-iced = { version = "0.13", features = ["canvas", "advanced", "wgpu", "image", "svg"] }
+iced = { version = "0.13", default-features = false, features = ["canvas", "advanced", "image", "svg"] }
 rodio = { version = "0.17", optional = true }
 rand = "0.8"
 cpal = { version = "0.15", optional = true }
@@ -57,6 +57,7 @@ wayland-client = "0.31"
 default = ["native"]
 native = [
     "iced/tokio",
+    "iced/wgpu",
     "rodio",
     "cpal",
     "portable-pty",
