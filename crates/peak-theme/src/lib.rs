@@ -77,7 +77,7 @@ impl ThemeTokens {
             Color::from_rgba(0.0, 0.0, 0.0, 0.15)
         };
 
-        let mut tokens = Self {
+        let tokens = Self {
             colors,
             tone,
             glass_opacity,

@@ -19,6 +19,7 @@ pub mod modifiers;
 pub mod motion;
 pub mod nav_split_view;
 pub mod scroll_view;
+pub mod views;
 
 pub mod prelude {
     pub use crate::atoms::{Divider, Icon, Image, Rectangle, Space, Text};
@@ -41,6 +42,7 @@ pub mod prelude {
     pub use crate::scroll_view::ScrollView;
     pub use crate::segmented_picker::SegmentedPicker;
     pub use crate::toolbar::{ToolbarGroup, ToolbarItem};
+    pub use crate::views::markdown::MarkdownView;
     pub use peak_theme::ThemeTone;
 
     // Re-export core UI types so showcase doesn't need direct iced imports
