@@ -3,11 +3,8 @@ use iced::{Element, Length};
 
 /// A segmented picker/control component with pill-style selection
 /// Similar to iOS segmented controls or material tabs
-pub struct SegmentedPicker<'a, Message, Theme = iced::Theme>
-where
-    Theme: 'a,
-{
-    options: Vec<SegmentOption<'a, Message>>,
+pub struct SegmentedPicker<Message, Theme = iced::Theme> {
+    options: Vec<SegmentOption<Message>>,
     active_index: usize,
     width: Length,
     height: Length,
@@ -21,10 +18,10 @@ where
     _phantom: std::marker::PhantomData<Theme>,
 }
 
-impl<'a, Message, Theme> Clone for SegmentedPicker<'a, Message, Theme>
+impl<Message, Theme> Clone for SegmentedPicker<Message, Theme>
 where
     Message: Clone,
-    Theme: Clone + 'a,
+    Theme: Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -45,18 +42,17 @@ where
 }
 
 #[derive(Clone)]
-pub struct SegmentOption<'a, Message> {
-    label: &'a str,
+pub struct SegmentOption<Message> {
+    label: String,
     on_press: Message,
 }
 
-impl<'a, Message, Theme> SegmentedPicker<'a, Message, Theme>
+impl<Message, Theme> SegmentedPicker<Message, Theme>
 where
-    Message: Clone + 'a,
-    Theme: 'a,
+    Message: Clone + 'static,
 {
     /// Create a new segmented picker with options
-    pub fn new(options: Vec<(&'a str, Message)>, active_index: usize) -> Self {
+    pub fn new(options: Vec<(String, Message)>, active_index: usize) -> Self {
         Self {
             options: options
                 .into_iter()
@@ -131,7 +127,7 @@ where
     }
 
     /// Build the view (consumes self)
-    pub fn build(self) -> Element<'a, Message> {
+    pub fn build(self) -> Element<'static, Message> {
         let active_idx = self.active_index;
         let active_bg = self.active_bg_color;
         let text_col = self.text_color;
@@ -168,16 +164,20 @@ where
                 })
                 .into()
             })
-            .collect::<Vec<Element<'a, Message>>>();
+            .collect::<Vec<Element<'static, Message>>>();
 
         container(row(buttons).spacing(4).padding(self.padding))
-            .style(move |_| container::Style {
-                background: Some(self.background_color.into()),
-                border: iced::Border {
-                    radius: self.border_radius.into(),
+            .style({
+                let bg_color = self.background_color;
+                let radius = self.border_radius;
+                move |_| container::Style {
+                    background: Some(bg_color.into()),
+                    border: iced::Border {
+                        radius: radius.into(),
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
+                }
             })
             .width(self.width)
             .height(self.height)
@@ -188,28 +188,19 @@ where
 use crate::core::{Context, View};
 use iced::Renderer;
 
-impl<'a, Message, Theme> View<Message> for SegmentedPicker<'a, Message, Theme>
+impl<Message, Theme> View<Message> for SegmentedPicker<Message, Theme>
 where
     Message: Clone + 'static,
-    Theme: 'a + Default + Clone,
+    Theme: Default + Clone + 'static,
 {
     fn view(&self, _context: &Context) -> Element<'static, Message, iced::Theme, Renderer> {
-        // Warning: This forces static lifetime which might be restrictive if Message matches
-        // But the View trait requires 'static Element output usually.
-        // We clone self to build the element.
-        // Also we cast Theme to default iced::Theme for now as `view` returns specific Element?
-        // Actually View trait returns Element<..., Theme, ...>.
-        // Let's rely on standard Iced.
+        let mut clone = self.clone();
 
-        // Note: The View trait signature is:
-        // fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer>;
-        // But here we have generics.
+        // Neutralize rounding for WASM
+        if cfg!(target_arch = "wasm32") {
+            clone.border_radius = 0.0;
+        }
 
-        // For simplicity in this codebase context, we'll assume standard Theme.
-        // Explicitly use Clone checking usage
-        let clone = <SegmentedPicker<'a, Message, Theme> as Clone>::clone(self);
-
-        // We'll trust that 'a is 'static in the usage context (Catalog use constant strings).
-        unsafe { std::mem::transmute(clone.build()) }
+        clone.build()
     }
 }

@@ -82,7 +82,12 @@ impl<Message: 'static> ScrollView<Message, IcedBackend> {
                         ..text_color
                     },
                     border: iced::Border {
-                        radius: 4.0.into(),
+                        radius: if cfg!(target_arch = "wasm32") {
+                            0.0
+                        } else {
+                            4.0
+                        }
+                        .into(),
                         ..Default::default()
                     },
                 },
@@ -96,7 +101,12 @@ impl<Message: 'static> ScrollView<Message, IcedBackend> {
                         ..text_color
                     },
                     border: iced::Border {
-                        radius: 4.0.into(),
+                        radius: if cfg!(target_arch = "wasm32") {
+                            0.0
+                        } else {
+                            4.0
+                        }
+                        .into(),
                         ..Default::default()
                     },
                 },

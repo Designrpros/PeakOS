@@ -2,7 +2,7 @@ use iced::widget::{button, container, row, text};
 use iced::{Alignment, Color, Element, Length, Padding};
 
 pub fn view<'a, Message>(
-    title: &str,
+    title: String,
     content: Element<'a, Message>,
     on_close: Message,
     on_maximize: Option<Message>,
@@ -68,16 +68,16 @@ where
         right: 16.0,
         ..Padding::ZERO
     })
-    .style(move |_| container::Style {
-        background: Some(
-            if is_light {
-                Color::WHITE
-            } else {
-                Color::from_rgb8(40, 40, 40)
-            }
-            .into(),
-        ),
-        ..Default::default()
+    .style({
+        let bg = if is_light {
+            Color::WHITE
+        } else {
+            Color::from_rgb8(40, 40, 40)
+        };
+        move |_| container::Style {
+            background: Some(bg.into()),
+            ..Default::default()
+        }
     });
     let window_body = container(content)
         .width(Length::Fill)
@@ -85,7 +85,7 @@ where
         .padding(0);
 
     container(iced::widget::column![title_bar, window_body])
-        .style(move |_| {
+        .style({
             let bg = if is_light {
                 Color::WHITE
             } else {
@@ -96,19 +96,29 @@ where
             } else {
                 Color::from_rgba(1.0, 1.0, 1.0, 0.1)
             };
+            let radius_val = if cfg!(target_arch = "wasm32") {
+                0.0
+            } else {
+                8.0
+            };
+            let shadow = if cfg!(target_arch = "wasm32") {
+                iced::Shadow::default()
+            } else {
+                iced::Shadow {
+                    color: Color::from_rgba(0.0, 0.0, 0.0, 0.15),
+                    offset: iced::Vector::new(0.0, 4.0),
+                    blur_radius: 12.0,
+                }
+            };
 
-            container::Style {
+            move |_| container::Style {
                 background: Some(bg.into()),
                 border: iced::Border {
                     color: border_color,
                     width: 1.0,
-                    radius: 8.0.into(),
+                    radius: radius_val.into(),
                 },
-                shadow: iced::Shadow {
-                    color: Color::from_rgba(0.0, 0.0, 0.0, 0.15),
-                    offset: iced::Vector::new(0.0, 4.0),
-                    blur_radius: 12.0,
-                },
+                shadow,
                 ..Default::default()
             }
         })
@@ -122,14 +132,22 @@ where
     container(iced::widget::text(""))
         .width(10)
         .height(10)
-        .style(move |_| container::Style {
-            background: Some(color.into()),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 10.0.into(),
-            },
-            ..Default::default()
+        .style({
+            let bg_color = color;
+            let radius_val = if cfg!(target_arch = "wasm32") {
+                0.0
+            } else {
+                10.0
+            };
+            move |_| container::Style {
+                background: Some(bg_color.into()),
+                border: iced::Border {
+                    color: Color::TRANSPARENT,
+                    width: 0.0,
+                    radius: radius_val.into(),
+                },
+                ..Default::default()
+            }
         })
         .into()
 }

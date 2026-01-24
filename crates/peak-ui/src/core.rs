@@ -1,5 +1,6 @@
 use crate::modifiers::Intent;
-use iced::{Alignment, Color, Length, Padding, Renderer, Size, Theme};
+// Force rebuild to pick up peak-icons changes
+use iced::{Alignment, Color, Length, Padding, Renderer, Shadow, Size, Theme, Vector};
 pub use peak_core::registry::ShellMode;
 pub use peak_theme::ThemeTokens;
 
@@ -41,6 +42,26 @@ impl Context {
 
     pub fn is_wide(&self) -> bool {
         self.size.width > 1200.0
+    }
+
+    pub fn shadow(&self, color: Color, offset: impl Into<Vector>, blur_radius: f32) -> Shadow {
+        if cfg!(target_arch = "wasm32") {
+            Shadow::default()
+        } else {
+            Shadow {
+                color,
+                offset: offset.into(),
+                blur_radius,
+            }
+        }
+    }
+
+    pub fn radius(&self, radius: f32) -> iced::border::Radius {
+        if cfg!(target_arch = "wasm32") {
+            0.0.into()
+        } else {
+            radius.into()
+        }
     }
 }
 
@@ -255,18 +276,26 @@ impl Backend for IcedBackend {
         context: &Context,
     ) -> Self::AnyView<Message> {
         let theme = context.theme;
-        let color = color.unwrap_or(theme.colors.text_primary);
+        let final_color = color.unwrap_or(theme.colors.text_primary);
 
         let hex_color = format!(
             "#{:02X}{:02X}{:02X}",
-            (color.r * 255.0) as u8,
-            (color.g * 255.0) as u8,
-            (color.b * 255.0) as u8
+            (final_color.r * 255.0) as u8,
+            (final_color.g * 255.0) as u8,
+            (final_color.b * 255.0) as u8
         );
 
-        // Try embedded icons first
+        // 1. Try embedded icons first
         if let Some(svg_data) = peak_icons::get_icon(&name) {
-            let colored_svg = svg_data.replace("currentColor", &hex_color);
+            #[cfg(target_arch = "wasm32")]
+            log::debug!("Icon '{}' found in EMBEDDED storage.", name);
+
+            // AGGRESSIVE RECOLORING: Replace various black definitions with theme color
+            let colored_svg = svg_data
+                .replace("currentColor", &hex_color)
+                .replace("fill=\"#000000\"", &format!("fill=\"{}\"", hex_color))
+                .replace("fill=\"black\"", &format!("fill=\"{}\"", hex_color));
+
             return iced::widget::svg(iced::widget::svg::Handle::from_memory(
                 colored_svg.into_bytes(),
             ))
@@ -275,9 +304,69 @@ impl Backend for IcedBackend {
             .into();
         }
 
-        // Fallback to core (file-based or category logic)
-        let handle = peak_core::icons::get_ui_icon(&name, &hex_color);
-        iced::widget::svg(handle).width(size).height(size).into()
+        // 2. WASM FIX: Smart mapping to existing assets
+        #[cfg(target_arch = "wasm32")]
+        {
+            // Determine if we need white or black icons based on brightness
+            let luminance =
+                0.2126 * final_color.r + 0.7152 * final_color.g + 0.0722 * final_color.b;
+            let folder = if luminance > 0.5 { "white" } else { "black" };
+
+            // Map abstract names to real files in your 'dist' folder
+            let filename = match name.as_str() {
+                // Sidebar mappings
+                "sidebar" => "apps", // Maps 'sidebar' -> 'apps.svg'
+                "book" => "library",
+                "map" => "map",
+                "users" => "smile",
+                "layers" => "folder",
+                "palette" => "palette",
+                "maximize" => "settings",
+                "type" => "document",
+                "grid" => "apps",
+                "monitor" => "cpu",
+                "box" => "cube",
+
+                // Toolbar / Common
+                "search" => "search",
+                "settings" => "settings",
+                "wifi" => "wifi_full",
+                "battery" => "battery",
+                "terminal" => "terminal",
+                "library" => "library",
+                "store" => "store",
+                _ => name.as_str(),
+            };
+
+            // Force path for showcase to ensure visibility
+            let best_path = if [
+                "search",
+                "settings",
+                "wifi_full",
+                "battery",
+                "library",
+                "store",
+                "terminal",
+            ]
+            .contains(&filename)
+            {
+                format!("assets/icons/menubar/{}/{}.svg", folder, filename)
+            } else {
+                format!("assets/icons/system/ui/{}.svg", filename)
+            };
+
+            return iced::widget::svg(iced::widget::svg::Handle::from_path(best_path))
+                .width(size)
+                .height(size)
+                .into();
+        }
+
+        // 3. DESKTOP FALLBACK
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let handle = peak_core::icons::get_ui_icon(&name, &hex_color);
+            iced::widget::svg(handle).width(size).height(size).into()
+        }
     }
 
     fn divider<Message: 'static>(context: &Context) -> Self::AnyView<Message> {
@@ -304,17 +393,26 @@ impl Backend for IcedBackend {
         border_color: Option<Color>,
     ) -> Self::AnyView<Message> {
         use iced::widget::container;
+
         container(iced::widget::Space::new(Length::Fill, Length::Fill))
             .width(width)
             .height(height)
-            .style(move |_| container::Style {
-                background: color.map(iced::Background::Color),
-                border: iced::Border {
-                    color: border_color.unwrap_or(Color::TRANSPARENT),
-                    width: border_width,
-                    radius: radius.into(),
-                },
-                ..Default::default()
+            .style({
+                let b_color = border_color.unwrap_or(Color::TRANSPARENT);
+                move |_| container::Style {
+                    background: color.map(iced::Background::Color),
+                    border: iced::Border {
+                        color: b_color,
+                        width: border_width,
+                        radius: if cfg!(target_arch = "wasm32") {
+                            0.0
+                        } else {
+                            radius
+                        }
+                        .into(),
+                    },
+                    ..Default::default()
+                }
             })
             .into()
     }
@@ -353,14 +451,22 @@ impl Backend for IcedBackend {
 
         if is_selected {
             container(content.view(context))
-                .style(move |_| container::Style {
-                    background: Some(theme.colors.primary.into()),
-                    border: iced::Border {
-                        radius: 8.0.into(),
+                .style({
+                    let bg_color = theme.colors.primary;
+                    let radius_val = if cfg!(target_arch = "wasm32") {
+                        0.0
+                    } else {
+                        8.0
+                    };
+                    move |_| container::Style {
+                        background: Some(bg_color.into()),
+                        border: iced::Border {
+                            radius: radius_val.into(),
+                            ..Default::default()
+                        },
+                        text_color: Some(iced::Color::WHITE),
                         ..Default::default()
-                    },
-                    text_color: Some(iced::Color::WHITE),
-                    ..Default::default()
+                    }
                 })
                 .width(Length::Fill)
                 .into()
@@ -433,17 +539,46 @@ impl Backend for IcedBackend {
         radius: f32,
     ) -> Self::AnyView<Message> {
         use iced::widget::container;
-        let img = iced::widget::image(path).width(width).height(height);
+
+        // WASM FIX: Ensure path starts with "assets/", but preserve subfolders!
+        let final_path = if cfg!(target_arch = "wasm32") {
+            let p_str = path.to_string_lossy();
+            let result = if p_str.starts_with("/assets") || p_str.starts_with("assets") {
+                path.clone()
+            } else {
+                std::path::PathBuf::from("assets").join(&path)
+            };
+
+            // --- DEBUGGING LOGS ---
+            log::info!(
+                "[IMAGE DEBUG] Orig: '{:?}' | Resolved: '{:?}'",
+                path,
+                result
+            );
+            // ---------------------
+            result
+        } else {
+            path
+        };
+
+        let img = iced::widget::image(final_path).width(width).height(height);
 
         container(img)
             .width(width)
             .height(height)
-            .style(move |_| container::Style {
-                border: iced::Border {
-                    radius: radius.into(),
+            .style({
+                let radius_val = if cfg!(target_arch = "wasm32") {
+                    0.0
+                } else {
+                    radius
+                };
+                move |_| container::Style {
+                    border: iced::Border {
+                        radius: radius_val.into(),
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
+                }
             })
             .into()
     }

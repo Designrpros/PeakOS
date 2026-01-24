@@ -192,7 +192,11 @@ impl<B: Backend> Rectangle<B> {
     }
 
     pub fn corner_radius(mut self, radius: f32) -> Self {
-        self.radius = radius;
+        self.radius = if cfg!(target_arch = "wasm32") {
+            0.0
+        } else {
+            radius
+        };
         self
     }
 
@@ -370,7 +374,11 @@ impl<B: Backend> Image<B> {
     }
 
     pub fn corner_radius(mut self, radius: f32) -> Self {
-        self.radius = radius;
+        self.radius = if cfg!(target_arch = "wasm32") {
+            0.0
+        } else {
+            radius
+        };
         self
     }
 }

@@ -1,38 +1,48 @@
 use super::super::app::Message;
+use super::super::page::PageResult;
 use crate::prelude::*;
 
-pub fn view(_context: &Context, is_mobile: bool) -> Box<dyn View<Message, IcedBackend>> {
-    Box::new(
-        VStack::new_generic()
-            .spacing(24.0)
-            .padding(Padding {
-                top: 96.0,
-                right: if is_mobile { 20.0 } else { 64.0 },
-                bottom: 120.0,
-                left: if is_mobile { 20.0 } else { 64.0 },
-            })
-            .push(Text::<IcedBackend>::new("Dock Component").large_title().bold())
-            .push(Text::<IcedBackend>::new("The Dock is a minimalistic, floating navigation component used for high-level app switching.").title3().secondary())
-            .push(Divider::<IcedBackend>::new())
-            .push(ProxyView::new(move |theme_ctx| {
-                let theme = theme_ctx.theme;
-                container(
-                    VStack::new_generic()
-                        .spacing(12.0)
-                        .push(Text::<IcedBackend>::new("Floating & Responsive").body().bold())
-                        .push(Text::<IcedBackend>::new("It automatically adapts to screen width and can be positioned at the bottom center or sides.").secondary())
-                        .view(theme_ctx)
-                )
-                .padding(40)
-                .style(move |_| container::Style {
-                    background: Some(theme.colors.surface_variant.scale_alpha(0.1).into()),
+pub fn view(_context: &Context, is_mobile: bool) -> PageResult {
+    VStack::new_generic()
+        .spacing(24.0)
+        .padding(Padding {
+            top: 96.0,
+            right: if is_mobile { 20.0 } else { 64.0 },
+            bottom: 120.0,
+            left: if is_mobile { 20.0 } else { 64.0 },
+        })
+        .push(Text::<IcedBackend>::new("Floating Docks").large_title().bold())
+        .push(
+            Text::<IcedBackend>::new("Minimalist navigation with high-density shortcuts.")
+                .title3()
+                .secondary(),
+        )
+        .push(Divider::<IcedBackend>::new())
+        .push(ProxyView::new(move |theme_ctx| {
+            let theme = theme_ctx.theme;
+            container(
+                Text::<IcedBackend>::new(
+                    "The Dock system is designed to provide quick access to commonly used tools without visual clutter.",
+                    )
+                    .body()
+                    .secondary()
+                    .view(theme_ctx),
+            )
+            .padding(40)
+            .style({
+                let radius = theme_ctx.radius(12.0);
+                let bg_color = theme.colors.surface_variant.scale_alpha(0.1);
+                move |_| container::Style {
+                    background: Some(bg_color.into()),
                     border: Border {
-                        radius: 12.0.into(),
+                        radius,
                         ..Default::default()
                     },
                     ..Default::default()
-                })
-                .into()
-            }))
-    )
+                }
+            })
+            .into()
+        }))
+        .searchable("", "Search docks...", |_| Message::ToggleSearch)
+        .sidebar_toggle(Message::ToggleSidebar)
 }

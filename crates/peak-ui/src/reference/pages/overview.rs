@@ -1,8 +1,9 @@
 use super::super::app::Message;
+use super::super::page::PageResult;
 use crate::prelude::*;
 
-pub fn view(_context: &Context, is_mobile: bool) -> Box<dyn View<Message, IcedBackend>> {
-    Box::new(
+pub fn view(_context: &Context, is_mobile: bool) -> PageResult {
+    PageResult::new(
         VStack::new_generic()
             .width(Length::Fill)
             .spacing(32.0)
@@ -53,17 +54,22 @@ pub fn view(_context: &Context, is_mobile: bool) -> Box<dyn View<Message, IcedBa
                 )
                 .padding(32)
                 .width(Length::Fill)
-                .style(move |_| container::Style {
-                    background: Some(theme.colors.surface_variant.scale_alpha(0.2).into()),
-                    border: Border {
-                        radius: 16.0.into(),
-                        color: theme.colors.border.scale_alpha(0.1),
-                        width: 1.0,
-                    },
-                    ..Default::default()
+                .style({
+                    let radius = ctx.radius(16.0);
+                    let bg_color = theme.colors.surface_variant.scale_alpha(0.2);
+                    let border_color = theme.colors.border.scale_alpha(0.1);
+                    move |_| container::Style {
+                        background: Some(bg_color.into()),
+                        border: Border {
+                            radius,
+                            color: border_color,
+                            width: 1.0,
+                        },
+                        ..Default::default()
+                    }
                 })
                 .into()
-            }))
+            })),
     )
 }
 
@@ -91,13 +97,17 @@ fn pillar_card(title: &str, description: &str, icon: &str) -> impl View<Message,
                             .view(ctx_inner),
                     )
                     .padding(16)
-                    .style(move |_| container::Style {
-                        background: Some(t.colors.primary.scale_alpha(0.1).into()),
-                        border: Border {
-                            radius: 12.0.into(),
+                    .style({
+                        let radius = ctx_inner.radius(12.0);
+                        let bg_color = t.colors.primary.scale_alpha(0.1);
+                        move |_| container::Style {
+                            background: Some(bg_color.into()),
+                            border: Border {
+                                radius,
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
+                        }
                     })
                     .into()
                 }))
@@ -119,14 +129,19 @@ fn pillar_card(title: &str, description: &str, icon: &str) -> impl View<Message,
         )
         .padding(20)
         .width(Length::Fill)
-        .style(move |_| container::Style {
-            background: Some(theme.colors.surface.into()),
-            border: Border {
-                radius: 16.0.into(),
-                color: theme.colors.border.scale_alpha(0.1),
-                width: 1.0,
-            },
-            ..Default::default()
+        .style({
+            let radius = ctx.radius(16.0);
+            let bg_color = theme.colors.surface;
+            let border_color = theme.colors.border.scale_alpha(0.1);
+            move |_| container::Style {
+                background: Some(bg_color.into()),
+                border: Border {
+                    radius,
+                    color: border_color,
+                    width: 1.0,
+                },
+                ..Default::default()
+            }
         })
         .into()
     })

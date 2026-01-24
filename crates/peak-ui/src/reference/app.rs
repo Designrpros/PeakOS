@@ -1,4 +1,3 @@
-use super::views::ContentView;
 use crate::prelude::*;
 use peak_core::registry::ShellMode;
 use peak_theme::{ThemeTokens, ThemeTone};
@@ -10,6 +9,7 @@ pub struct App {
     pub show_sidebar: bool,
     pub show_user_profile: bool,
     pub navigation_mode: String,
+    pub search_query: String,
     pub expanded_sections: std::collections::HashSet<String>,
 }
 
@@ -22,6 +22,7 @@ pub enum Message {
     ToggleUserProfile,
     SetNavigationMode(String),
     ToggleSection(String),
+    Search(String),
 }
 
 impl Default for App {
@@ -29,10 +30,11 @@ impl Default for App {
         Self {
             active_tab: "Introduction".to_string(),
             show_search: false,
-            show_inspector: true,
+            show_inspector: false,
             show_sidebar: true,
             show_user_profile: false,
             navigation_mode: "Documentation".to_string(),
+            search_query: "".to_string(),
             expanded_sections: ["Components".to_string()].into_iter().collect(),
         }
     }
@@ -43,10 +45,14 @@ impl App {
         match message {
             Message::SetTab(tab) => {
                 self.active_tab = tab;
+                self.show_search = false;
                 Task::none()
             }
             Message::ToggleSearch => {
                 self.show_search = !self.show_search;
+                if !self.show_search {
+                    self.search_query.clear();
+                }
                 Task::none()
             }
             Message::ToggleInspector => {
@@ -62,7 +68,15 @@ impl App {
                 Task::none()
             }
             Message::SetNavigationMode(mode) => {
-                self.navigation_mode = mode;
+                self.navigation_mode = mode.clone();
+                self.active_tab = match mode.as_str() {
+                    "Guide" => "Introduction".to_string(),
+                    "Documentation" => "Overview".to_string(),
+                    "Components" => "Buttons".to_string(),
+                    "Hooks" => "use_state".to_string(),
+                    "Settings" => "Appearance".to_string(),
+                    _ => self.active_tab.clone(),
+                };
                 Task::none()
             }
             Message::ToggleSection(section) => {
@@ -73,6 +87,10 @@ impl App {
                 }
                 Task::none()
             }
+            Message::Search(query) => {
+                self.search_query = query;
+                Task::none()
+            }
         }
     }
 
@@ -81,8 +99,19 @@ impl App {
         let tone = ThemeTone::Light;
         let tokens = ThemeTokens::get(mode, tone);
 
-        let content = ContentView::new(self);
+        // 1. Prepare Content
+        let content = super::views::ContentView::new(self);
 
-        responsive(mode, tokens, move |context| content.view(&context))
+        crate::core::responsive(mode, tokens, move |context| {
+            // Main App Content - ContentView handles splitting, inspector, and layers
+            iced::widget::container(content.view(&context))
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .style(move |_| iced::widget::container::Style {
+                    background: Some(tokens.colors.background.into()),
+                    ..Default::default()
+                })
+                .into()
+        })
     }
 }

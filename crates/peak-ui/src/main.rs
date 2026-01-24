@@ -30,10 +30,19 @@ pub fn run() {
     console_log::init_with_level(log::Level::Debug).expect("Console log failed");
     log::info!("PeakUI Showcase WASM started");
 
-    let _ = iced::application(
-        "PeakUI Showcase",
+    let result = iced::application(
+        "WASM Clean Slate",
         reference::App::update,
         reference::App::view,
     )
+    .window(iced::window::Settings {
+        visible: true,
+        ..Default::default()
+    })
     .run();
+
+    #[cfg(target_arch = "wasm32")]
+    if let Err(e) = result {
+        log::error!("Iced run failed: {:?}", e);
+    }
 }

@@ -109,25 +109,14 @@ impl IconResolver {
         let rel_path = format!("icons/system/categories/{}.svg", category_name);
         let path = crate::utils::assets::get_asset_path(&rel_path);
         #[cfg(target_arch = "wasm32")]
-        {
-            return AppIcon::Svg(SvgHandle::from_path(path));
-        }
+        return AppIcon::Svg(SvgHandle::from_path(path));
 
         #[cfg(not(target_arch = "wasm32"))]
         if path.exists() {
-            return AppIcon::Svg(load_system_svg("categories", category_name, color));
-        }
-
-        // 5. Ultimate Fallback (Generic System Icon)
-        #[cfg(not(target_arch = "wasm32"))]
-        return AppIcon::Svg(load_system_svg("system", "utilities", color));
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            // This is actually redundant because of the return above,
-            // but we keep it to satisfy the compiler's path analysis
-            // in a clean way without warning.
-            AppIcon::Svg(SvgHandle::from_memory(Vec::new()))
+            AppIcon::Svg(load_system_svg("categories", category_name, color))
+        } else {
+            // 5. Ultimate Fallback (Generic System Icon)
+            AppIcon::Svg(load_system_svg("system", "utilities", color))
         }
     }
 }

@@ -1,11 +1,14 @@
 pub mod api_schema;
 pub mod community;
 pub mod component_detail;
+pub mod components;
 pub mod customizations;
 pub mod docks;
+pub mod hooks;
 pub mod introduction;
 pub mod layout;
 pub mod overview;
 pub mod roadmap;
+pub mod settings;
 pub mod sizing;
 pub mod typography;

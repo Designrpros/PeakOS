@@ -73,10 +73,14 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                 container(self.sidebar.view(context))
                     .width(Length::Fill)
                     .height(Length::Fill)
-                    .style(move |_| container::Style {
-                        background: Some(theme.colors.background.into()),
-                        text_color: Some(theme.colors.text_primary),
-                        ..Default::default()
+                    .style({
+                        let bg_color = theme.colors.background;
+                        let text_color = theme.colors.text_primary;
+                        move |_| container::Style {
+                            background: Some(bg_color.into()),
+                            text_color: Some(text_color),
+                            ..Default::default()
+                        }
                     })
                     .into()
             } else {
@@ -98,9 +102,12 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                         container(back_button)
                             .padding([16, 20])
                             .width(Length::Fill)
-                            .style(move |_| container::Style {
-                                background: Some(theme.colors.background.into()),
-                                ..Default::default()
+                            .style({
+                                let bg_color = theme.colors.background;
+                                move |_| container::Style {
+                                    background: Some(bg_color.into()),
+                                    ..Default::default()
+                                }
                             }),
                     );
                 }
@@ -116,10 +123,14 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                 let base_content = container(content_col)
                     .width(Length::Fill)
                     .height(Length::Fill)
-                    .style(move |_| container::Style {
-                        background: Some(theme.colors.background.into()),
-                        text_color: Some(theme.colors.text_primary),
-                        ..Default::default()
+                    .style({
+                        let bg_color = theme.colors.background;
+                        let text_color = theme.colors.text_primary;
+                        move |_| container::Style {
+                            background: Some(bg_color.into()),
+                            text_color: Some(text_color),
+                            ..Default::default()
+                        }
                     });
 
                 // Use Stack to support Inspector Overlay
@@ -142,17 +153,23 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                         ),
                     );
 
+                    let radius = context.radius(16.0);
+                    let bg_color = theme.colors.surface_variant;
                     let sheet = container(inspector.view(context))
                         .width(Length::Fill)
                         .height(Length::FillPortion(1)) // Take up half screen? Or fixed height?
                         .padding(16)
-                        .style(move |_| container::Style {
-                            background: Some(theme.colors.surface_variant.into()),
-                            border: iced::Border {
-                                radius: 16.0.into(), // Top corners rounded - simplified to all for now
+                        .style({
+                            let bg = bg_color;
+                            let r = radius;
+                            move |_| container::Style {
+                                background: Some(bg.into()),
+                                border: iced::Border {
+                                    radius: r, // Top corners rounded - simplified to all for now
+                                    ..Default::default()
+                                },
                                 ..Default::default()
-                            },
-                            ..Default::default()
+                            }
                         });
 
                     // Align to bottom
@@ -177,31 +194,40 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                 container(self.sidebar.view(context))
                     .width(Length::Fixed(240.0))
                     .height(Length::Fill)
-                    .style(move |_| container::Style {
-                        background: Some(if theme.colors.background.r < 0.1 {
-                            iced::Color::from_rgb8(28, 28, 30).into()
+                    .style({
+                        let bg = if theme.colors.background.r < 0.1 {
+                            iced::Color::from_rgb8(28, 28, 30)
                         } else {
                             let mut c = theme.colors.surface_variant;
                             c.a = 0.5; // High transparency for glass
-                            c.into()
-                        }),
-                        text_color: Some(theme.colors.text_primary),
-                        ..Default::default()
+                            c
+                        };
+                        let text_color = theme.colors.text_primary;
+                        move |_| container::Style {
+                            background: Some(bg.into()),
+                            text_color: Some(text_color),
+                            ..Default::default()
+                        }
                     }),
                 // Right border divider
-                container(iced::widget::Space::new(Length::Fixed(1.0), Length::Fill)).style(
+                container(iced::widget::Space::new(Length::Fixed(1.0), Length::Fill)).style({
+                    let div_color = theme.colors.divider;
                     move |_| container::Style {
-                        background: Some(theme.colors.divider.into()),
+                        background: Some(div_color.into()),
                         ..Default::default()
                     }
-                ),
+                }),
                 container(self.content.view(context))
                     .width(Length::Fill)
                     .height(Length::Fill)
-                    .style(move |_| container::Style {
-                        background: Some(theme.colors.background.into()),
-                        text_color: Some(theme.colors.text_primary),
-                        ..Default::default()
+                    .style({
+                        let bg_color = theme.colors.background;
+                        let text_color = theme.colors.text_primary;
+                        move |_| container::Style {
+                            background: Some(bg_color.into()),
+                            text_color: Some(text_color),
+                            ..Default::default()
+                        }
                     })
             ]
             .height(Length::Fill);
@@ -212,21 +238,26 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                     container(inspector.view(context))
                         .width(Length::Fixed(220.0)) // Standard inspector width
                         .height(Length::Fill)
-                        .style(move |_| container::Style {
-                            background: Some(if theme.colors.background.r < 0.1 {
-                                iced::Color::from_rgb8(28, 28, 30).into() // Darker sidebar match
+                        .style({
+                            let bg = if theme.colors.background.r < 0.1 {
+                                iced::Color::from_rgb8(28, 28, 30)
                             } else {
                                 let mut c = theme.colors.surface;
                                 c.a = 0.5; // Slightly more transparent than sidebar
-                                c.into()
-                            }),
-                            border: iced::Border {
-                                color: theme.colors.divider,
-                                width: 1.0,
+                                c
+                            };
+                            let div_color = theme.colors.divider;
+                            let text_color = theme.colors.text_primary;
+                            move |_| container::Style {
+                                background: Some(bg.into()),
+                                border: iced::Border {
+                                    color: div_color,
+                                    width: 1.0,
+                                    ..Default::default()
+                                },
+                                text_color: Some(text_color),
                                 ..Default::default()
-                            },
-                            text_color: Some(theme.colors.text_primary),
-                            ..Default::default()
+                            }
                         }),
                 );
             }
@@ -234,9 +265,12 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
             container(main_row)
                 .width(Length::Fill)
                 .height(Length::Fill)
-                .style(move |_| container::Style {
-                    background: Some(theme.colors.background.into()),
-                    ..Default::default()
+                .style({
+                    let bg_color = theme.colors.background;
+                    move |_| container::Style {
+                        background: Some(bg_color.into()),
+                        ..Default::default()
+                    }
                 })
                 .into()
         }

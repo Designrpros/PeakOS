@@ -77,7 +77,7 @@ impl ThemeTokens {
             Color::from_rgba(0.0, 0.0, 0.0, 0.15)
         };
 
-        Self {
+        let mut tokens = Self {
             colors,
             tone,
             glass_opacity,
@@ -88,7 +88,18 @@ impl ThemeTokens {
             shadow_blur,
             spacing_unit,
             scaling: 1.0, // Default to 1.0, can be overridden
+        };
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            tokens.glass_opacity = 1.0;
+            tokens.blur_radius = 0.0;
+            tokens.radius = 0.0;
+            tokens.shadow_blur = 0.0;
+            tokens.shadow_offset = [0.0, 0.0];
         }
+
+        tokens
     }
 
     /// Get theme tokens for a shell mode using its default theme

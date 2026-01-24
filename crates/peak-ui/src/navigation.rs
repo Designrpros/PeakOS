@@ -1,8 +1,157 @@
 use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
+use crate::toolbar::ToolbarItem;
 use iced::widget::{column, container, row, scrollable, text};
 use iced::{Alignment, Color, Element, Length, Padding};
 use peak_core::icons;
 use std::sync::Arc;
+
+/// Configuration for search behavior in a page
+pub struct SearchConfig<Message: 'static> {
+    /// The current search query
+    pub query: String,
+    /// Placeholder text for the search field
+    pub placeholder: String,
+    /// Callback triggered when the search query changes
+    pub on_change: Arc<dyn Fn(String) -> Message + Send + Sync + 'static>,
+}
+
+/// Result of a page rendering, including contextual UI elements
+pub struct PageResult<Message: 'static, B: Backend = IcedBackend> {
+    /// The main content of the page
+    pub view: Box<dyn View<Message, B>>,
+    /// Contextual toolbar items contributed by the page
+    pub toolbar_items: Vec<ToolbarItem<Message>>,
+    /// Optional contextual inspector view provided by the page
+    pub inspector: Option<Box<dyn View<Message, B>>>,
+    /// Optional search configuration
+    pub search_config: Option<SearchConfig<Message>>,
+    /// Optional message to toggle the sidebar (used for burger menu on mobile)
+    pub sidebar_toggle: Option<Message>,
+}
+
+impl<Message: 'static, B: Backend> PageResult<Message, B> {
+    pub fn new(view: impl View<Message, B> + 'static) -> Self {
+        Self {
+            view: Box::new(view),
+            toolbar_items: Vec::new(),
+            inspector: None,
+            search_config: None,
+            sidebar_toggle: None,
+        }
+    }
+
+    pub fn toolbar(mut self, item: ToolbarItem<Message>) -> Self {
+        self.toolbar_items.push(item);
+        self
+    }
+
+    pub fn inspector(mut self, inspector: impl View<Message, B> + 'static) -> Self {
+        self.inspector = Some(Box::new(inspector));
+        self
+    }
+
+    pub fn searchable(
+        mut self,
+        query: impl Into<String>,
+        placeholder: impl Into<String>,
+        on_change: impl Fn(String) -> Message + Send + Sync + 'static,
+    ) -> Self {
+        self.search_config = Some(SearchConfig {
+            query: query.into(),
+            placeholder: placeholder.into(),
+            on_change: Arc::new(on_change),
+        });
+        self
+    }
+
+    pub fn sidebar_toggle(mut self, msg: Message) -> Self {
+        self.sidebar_toggle = Some(msg);
+        self
+    }
+}
+
+/// A Page is a top-level view that can contribute contextual UI elements like toolbars and inspectors.
+pub trait Page<Message: 'static, B: Backend = IcedBackend>: View<Message, B> {
+    /// Returns the contextual toolbar items for this page.
+    fn page_toolbar_items(&self) -> Vec<ToolbarItem<Message>> {
+        Vec::new()
+    }
+
+    /// Returns the optional contextual inspector for this page.
+    fn page_inspector(&self) -> Option<Box<dyn View<Message, B>>> {
+        None
+    }
+
+    /// Returns the optional search configuration for this page.
+    fn page_search_config(&self) -> Option<SearchConfig<Message>> {
+        None
+    }
+
+    /// Returns the optional sidebar toggle message for this page.
+    fn page_sidebar_toggle(&self) -> Option<Message> {
+        None
+    }
+
+    /// Wraps this page into a PageResult.
+    fn into_page_result(self) -> PageResult<Message, B>
+    where
+        Self: Sized + 'static,
+    {
+        let toolbar_items = self.page_toolbar_items();
+        let inspector = self.page_inspector();
+        let search_config = self.page_search_config();
+        let sidebar_toggle = self.page_sidebar_toggle();
+        PageResult {
+            view: Box::new(self),
+            toolbar_items,
+            inspector,
+            search_config,
+            sidebar_toggle,
+        }
+    }
+}
+
+/// Extensions to the View trait for ergonomic contextual UI building.
+pub trait ViewExt<Message: 'static, B: Backend = IcedBackend>: View<Message, B> + Sized {
+    /// Adds a contextual toolbar item to this view, turning it into a PageResult.
+    fn toolbar(self, item: ToolbarItem<Message>) -> PageResult<Message, B>
+    where
+        Self: 'static,
+    {
+        PageResult::new(self).toolbar(item)
+    }
+
+    /// Adds a contextual inspector to this view, turning it into a PageResult.
+    fn inspector(self, inspector: impl View<Message, B> + 'static) -> PageResult<Message, B>
+    where
+        Self: 'static,
+    {
+        PageResult::new(self).inspector(inspector)
+    }
+
+    /// Adds a search configuration to this view, turning it into a PageResult.
+    fn searchable(
+        self,
+        query: impl Into<String>,
+        placeholder: impl Into<String>,
+        on_change: impl Fn(String) -> Message + Send + Sync + 'static,
+    ) -> PageResult<Message, B>
+    where
+        Self: 'static,
+    {
+        PageResult::new(self).searchable(query, placeholder, on_change)
+    }
+
+    /// Adds a sidebar toggle message to this view, turning it into a PageResult.
+    fn sidebar_toggle(self, msg: Message) -> PageResult<Message, B>
+    where
+        Self: 'static,
+    {
+        PageResult::new(self).sidebar_toggle(msg)
+    }
+}
+
+impl<Message: 'static, B: Backend, T: View<Message, B>> ViewExt<Message, B> for T {}
 
 pub struct SidebarItem<Message> {
     pub label: String,
@@ -115,17 +264,25 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for Sidebar<Message, I
                     .align_y(Alignment::Center)
                     .padding(8),
                 )
-                .style(move |_| container::Style {
-                    background: Some({
+                .style({
+                    let bg_color = {
                         let mut c = tokens.colors.text_primary;
                         c.a = 0.05;
-                        c.into()
-                    }),
-                    border: iced::Border {
-                        radius: 8.0.into(),
+                        c
+                    };
+                    let radius_val = if cfg!(target_arch = "wasm32") {
+                        0.0
+                    } else {
+                        8.0
+                    };
+                    move |_| container::Style {
+                        background: Some(bg_color.into()),
+                        border: iced::Border {
+                            radius: radius_val.into(),
+                            ..Default::default()
+                        },
                         ..Default::default()
-                    },
-                    ..Default::default()
+                    }
                 }),
             );
             content = content.push(iced::widget::vertical_space().height(16));
@@ -166,25 +323,35 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for Sidebar<Message, I
                 .on_press(on_press)
                 .padding(Padding::from([8, 12]))
                 .width(Length::Fill)
-                .style(move |_theme, status| {
-                    let final_bg = if is_selected {
-                        bg
-                    } else if status == iced::widget::button::Status::Hovered {
-                        let mut c = tokens.colors.text_primary;
-                        c.a = 0.05;
-                        c
+                .style({
+                    let bg_selected = bg;
+                    let text_color = text_color;
+                    let text_primary = tokens.colors.text_primary;
+                    let radius_val = if cfg!(target_arch = "wasm32") {
+                        0.0
                     } else {
-                        Color::TRANSPARENT
+                        8.0
                     };
+                    move |_theme, status| {
+                        let final_bg = if is_selected {
+                            bg_selected
+                        } else if status == iced::widget::button::Status::Hovered {
+                            let mut c = text_primary;
+                            c.a = 0.05;
+                            c
+                        } else {
+                            Color::TRANSPARENT
+                        };
 
-                    iced::widget::button::Style {
-                        background: Some(final_bg.into()),
-                        text_color,
-                        border: iced::Border {
-                            radius: 8.0.into(),
+                        iced::widget::button::Style {
+                            background: Some(final_bg.into()),
+                            text_color,
+                            border: iced::Border {
+                                radius: radius_val.into(),
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
+                        }
                     }
                 }),
             );

@@ -527,7 +527,7 @@ impl PeakNative {
                 workspace_stack = workspace_stack.push(
                     container(
                         container(window_chrome::view(
-                            title,
+                            title.to_string(),
                             content,
                             on_close,
                             Some(Message::Maximize(app_id)),

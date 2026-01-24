@@ -1,9 +1,10 @@
-use super::super::app::Message;
 use super::super::mcp;
+use super::super::page::PageResult;
 use crate::prelude::*;
+use crate::reference::app::Message;
 
-pub fn view(_context: &Context, is_mobile: bool) -> Box<dyn View<Message, IcedBackend>> {
-    Box::new(
+pub fn view(_context: &Context, is_mobile: bool) -> PageResult {
+    PageResult::new(
         VStack::new_generic()
             .spacing(24.0)
             .padding(Padding {
@@ -32,16 +33,27 @@ pub fn view(_context: &Context, is_mobile: bool) -> Box<dyn View<Message, IcedBa
                 )
                 .padding(24)
                 .width(Length::Fill)
-                .style(move |_| container::Style {
-                    background: Some(theme.colors.surface_variant.scale_alpha(0.3).into()),
-                    border: Border {
-                        radius: 12.0.into(),
-                        color: theme.colors.border.scale_alpha(0.1),
-                        width: 1.0,
-                    },
-                    ..Default::default()
+                .style({
+                    let radius = if cfg!(target_arch = "wasm32") {
+                        0.0
+                    } else {
+                        12.0
+                    }
+                    .into();
+                    let bg_color = theme.colors.surface_variant.scale_alpha(0.3);
+                    let border_color = theme.colors.border.scale_alpha(0.1);
+                    move |_| container::Style {
+                        background: Some(bg_color.into()),
+                        border: Border {
+                            radius,
+                            color: border_color,
+                            width: 1.0,
+                        },
+                        ..Default::default()
+                    }
                 })
                 .into()
             })),
     )
+    .sidebar_toggle(Message::ToggleSidebar)
 }

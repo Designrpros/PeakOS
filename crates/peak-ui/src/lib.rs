@@ -37,7 +37,7 @@ pub mod prelude {
     pub use crate::modifiers::{ControlSize, Intent, Variant};
     pub use crate::motion::{AnimationConfig, Interpolatable, MotionState, Spring};
     pub use crate::nav_split_view::NavigationSplitView;
-    pub use crate::navigation::Sidebar;
+    pub use crate::navigation::{Page, PageResult, SearchConfig, Sidebar, ViewExt};
     pub use crate::scroll_view::ScrollView;
     pub use crate::segmented_picker::SegmentedPicker;
     pub use crate::toolbar::{ToolbarGroup, ToolbarItem};

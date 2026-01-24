@@ -46,36 +46,48 @@ impl<Message: 'static> View<Message, IcedBackend> for Card<Message, IcedBackend>
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let theme = context.theme;
 
+        let shadow = context.shadow(
+            theme.shadow_color,
+            iced::Vector::new(theme.shadow_offset[0], theme.shadow_offset[1]),
+            theme.shadow_blur,
+        );
+
         container(
             container(self.content.view(context))
                 .padding(self.padding)
                 .width(self.width)
                 .height(self.height)
-                .style(move |_theme| container::Style {
-                    background: Some(theme.colors.surface.into()),
-                    border: iced::Border {
-                        radius: theme.radius.into(),
-                        color: theme.colors.border.scale_alpha(0.5),
-                        width: 1.0,
-                    },
-                    text_color: Some(theme.colors.text_primary),
-                    ..Default::default()
+                .style({
+                    let radius = context.radius(theme.radius);
+                    let bg_color = theme.colors.surface;
+                    let border_color = theme.colors.border.scale_alpha(0.5);
+                    let text_color = theme.colors.text_primary;
+                    move |_theme| container::Style {
+                        background: Some(bg_color.into()),
+                        border: iced::Border {
+                            radius,
+                            color: border_color,
+                            width: 1.0,
+                        },
+                        text_color: Some(text_color),
+                        ..Default::default()
+                    }
                 }),
         )
         .width(self.width)
         .height(self.height)
-        .style(move |_theme| container::Style {
-            border: iced::Border {
-                radius: theme.radius.into(),
-                color: theme.colors.border,
-                width: 1.0,
-            },
-            shadow: iced::Shadow {
-                color: theme.shadow_color,
-                offset: iced::Vector::new(theme.shadow_offset[0], theme.shadow_offset[1]),
-                blur_radius: theme.shadow_blur,
-            },
-            ..Default::default()
+        .style({
+            let radius = context.radius(theme.radius);
+            let border_color = theme.colors.border;
+            move |_theme| container::Style {
+                border: iced::Border {
+                    radius,
+                    color: border_color,
+                    width: 1.0,
+                },
+                shadow,
+                ..Default::default()
+            }
         })
         .into()
     }
@@ -246,27 +258,39 @@ impl<Message: 'static> View<Message, IcedBackend> for GlassCard<Message, IcedBac
             Color::from_rgba(1.0, 1.0, 1.0, 0.05)
         };
 
+        let shadow = context.shadow(
+            theme.shadow_color,
+            iced::Vector::new(theme.shadow_offset[0], theme.shadow_offset[1]),
+            theme.shadow_blur,
+        );
+
         container(iced::widget::stack![
             // Base Glass Layer
             container(iced::widget::Space::new(Length::Fill, Length::Fill))
                 .width(self.width)
                 .height(self.height)
-                .style(move |_| container::Style {
-                    background: Some(bg.into()),
-                    ..Default::default()
+                .style({
+                    let bg_color = bg;
+                    move |_| container::Style {
+                        background: Some(bg_color.into()),
+                        ..Default::default()
+                    }
                 }),
             // Refraction / Shine Layer
             container(iced::widget::Space::new(Length::Fill, Length::Fill))
                 .width(self.width)
                 .height(self.height)
-                .style(move |_| container::Style {
-                    background: Some(iced::Background::Gradient(
-                        iced::gradient::Linear::new(iced::Degrees(135.0))
-                            .add_stop(0.0, glass_color)
-                            .add_stop(0.5, Color::TRANSPARENT)
-                            .into()
-                    )),
-                    ..Default::default()
+                .style({
+                    let g_color = glass_color;
+                    move |_| container::Style {
+                        background: Some(iced::Background::Gradient(
+                            iced::gradient::Linear::new(iced::Degrees(135.0))
+                                .add_stop(0.0, g_color)
+                                .add_stop(0.5, Color::TRANSPARENT)
+                                .into(),
+                        )),
+                        ..Default::default()
+                    }
                 }),
             // Content Layer
             container(self.content.view(context))
@@ -276,18 +300,17 @@ impl<Message: 'static> View<Message, IcedBackend> for GlassCard<Message, IcedBac
         ])
         .width(self.width)
         .height(self.height)
-        .style(move |_| container::Style {
-            border: iced::Border {
-                radius: theme.radius.into(),
-                color: Color::from_rgba(1.0, 1.0, 1.0, 0.15),
-                width: 1.0,
-            },
-            shadow: iced::Shadow {
-                color: theme.shadow_color,
-                offset: iced::Vector::new(theme.shadow_offset[0], theme.shadow_offset[1]),
-                blur_radius: theme.shadow_blur,
-            },
-            ..Default::default()
+        .style({
+            let radius = context.radius(theme.radius);
+            move |_| container::Style {
+                border: iced::Border {
+                    radius,
+                    color: Color::from_rgba(1.0, 1.0, 1.0, 0.15),
+                    width: 1.0,
+                },
+                shadow,
+                ..Default::default()
+            }
         })
         .into()
     }

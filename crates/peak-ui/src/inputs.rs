@@ -49,29 +49,44 @@ impl<Message: Clone + 'static> View<Message> for TextField<Message> {
         let theme = context.theme;
         let on_change = self.on_change.clone();
 
-        let input = text_input(&self.placeholder, &self.value)
+        let radius = context.radius(8.0);
+        let primary_color = theme.colors.primary;
+        let variant_bg_color = theme.colors.surface_variant;
+        let text_secondary_color = theme.colors.text_secondary;
+        let text_primary_color = theme.colors.text_primary;
+
+        let val_str = self.value.clone();
+        let placeholder_str = self.placeholder.clone();
+        let input = text_input(&placeholder_str, &val_str)
             .on_input(move |s| (on_change)(s))
             .secure(self.is_secure)
             .padding(12)
             .width(Length::Fill)
-            .style(move |_theme, status| {
-                let active_border = if matches!(status, text_input::Status::Focused) {
-                    theme.colors.primary
-                } else {
-                    Color::TRANSPARENT
-                };
+            .style({
+                let r = radius;
+                let p_color = primary_color;
+                let v_bg = variant_bg_color;
+                let t_sec = text_secondary_color;
+                let t_pri = text_primary_color;
+                move |_theme, status| {
+                    let active_border = if matches!(status, text_input::Status::Focused) {
+                        p_color
+                    } else {
+                        Color::TRANSPARENT
+                    };
 
-                text_input::Style {
-                    background: theme.colors.surface_variant.into(),
-                    border: iced::Border {
-                        radius: 8.0.into(),
-                        width: 1.0,
-                        color: active_border,
-                    },
-                    icon: theme.colors.text_secondary,
-                    placeholder: theme.colors.text_secondary,
-                    value: theme.colors.text_primary,
-                    selection: theme.colors.primary,
+                    text_input::Style {
+                        background: v_bg.into(),
+                        border: iced::Border {
+                            radius: r,
+                            width: 1.0,
+                            color: active_border,
+                        },
+                        icon: t_sec,
+                        placeholder: t_sec,
+                        value: t_pri,
+                        selection: p_color,
+                    }
                 }
             });
 
@@ -132,28 +147,41 @@ impl<Message: Clone + 'static> View<Message> for TextInput<Message> {
         let theme = context.theme;
         let on_change = self.on_change.clone();
 
-        let mut input = text_input(&self.placeholder, &self.value)
+        let radius = context.radius(4.0);
+        let primary_color = theme.colors.primary;
+        let text_secondary_color = theme.colors.text_secondary;
+        let text_primary_color = theme.colors.text_primary;
+
+        let val_str = self.value.clone();
+        let placeholder_str = self.placeholder.clone();
+        let mut input = text_input(&placeholder_str, &val_str)
             .on_input(move |s| (on_change)(s))
             .padding(8)
             .font(self.font)
-            .style(move |_theme, status| {
-                let active_border = if matches!(status, text_input::Status::Focused) {
-                    theme.colors.primary
-                } else {
-                    Color::TRANSPARENT
-                };
+            .style({
+                let r = radius;
+                let p_color = primary_color;
+                let t_sec = text_secondary_color;
+                let t_pri = text_primary_color;
+                move |_theme, status| {
+                    let active_border = if matches!(status, text_input::Status::Focused) {
+                        p_color
+                    } else {
+                        Color::TRANSPARENT
+                    };
 
-                text_input::Style {
-                    background: Color::TRANSPARENT.into(),
-                    border: iced::Border {
-                        radius: 4.0.into(),
-                        width: 0.0,
-                        color: active_border,
-                    },
-                    icon: theme.colors.text_secondary,
-                    placeholder: theme.colors.text_secondary,
-                    value: theme.colors.text_primary,
-                    selection: theme.colors.primary,
+                    text_input::Style {
+                        background: Color::TRANSPARENT.into(),
+                        border: iced::Border {
+                            radius: r,
+                            width: 0.0,
+                            color: active_border,
+                        },
+                        icon: t_sec,
+                        placeholder: t_sec,
+                        value: t_pri,
+                        selection: p_color,
+                    }
                 }
             });
 

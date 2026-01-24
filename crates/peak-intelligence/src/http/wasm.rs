@@ -19,7 +19,7 @@ pub async fn get_with_headers(
     let window =
         web_sys::window().ok_or_else(|| HttpError::WasmError("No window object".to_string()))?;
 
-    let mut opts = RequestInit::new();
+    let opts = RequestInit::new();
     opts.set_method("GET");
     opts.set_mode(RequestMode::Cors);
 
@@ -73,7 +73,7 @@ pub async fn post_json_with_headers<T: Serialize>(
 
     let json_body = serde_json::to_string(body)?;
 
-    let mut opts = RequestInit::new();
+    let opts = RequestInit::new();
     opts.set_method("POST");
     opts.set_mode(RequestMode::Cors);
     opts.set_body(&wasm_bindgen::JsValue::from_str(&json_body));

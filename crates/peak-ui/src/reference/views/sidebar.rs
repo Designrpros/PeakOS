@@ -4,13 +4,19 @@ use std::collections::HashSet;
 
 pub struct SidebarView {
     pub active_tab: String,
+    pub navigation_mode: String,
     pub expanded_sections: HashSet<String>,
 }
 
 impl SidebarView {
-    pub fn new(active_tab: String, expanded_sections: HashSet<String>) -> Self {
+    pub fn new(
+        active_tab: String,
+        navigation_mode: String,
+        expanded_sections: HashSet<String>,
+    ) -> Self {
         Self {
             active_tab,
+            navigation_mode,
             expanded_sections,
         }
     }
@@ -21,16 +27,18 @@ impl View<Message, IcedBackend> for SidebarView {
         let theme = context.theme;
         let active_tab = &self.active_tab;
 
-        container(
-            ScrollView::new(
-                VStack::new_generic()
-                    .spacing(4.0)
-                    .padding(Padding {
-                        top: 96.0,
-                        right: 16.0,
-                        bottom: 40.0,
-                        left: 16.0,
-                    })
+        let mut content = VStack::<Message, IcedBackend>::new_generic()
+            .spacing(4.0)
+            .padding(Padding {
+                top: 96.0,
+                right: 16.0,
+                bottom: 40.0,
+                left: 16.0,
+            });
+
+        match self.navigation_mode.as_str() {
+            "Guide" => {
+                content = content
                     .push(sidebar_section_header("GETTING STARTED"))
                     .push(sidebar_item(
                         "Introduction",
@@ -42,8 +50,10 @@ impl View<Message, IcedBackend> for SidebarView {
                         "Community",
                         "users",
                         active_tab == "Community",
-                    ))
-                    .push(Space::<IcedBackend>::new(0.0.into(), 16.0.into()))
+                    ));
+            }
+            "Documentation" => {
+                content = content
                     .push(sidebar_section_header("CORE CONCEPTS"))
                     .push(sidebar_item("Overview", "layers", active_tab == "Overview"))
                     .push(sidebar_item(
@@ -62,7 +72,6 @@ impl View<Message, IcedBackend> for SidebarView {
                         active_tab == "Typography",
                     ))
                     .push(sidebar_item("Layout", "grid", active_tab == "Layout"))
-                    .push(sidebar_item("Docks", "monitor", active_tab == "Docks"))
                     .push(Space::<IcedBackend>::new(0.0.into(), 16.0.into()))
                     .push(self.tree_section(
                         "COMPONENTS",
@@ -82,22 +91,78 @@ impl View<Message, IcedBackend> for SidebarView {
                         "API Schema",
                         "code",
                         active_tab == "API Schema",
-                    )),
-            )
-            .view(context),
-        )
-        .width(260)
-        .height(Length::Fill)
-        .style(move |_| container::Style {
-            background: Some(theme.colors.surface.scale_alpha(0.5).into()),
-            border: Border {
-                color: theme.colors.border.scale_alpha(0.05),
-                width: 1.0,
-                radius: 0.0.into(),
-            },
-            ..Default::default()
-        })
-        .into()
+                    ));
+            }
+            "Components" => {
+                content = content
+                    .push(sidebar_section_header("VISUAL GALLERY"))
+                    .push(sidebar_item("Buttons", "square", active_tab == "Buttons"))
+                    .push(sidebar_item("Inputs", "edit-3", active_tab == "Inputs"))
+                    .push(sidebar_item(
+                        "Toggles",
+                        "toggle-right",
+                        active_tab == "Toggles",
+                    ))
+                    .push(sidebar_item("Sliders", "sliders", active_tab == "Sliders"))
+                    .push(sidebar_item("Pickers", "list", active_tab == "Pickers"));
+            }
+            "Hooks" => {
+                content = content
+                    .push(sidebar_section_header("STATE & EFFECTS"))
+                    .push(sidebar_item("use_state", "zap", active_tab == "use_state"))
+                    .push(sidebar_item(
+                        "use_effect",
+                        "zap",
+                        active_tab == "use_effect",
+                    ))
+                    .push(sidebar_item("use_memo", "zap", active_tab == "use_memo"))
+                    .push(sidebar_item(
+                        "use_callback",
+                        "zap",
+                        active_tab == "use_callback",
+                    ));
+            }
+            "Settings" => {
+                content = content
+                    .push(sidebar_section_header("PREFERENCES"))
+                    .push(sidebar_item(
+                        "Appearance",
+                        "sun",
+                        active_tab == "Appearance",
+                    ))
+                    .push(sidebar_item("Scaling", "maximize", active_tab == "Scaling"))
+                    .push(sidebar_item(
+                        "Shortcuts",
+                        "command",
+                        active_tab == "Shortcuts",
+                    ))
+                    .push(Space::<IcedBackend>::new(0.0.into(), 16.0.into()))
+                    .push(sidebar_section_header("SYSTEM"))
+                    .push(sidebar_item("About", "info", active_tab == "About"))
+                    .push(sidebar_item("Updates", "download", active_tab == "Updates"));
+            }
+            _ => {
+                content = content.push(Text::<IcedBackend>::new("Unknown Mode").secondary());
+            }
+        }
+
+        container(ScrollView::new(content).view(context))
+            .width(260)
+            .height(Length::Fill)
+            .style({
+                let bg_color = theme.colors.surface.scale_alpha(0.5);
+                let border_color = theme.colors.border.scale_alpha(0.05);
+                move |_| container::Style {
+                    background: Some(bg_color.into()),
+                    border: Border {
+                        color: border_color,
+                        width: 1.0,
+                        radius: 0.0.into(),
+                    },
+                    ..Default::default()
+                }
+            })
+            .into()
     }
 }
 

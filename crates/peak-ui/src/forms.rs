@@ -56,38 +56,51 @@ impl<Message: 'static> View<Message, IcedBackend> for Form<Message, IcedBackend>
                 FormStyle::Grouped => {
                     let section_view = section.view(context);
 
-                    // Manually construct the card effect to avoid WrapperView/transmute_copy issues
+                    let radius = context.radius(theme.radius);
+                    let shadow = context.shadow(
+                        theme.shadow_color,
+                        iced::Vector::new(theme.shadow_offset[0], theme.shadow_offset[1]),
+                        theme.shadow_blur,
+                    );
+                    let surface_color = theme.colors.surface;
+                    let border_color = theme.colors.border;
+                    let text_primary_color = theme.colors.text_primary;
+
                     let card = iced::widget::container(
                         iced::widget::container(section_view)
                             .padding(16)
                             .width(Length::Fill)
-                            .style(move |_| iced::widget::container::Style {
-                                background: Some(theme.colors.surface.into()),
-                                border: iced::Border {
-                                    radius: theme.radius.into(),
-                                    color: theme.colors.border.scale_alpha(0.5),
-                                    width: 1.0,
-                                },
-                                text_color: Some(theme.colors.text_primary),
-                                ..Default::default()
+                            .style({
+                                let s_color = surface_color;
+                                let b_color = border_color.scale_alpha(0.5);
+                                let t_color = text_primary_color;
+                                let r = radius;
+                                move |_| iced::widget::container::Style {
+                                    background: Some(s_color.into()),
+                                    border: iced::Border {
+                                        radius: r,
+                                        color: b_color,
+                                        width: 1.0,
+                                    },
+                                    text_color: Some(t_color),
+                                    ..Default::default()
+                                }
                             }),
                     )
                     .width(Length::Fill)
-                    .style(move |_| iced::widget::container::Style {
-                        border: iced::Border {
-                            radius: theme.radius.into(),
-                            color: theme.colors.border,
-                            width: 1.0,
-                        },
-                        shadow: iced::Shadow {
-                            color: theme.shadow_color,
-                            offset: iced::Vector::new(
-                                theme.shadow_offset[0],
-                                theme.shadow_offset[1],
-                            ),
-                            blur_radius: theme.shadow_blur,
-                        },
-                        ..Default::default()
+                    .style({
+                        let b_color = border_color;
+                        let r = radius;
+                        let s = shadow;
+                        move |_| iced::widget::container::Style {
+                            border: iced::Border {
+                                radius: r,
+                                color: b_color,
+                                width: 1.0,
+                            },
+                            shadow: s,
+                            ..Default::default()
+                        }
                     });
 
                     column = column.push(card);

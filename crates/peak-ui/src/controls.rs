@@ -157,82 +157,91 @@ impl<Message: Clone + 'static> View<Message> for Button<Message> {
 
         content = content.push(self.content.view(context));
 
+        let radius = context.radius(8.0);
         button(content)
             .on_press_maybe(self.on_press.clone())
             .padding(padding)
             .width(self.width)
-            .style(move |_theme, status| {
-                let text_color = match variant {
-                    Variant::Solid => theme.colors.on_primary, // Need robust verification
-                    Variant::Soft => base_color,
-                    Variant::Outline => base_color,
-                    Variant::Ghost => base_color,
-                };
+            .style({
+                let r = radius;
+                let v = variant;
+                let b_col = base_color;
+                let o_pri = theme.colors.on_primary;
+                let s_col = theme.shadow_color;
 
-                // Define backgrounds based on status and variant
-                let background = match (variant, status) {
-                    (Variant::Solid, button::Status::Active) => Some(base_color.into()),
-                    (Variant::Solid, button::Status::Hovered) => {
-                        Some(base_color.scale_alpha(0.9).into())
-                    }
-                    (Variant::Solid, button::Status::Pressed) => {
-                        Some(base_color.scale_alpha(0.8).into())
-                    }
+                move |_theme, status| {
+                    let text_color = match v {
+                        Variant::Solid => o_pri,
+                        Variant::Soft => b_col,
+                        Variant::Outline => b_col,
+                        Variant::Ghost => b_col,
+                    };
 
-                    (Variant::Soft, button::Status::Active) => {
-                        Some(base_color.scale_alpha(0.15).into())
-                    }
-                    (Variant::Soft, button::Status::Hovered) => {
-                        Some(base_color.scale_alpha(0.25).into())
-                    }
-                    (Variant::Soft, button::Status::Pressed) => {
-                        Some(base_color.scale_alpha(0.1).into())
-                    }
+                    let background = match (v, status) {
+                        (Variant::Solid, button::Status::Active) => Some(b_col.into()),
+                        (Variant::Solid, button::Status::Hovered) => {
+                            Some(b_col.scale_alpha(0.9).into())
+                        }
+                        (Variant::Solid, button::Status::Pressed) => {
+                            Some(b_col.scale_alpha(0.8).into())
+                        }
 
-                    (Variant::Outline, button::Status::Hovered) => {
-                        Some(base_color.scale_alpha(0.05).into())
-                    }
-                    (Variant::Outline, button::Status::Pressed) => {
-                        Some(base_color.scale_alpha(0.1).into())
-                    }
+                        (Variant::Soft, button::Status::Active) => {
+                            Some(b_col.scale_alpha(0.15).into())
+                        }
+                        (Variant::Soft, button::Status::Hovered) => {
+                            Some(b_col.scale_alpha(0.25).into())
+                        }
+                        (Variant::Soft, button::Status::Pressed) => {
+                            Some(b_col.scale_alpha(0.1).into())
+                        }
 
-                    (Variant::Ghost, button::Status::Hovered) => {
-                        Some(base_color.scale_alpha(0.05).into())
+                        (Variant::Outline, button::Status::Hovered) => {
+                            Some(b_col.scale_alpha(0.05).into())
+                        }
+                        (Variant::Outline, button::Status::Pressed) => {
+                            Some(b_col.scale_alpha(0.1).into())
+                        }
+
+                        (Variant::Ghost, button::Status::Hovered) => {
+                            Some(b_col.scale_alpha(0.05).into())
+                        }
+                        (Variant::Ghost, button::Status::Pressed) => {
+                            Some(b_col.scale_alpha(0.1).into())
+                        }
+
+                        _ => None,
+                    };
+
+                    let border_color = if matches!(v, Variant::Outline) {
+                        b_col
+                    } else {
+                        Color::TRANSPARENT
+                    };
+
+                    let shadow = if !cfg!(target_arch = "wasm32")
+                        && matches!(v, Variant::Solid)
+                        && matches!(status, button::Status::Active)
+                    {
+                        iced::Shadow {
+                            color: s_col,
+                            offset: iced::Vector::new(0.0, 1.0),
+                            blur_radius: 2.0,
+                        }
+                    } else {
+                        iced::Shadow::default()
+                    };
+
+                    button::Style {
+                        background,
+                        text_color,
+                        border: iced::Border {
+                            radius: r,
+                            color: border_color,
+                            width: 1.0,
+                        },
+                        shadow,
                     }
-                    (Variant::Ghost, button::Status::Pressed) => {
-                        Some(base_color.scale_alpha(0.1).into())
-                    }
-
-                    _ => None,
-                };
-
-                let border_color = if matches!(variant, Variant::Outline) {
-                    base_color
-                } else {
-                    Color::TRANSPARENT
-                };
-
-                let shadow = if matches!(variant, Variant::Solid)
-                    && matches!(status, button::Status::Active)
-                {
-                    iced::Shadow {
-                        color: theme.shadow_color,
-                        offset: iced::Vector::new(0.0, 1.0),
-                        blur_radius: 2.0,
-                    }
-                } else {
-                    iced::Shadow::default()
-                };
-
-                button::Style {
-                    background,
-                    text_color,
-                    border: iced::Border {
-                        radius: 8.0.into(),
-                        color: border_color,
-                        width: 1.0,
-                    },
-                    shadow,
                 }
             })
             .into()
@@ -311,28 +320,37 @@ impl<Message: Clone + 'static> View<Message> for Slider<Message> {
         let theme = context.theme;
         let on_change = self.on_change.clone();
 
+        let rail_radius = context.radius(2.0);
         container(
-            slider(self.range.clone(), self.value, move |v| (on_change)(v)).style(
+            slider(self.range.clone(), self.value, move |v| (on_change)(v)).style({
+                let r = rail_radius;
+                let p_col = theme.colors.primary;
+                let v_bg = theme.colors.surface_variant;
+                let div_col = theme.colors.divider;
                 move |_theme, _status| slider::Style {
                     rail: slider::Rail {
-                        backgrounds: (
-                            theme.colors.primary.into(),
-                            theme.colors.surface_variant.into(),
-                        ),
+                        backgrounds: (p_col.into(), v_bg.into()),
                         width: 4.0,
                         border: iced::Border {
-                            radius: 2.0.into(),
+                            radius: r,
                             ..Default::default()
                         },
                     },
                     handle: slider::Handle {
-                        shape: slider::HandleShape::Circle { radius: 10.0 },
+                        shape: if cfg!(target_arch = "wasm32") {
+                            slider::HandleShape::Rectangle {
+                                width: 20,
+                                border_radius: 0.0.into(),
+                            }
+                        } else {
+                            slider::HandleShape::Circle { radius: 10.0 }
+                        },
                         background: Color::WHITE.into(),
                         border_width: 0.5,
-                        border_color: theme.colors.divider,
+                        border_color: div_col,
                     },
-                },
-            ),
+                }
+            }),
         )
         .width(self.width)
         .padding([8, 0])
@@ -385,6 +403,11 @@ impl<Message: Clone + 'static> View<Message> for Stepper<Message> {
         let decrease_disabled = value <= *range.start();
         let increase_disabled = value >= *range.end();
 
+        let radius = context.radius(8.0);
+        let primary_color = theme.colors.primary;
+        let variant_bg_color = theme.colors.surface_variant;
+        let text_secondary_color = theme.colors.text_secondary;
+
         let decrement = button(
             text("-")
                 .size(16)
@@ -394,29 +417,36 @@ impl<Message: Clone + 'static> View<Message> for Stepper<Message> {
         .width(32)
         .height(32)
         .padding(0)
-        .style(move |_theme, status| {
-            let base_color = if decrease_disabled {
-                theme.colors.text_secondary.scale_alpha(0.5)
-            } else {
-                theme.colors.primary
-            };
+        .style({
+            let r = radius;
+            let p_col = primary_color;
+            let v_bg = variant_bg_color;
+            let t_sec = text_secondary_color;
+            let disabled = decrease_disabled;
+            move |_theme, status| {
+                let base_color = if disabled {
+                    t_sec.scale_alpha(0.5)
+                } else {
+                    p_col
+                };
 
-            let bg = match status {
-                _ if decrease_disabled => iced::Color::TRANSPARENT,
-                button::Status::Active => theme.colors.surface_variant, // Using variant for btn bg
-                button::Status::Hovered => theme.colors.surface_variant.scale_alpha(0.8),
-                button::Status::Pressed => theme.colors.surface_variant.scale_alpha(0.6),
-                _ => iced::Color::TRANSPARENT,
-            };
+                let bg = match status {
+                    _ if disabled => iced::Color::TRANSPARENT,
+                    button::Status::Active => v_bg,
+                    button::Status::Hovered => v_bg.scale_alpha(0.8),
+                    button::Status::Pressed => v_bg.scale_alpha(0.6),
+                    _ => iced::Color::TRANSPARENT,
+                };
 
-            button::Style {
-                background: Some(bg.into()),
-                text_color: base_color,
-                border: iced::Border {
-                    radius: 8.0.into(),
+                button::Style {
+                    background: Some(bg.into()),
+                    text_color: base_color,
+                    border: iced::Border {
+                        radius: r,
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
+                }
             }
         })
         .on_press_maybe(if decrease_disabled {
@@ -425,6 +455,7 @@ impl<Message: Clone + 'static> View<Message> for Stepper<Message> {
             Some((on_change)(value - step))
         });
 
+        let radius = context.radius(8.0);
         let increment = button(
             text("+")
                 .size(16)
@@ -434,29 +465,36 @@ impl<Message: Clone + 'static> View<Message> for Stepper<Message> {
         .width(32)
         .height(32)
         .padding(0)
-        .style(move |_theme, status| {
-            let base_color = if increase_disabled {
-                theme.colors.text_secondary.scale_alpha(0.5)
-            } else {
-                theme.colors.primary
-            };
+        .style({
+            let r = radius;
+            let p_col = primary_color;
+            let v_bg = variant_bg_color;
+            let t_sec = text_secondary_color;
+            let disabled = increase_disabled;
+            move |_theme, status| {
+                let base_color = if disabled {
+                    t_sec.scale_alpha(0.5)
+                } else {
+                    p_col
+                };
 
-            let bg = match status {
-                _ if increase_disabled => iced::Color::TRANSPARENT,
-                button::Status::Active => theme.colors.surface_variant,
-                button::Status::Hovered => theme.colors.surface_variant.scale_alpha(0.8),
-                button::Status::Pressed => theme.colors.surface_variant.scale_alpha(0.6),
-                _ => iced::Color::TRANSPARENT,
-            };
+                let bg = match status {
+                    _ if disabled => iced::Color::TRANSPARENT,
+                    button::Status::Active => v_bg,
+                    button::Status::Hovered => v_bg.scale_alpha(0.8),
+                    button::Status::Pressed => v_bg.scale_alpha(0.6),
+                    _ => iced::Color::TRANSPARENT,
+                };
 
-            button::Style {
-                background: Some(bg.into()),
-                text_color: base_color,
-                border: iced::Border {
-                    radius: 8.0.into(),
+                button::Style {
+                    background: Some(bg.into()),
+                    text_color: base_color,
+                    border: iced::Border {
+                        radius: r,
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
+                }
             }
         })
         .on_press_maybe(if increase_disabled {
@@ -465,18 +503,24 @@ impl<Message: Clone + 'static> View<Message> for Stepper<Message> {
             Some((on_change)(value + step))
         });
 
+        let group_radius = context.radius(8.0);
+        let group_bg_color = theme.colors.surface_variant;
         container(
             row![
                 text(self.label.clone())
                     .width(Length::Fill)
                     .color(theme.colors.text_primary),
-                container(row![decrement, increment].spacing(1)).style(move |_| container::Style {
-                    background: Some(theme.colors.surface_variant.into()), // Group background
-                    border: iced::Border {
-                        radius: 8.0.into(),
+                container(row![decrement, increment].spacing(1)).style({
+                    let r = group_radius;
+                    let g_bg = group_bg_color;
+                    move |_| container::Style {
+                        background: Some(g_bg.into()), // Group background
+                        border: iced::Border {
+                            radius: r,
+                            ..Default::default()
+                        },
                         ..Default::default()
-                    },
-                    ..Default::default()
+                    }
                 })
             ]
             .align_y(iced::Alignment::Center),

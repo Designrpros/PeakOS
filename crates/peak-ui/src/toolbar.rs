@@ -54,14 +54,15 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ToolbarItem<Messag
             .align_y(Alignment::Center);
 
         if let Some(icon_name) = &self.icon {
+            let color = if active {
+                theme.colors.primary
+            } else {
+                theme.colors.text_secondary
+            };
             content = content.push(
                 Icon::<IcedBackend>::new(icon_name.clone())
                     .size(18.0)
-                    .color(if active {
-                        theme.colors.primary
-                    } else {
-                        theme.colors.text_secondary
-                    }),
+                    .color(color),
             );
         }
 
@@ -133,25 +134,35 @@ impl<Message: 'static> View<Message, IcedBackend> for ToolbarGroup<Message> {
             theme.scaling,
         );
 
+        let radius = context.radius(24.0);
         if is_grouped {
             iced::widget::container(row)
                 .width(Length::Shrink)
-                .style(move |_| iced::widget::container::Style {
-                    background: Some(theme.colors.surface.scale_alpha(0.8).into()),
-                    border: Border {
-                        radius: 24.0.into(),
-                        color: theme.colors.border.scale_alpha(0.15),
-                        width: 1.0,
-                    },
-                    shadow: Shadow {
-                        color: Color {
-                            a: 0.12,
-                            ..Color::BLACK
+                .style({
+                    let bg_color = theme.colors.surface;
+                    let border_color = theme.colors.border.scale_alpha(0.1);
+                    let shadow = if cfg!(target_arch = "wasm32") {
+                        Shadow::default()
+                    } else {
+                        Shadow {
+                            color: Color {
+                                a: 0.1,
+                                ..Color::BLACK
+                            },
+                            offset: Vector::new(0.0, 4.0),
+                            blur_radius: 12.0,
+                        }
+                    };
+                    move |_| iced::widget::container::Style {
+                        background: Some(bg_color.into()),
+                        border: Border {
+                            radius,
+                            color: border_color,
+                            width: 1.0,
                         },
-                        offset: Vector::new(0.0, 4.0),
-                        blur_radius: 16.0,
-                    },
-                    ..Default::default()
+                        shadow,
+                        ..Default::default()
+                    }
                 })
                 .into()
         } else {

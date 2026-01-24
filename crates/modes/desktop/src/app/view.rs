@@ -22,8 +22,8 @@ impl PeakNative {
             iced::widget::stack![
                 content,
                 iced::widget::container(peak_ui::alert::SystemAlert::view(
-                    title,
-                    body,
+                    title.clone(),
+                    body.clone(),
                     Message::CloseAlert,
                     matches!(self.theme, peak_core::Theme::Light)
                 ))

@@ -8,21 +8,29 @@
     <style>
         html,
         body {
+            width: 100%;
+            height: 100%;
             margin: 0;
             padding: 0;
-            background-color: #111111;
             overflow: hidden;
-            height: 100%;
+            /* Changed from Red to Black to avoid "Alarm" mode */
+            background-color: #FF00FF;
+        }
+
+        /* Ensure canvas takes full space */
+        canvas {
+            display: block;
             width: 100%;
+            height: 100%;
         }
     </style>
-<link rel="modulepreload" href="/peak-ui-showcase-d129ef587ddb052b.js" crossorigin=anonymous integrity="sha384-fLn+Q5IKusMzRMXkgQQmPJpe3QctSn8EM5uz+wI+DDKpsVsd7N6lFRuSY+mHnkLF"><link rel="preload" href="/peak-ui-showcase-d129ef587ddb052b_bg.wasm" crossorigin=anonymous integrity="sha384-rGGy3jmUyQSFedbSIe5e/lXEGBSmeY3bJJxBQz6/ptpku4Kl7Fp5CHPHcr4fVK+L" as="fetch" type="application/wasm"></head>
 
-<body>
     
-<script type="module" nonce="ULV9CF12VkRASQli0+zLUg==">
-import init, * as bindings from '/peak-ui-showcase-d129ef587ddb052b.js';
-const wasm = await init({ module_or_path: '/peak-ui-showcase-d129ef587ddb052b_bg.wasm' });
+
+    
+<script type="module" nonce="NSKvG2sWM6w5AodlbofJuA==">
+import init, * as bindings from '/peak-ui-showcase-33a7b5158d0a90d2.js';
+const wasm = await init({ module_or_path: '/peak-ui-showcase-33a7b5158d0a90d2_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -31,6 +39,24 @@ window.wasmBindings = bindings;
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
 </script>
+<link rel="modulepreload" href="/peak-ui-showcase-33a7b5158d0a90d2.js" crossorigin=anonymous integrity="sha384-CVY0NQQzZKH+mXdvImT9HTkOKvs9DMZkRIykvM/UIXtuN7jgPQ3zPH/ao0NsPVTz"><link rel="preload" href="/peak-ui-showcase-33a7b5158d0a90d2_bg.wasm" crossorigin=anonymous integrity="sha384-8fAhU/nbClNt764rrjkQe143KJ+r3eTtsXq7IkG3Z+dNX1L+PxC08D1ihEn6Pjb2" as="fetch" type="application/wasm"></head>
+
+<body>
+
+    <div id="loading"
+        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-family: monospace;">
+        Loading PeakUI...
+    </div>
+
+    <script>
+        // Hide loading text once canvas appears
+        const observer = new MutationObserver((mutations) => {
+            if (document.querySelector('canvas')) {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    </script>
 <script>"use strict";
 
 (function () {
