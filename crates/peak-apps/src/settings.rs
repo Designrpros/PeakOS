@@ -194,7 +194,7 @@ impl SettingsDesktopView for SettingsApp {
 
                     grid = grid.push(
                         Button::new(
-                            Image::new(&image_path)
+                            Image::new(image_path.to_string_lossy().to_string())
                                 .width(120.0.into())
                                 .height(75.0.into())
                                 .radius(8.0),
