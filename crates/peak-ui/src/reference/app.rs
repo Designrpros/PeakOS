@@ -91,6 +91,7 @@ pub enum Message {
     StopResizingSidebar,
     StartResizingInspector,
     StopResizingInspector,
+    FontLoaded(std::result::Result<(), iced::font::Error>),
     None,
 }
 
@@ -238,6 +239,7 @@ impl App {
                 self.is_resizing_inspector = false;
                 Task::none()
             }
+            Message::FontLoaded(_) => Task::none(),
             Message::None => Task::none(),
         }
     }

@@ -13,7 +13,7 @@ log = "0.4" # <--- MOVED HERE (Now available for both Native and WASM)
 peak-core = { path = "../peak-core", default-features = false }
 peak-theme = { path = "../peak-theme", default-features = false }
 peak-icons = { path = "../peak-icons" }
-iced = { version = "0.13", default-features = false, features = ["canvas", "advanced", "image", "svg", "lazy", "debug"] }
+iced = { version = "0.13", default-features = false, features = ["canvas", "advanced", "image", "svg", "lazy", "debug", "fira-sans"] }
 iced_widget = { version = "0.13", default-features = false, features = ["lazy"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -36,4 +36,4 @@ native = [
     "peak-theme/native"
 ]
 tokio = ["iced/tokio"]
-wasm = ["iced/webgl", "iced/canvas", "peak-core/wasm", "peak-theme/wasm"]
+wasm = ["iced/webgl", "iced/canvas", "iced/wgpu", "peak-core/wasm", "peak-theme/wasm"]

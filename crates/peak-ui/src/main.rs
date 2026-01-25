@@ -39,6 +39,11 @@ pub fn run() {
         visible: true,
         ..Default::default()
     })
+    .style(|_theme, _style| iced::application::Appearance {
+        background_color: iced::Color::BLACK,
+        text_color: iced::Color::WHITE,
+    })
+    .font(include_bytes!("../assets/fonts/Fira_Sans/FiraSans-Bold.ttf").as_slice())
     .run();
 
     #[cfg(target_arch = "wasm32")]
