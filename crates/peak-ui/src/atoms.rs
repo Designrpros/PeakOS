@@ -14,6 +14,7 @@ pub struct Text<B: Backend = IcedBackend> {
     is_dim: bool,
     alignment: Alignment,
     font: iced::Font,
+    width: Length,
     _phantom: PhantomData<B>,
 }
 
@@ -28,6 +29,7 @@ impl<B: Backend> Text<B> {
             is_dim: false,
             alignment: Alignment::Start,
             font: iced::Font::default(),
+            width: Length::Shrink,
             _phantom: PhantomData,
         }
     }
@@ -135,9 +137,24 @@ impl<B: Backend> Text<B> {
         self.is_dim = true;
         self
     }
+
+    pub fn primary(mut self) -> Self {
+        self.intent = Some(Intent::Primary);
+        self
+    }
+
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
+        self
+    }
+
+    pub fn wrap(mut self) -> Self {
+        self.width = Length::Fill;
+        self
+    }
 }
 
-impl<Message: 'static, B: Backend> View<Message, B> for Text<B> {
+impl<Message: Clone + 'static, B: Backend> View<Message, B> for Text<B> {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
         B::text(
             self.content.clone(),
@@ -147,6 +164,7 @@ impl<Message: 'static, B: Backend> View<Message, B> for Text<B> {
             self.is_dim,
             self.intent,
             Some(self.font),
+            self.width,
             self.alignment,
             context,
         )
@@ -191,7 +209,7 @@ impl<B: Backend> Rectangle<B> {
         self
     }
 
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    pub fn radius(mut self, radius: f32) -> Self {
         self.radius = if cfg!(target_arch = "wasm32") {
             0.0
         } else {
@@ -222,6 +240,82 @@ impl<Message: 'static, B: Backend> View<Message, B> for Rectangle<B> {
     fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
         crate::core::SemanticNode {
             role: "rectangle".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct Circle<B: Backend = IcedBackend> {
+    radius: f32,
+    color: Option<Color>,
+    _phantom: PhantomData<B>,
+}
+
+impl<B: Backend> Circle<B> {
+    pub fn new(radius: f32) -> Self {
+        Self {
+            radius,
+            color: None,
+            _phantom: PhantomData,
+        }
+    }
+
+    pub fn color(mut self, color: Color) -> Self {
+        self.color = Some(color);
+        self
+    }
+}
+
+impl<Message: 'static, B: Backend> View<Message, B> for Circle<B> {
+    fn view(&self, _context: &Context) -> B::AnyView<Message> {
+        B::circle(self.radius, self.color)
+    }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "circle".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct Capsule<B: Backend = IcedBackend> {
+    width: Length,
+    height: Length,
+    color: Option<Color>,
+    _phantom: PhantomData<B>,
+}
+
+impl<B: Backend> Capsule<B> {
+    pub fn new(width: Length, height: Length) -> Self {
+        Self {
+            width,
+            height,
+            color: None,
+            _phantom: PhantomData,
+        }
+    }
+
+    pub fn color(mut self, color: Color) -> Self {
+        self.color = Some(color);
+        self
+    }
+}
+
+impl<Message: 'static, B: Backend> View<Message, B> for Capsule<B> {
+    fn view(&self, _context: &Context) -> B::AnyView<Message> {
+        B::capsule(self.width, self.height, self.color)
+    }
+
+    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "capsule".to_string(),
             label: None,
             content: None,
             children: Vec::new(),
@@ -317,9 +411,31 @@ impl<B: Backend> Icon<B> {
         self
     }
 
+    pub fn primary<M>(self) -> ProxyView<M, B>
+    where
+        M: Clone + 'static,
+    {
+        ProxyView::new(move |ctx| {
+            let mut icon = self.clone();
+            icon.color = Some(ctx.theme.colors.primary);
+            icon.view(ctx)
+        })
+    }
+
+    pub fn primary_color<M>(self) -> ProxyView<M, B>
+    where
+        M: Clone + 'static,
+    {
+        ProxyView::new(move |ctx| {
+            let mut icon = self.clone();
+            icon.color = Some(ctx.theme.colors.primary);
+            icon.view(ctx)
+        })
+    }
+
     pub fn secondary<M>(self) -> ProxyView<M, B>
     where
-        M: 'static,
+        M: Clone + 'static,
     {
         ProxyView::new(move |ctx| {
             let mut icon = self.clone();
@@ -329,7 +445,7 @@ impl<B: Backend> Icon<B> {
     }
 }
 
-impl<Message: 'static, B: Backend> View<Message, B> for Icon<B> {
+impl<Message: Clone + 'static, B: Backend> View<Message, B> for Icon<B> {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
         B::icon(self.name.clone(), self.size, self.color, context)
     }
@@ -373,7 +489,7 @@ impl<B: Backend> Image<B> {
         self
     }
 
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    pub fn radius(mut self, radius: f32) -> Self {
         self.radius = if cfg!(target_arch = "wasm32") {
             0.0
         } else {

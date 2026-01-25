@@ -22,7 +22,7 @@ pub mod scroll_view;
 pub mod views;
 
 pub mod prelude {
-    pub use crate::atoms::{Divider, Icon, Image, Rectangle, Space, Text};
+    pub use crate::atoms::{Capsule, Circle, Divider, Icon, Image, Rectangle, Space, Text};
     pub use crate::catalog::{Catalog, CatalogItem, CatalogMessage};
     pub use crate::console::Console;
     pub use crate::containers::{Card, GlassCard, Section};
@@ -34,14 +34,18 @@ pub mod prelude {
     pub use crate::forms::{Form, FormStyle};
     pub use crate::gestures::{Gesture, GestureDetector};
     pub use crate::inputs::{TextField, TextInput};
-    pub use crate::layout::{HStack, ResponsiveGrid, VStack, ZStack};
+    pub use crate::layout::{HStack, LayoutExt, ResponsiveGrid, VStack, ZStack};
     pub use crate::modifiers::{ControlSize, Intent, Variant};
     pub use crate::motion::{AnimationConfig, Interpolatable, MotionState, Spring};
     pub use crate::nav_split_view::NavigationSplitView;
-    pub use crate::navigation::{Page, PageResult, SearchConfig, Sidebar, ViewExt};
+    pub use crate::navigation::{
+        DetailView, NavigationLink, NavigationListView, Page, PageResult, SearchConfig, Sidebar,
+        ViewExt,
+    };
     pub use crate::scroll_view::ScrollView;
     pub use crate::segmented_picker::SegmentedPicker;
     pub use crate::toolbar::{ToolbarGroup, ToolbarItem};
+    pub use crate::views::code_block::CodeBlock;
     pub use crate::views::markdown::MarkdownView;
     pub use peak_theme::ThemeTone;
 

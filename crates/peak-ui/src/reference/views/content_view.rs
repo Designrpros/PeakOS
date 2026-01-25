@@ -1,10 +1,11 @@
 use super::super::app::{App, Message};
+use super::super::model::Page;
 use super::{CanvasView, SidebarView, TabBarView};
 use crate::nav_split_view::NavigationSplitView;
 use crate::prelude::*;
 
 pub struct ContentView {
-    pub active_tab: String,
+    pub active_tab: Page,
     pub show_search: bool,
     pub show_inspector: bool,
     pub show_sidebar: bool,
@@ -17,7 +18,7 @@ pub struct ContentView {
 impl ContentView {
     pub fn new(app: &App) -> Self {
         Self {
-            active_tab: app.active_tab.clone(),
+            active_tab: app.active_tab.clone(), // Now it is Page
             show_search: app.show_search,
             show_inspector: app.show_inspector,
             show_sidebar: app.show_sidebar,
@@ -33,7 +34,6 @@ impl ContentView {
 
         // --- 1. Sub-Views (Data Collection) ---
         let canvas_manager = CanvasView::new(self.active_tab.clone(), self.navigation_mode.clone());
-        let page = canvas_manager.render_page(context);
 
         let sidebar = SidebarView::new(
             self.active_tab.clone(),
@@ -43,7 +43,23 @@ impl ContentView {
         let tabbar = TabBarView::new(self.navigation_mode.clone());
 
         // --- 2. Main Layout (Three-Column Split) ---
-        let mut split_view = NavigationSplitView::new(sidebar, page.view)
+        // We inject this into the context so ScrollViews can respect it.
+        let mut content_context = context.clone();
+
+        // Define standard safe areas
+        let top_safe = if is_mobile { 40.0 } else { 80.0 };
+        let bottom_safe = if is_mobile { 40.0 } else { 100.0 };
+
+        content_context = content_context.with_safe_area(Padding {
+            top: top_safe,       // Protect from the notch bar / top edge
+            bottom: bottom_safe, // Protect from the floating dock / bottom edge
+            ..context.safe_area
+        });
+
+        // Render page with the safe-area-aware context
+        let page = canvas_manager.render_page(&content_context);
+
+        let mut split_view = NavigationSplitView::new(sidebar, ScrollView::from_boxed(page.view))
             .force_sidebar_on_slim(self.show_sidebar && is_mobile);
 
         // Decide which inspector to show: strictly page-specific
@@ -178,7 +194,7 @@ impl ContentView {
 
         // --- 4. Final Assembly ---
         let final_view: Element<'static, Message> = stack![
-            split_view.view(context),
+            split_view.view(&content_context),
             // Floating Notch Bar
             container(notch_container)
                 .width(Length::Fill)

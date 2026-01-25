@@ -10,6 +10,7 @@ pub struct Context {
     pub mode: ShellMode,
     pub device: DeviceType,
     pub size: Size,
+    pub safe_area: Padding,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -33,6 +34,7 @@ impl Context {
             mode,
             device,
             size,
+            safe_area: Padding::default(),
         }
     }
 
@@ -63,6 +65,11 @@ impl Context {
             radius.into()
         }
     }
+
+    pub fn with_safe_area(mut self, padding: Padding) -> Self {
+        self.safe_area = padding;
+        self
+    }
 }
 
 /// A Backend defines the output type and composition logic for a View.
@@ -89,7 +96,7 @@ pub trait Backend: Sized + Clone + 'static {
         scale: f32,
     ) -> Self::AnyView<Message>;
 
-    fn text<Message: 'static>(
+    fn text<Message: Clone + 'static>(
         content: String,
         size: f32,
         color: Option<Color>,
@@ -97,11 +104,12 @@ pub trait Backend: Sized + Clone + 'static {
         is_dim: bool,
         intent: Option<Intent>,
         font: Option<iced::Font>,
+        width: Length,
         alignment: Alignment,
         context: &Context,
     ) -> Self::AnyView<Message>;
 
-    fn icon<Message: 'static>(
+    fn icon<Message: Clone + 'static>(
         name: String,
         size: f32,
         color: Option<Color>,
@@ -111,6 +119,14 @@ pub trait Backend: Sized + Clone + 'static {
     fn divider<Message: 'static>(context: &Context) -> Self::AnyView<Message>;
 
     fn space<Message: 'static>(width: Length, height: Length) -> Self::AnyView<Message>;
+
+    fn circle<Message: 'static>(radius: f32, color: Option<Color>) -> Self::AnyView<Message>;
+
+    fn capsule<Message: 'static>(
+        width: Length,
+        height: Length,
+        color: Option<Color>,
+    ) -> Self::AnyView<Message>;
 
     fn rectangle<Message: 'static>(
         width: Length,
@@ -127,7 +143,7 @@ pub trait Backend: Sized + Clone + 'static {
         context: &Context,
     ) -> Self::AnyView<Message>;
 
-    fn sidebar_item<Message: 'static>(
+    fn sidebar_item<Message: Clone + 'static>(
         title: String,
         icon: String,
         is_selected: bool,
@@ -159,6 +175,7 @@ pub trait Backend: Sized + Clone + 'static {
         children: Vec<Self::AnyView<Message>>,
         width: Length,
         height: Length,
+        alignment: Alignment,
     ) -> Self::AnyView<Message>;
 
     fn grid<Message: 'static>(
@@ -173,6 +190,16 @@ pub trait Backend: Sized + Clone + 'static {
         height: Length,
         radius: f32,
     ) -> Self::AnyView<Message>;
+
+    fn container<Message: 'static>(
+        content: Self::AnyView<Message>,
+        padding: Padding,
+        width: Length,
+        height: Length,
+        context: &Context,
+    ) -> Self::AnyView<Message>;
+
+    fn scroll_view<Message: 'static>(content: Self::AnyView<Message>) -> Self::AnyView<Message>;
 }
 
 /// The default Iced-based GUI backend.
@@ -192,16 +219,22 @@ impl Backend for IcedBackend {
         scale: f32,
     ) -> Self::AnyView<Message> {
         use iced::widget::{column, container};
-        container(column(children).spacing(spacing * scale).align_x(align_x))
-            .padding(Padding {
-                top: padding.top * scale,
-                right: padding.right * scale,
-                bottom: padding.bottom * scale,
-                left: padding.left * scale,
-            })
-            .width(width)
-            .height(height)
-            .into()
+        container(
+            column(children)
+                .spacing(spacing * scale)
+                .align_x(align_x)
+                .width(width)
+                .height(height),
+        )
+        .padding(Padding {
+            top: padding.top * scale,
+            right: padding.right * scale,
+            bottom: padding.bottom * scale,
+            left: padding.left * scale,
+        })
+        .width(width)
+        .height(height)
+        .into()
     }
 
     fn hstack<Message: 'static>(
@@ -214,19 +247,25 @@ impl Backend for IcedBackend {
         scale: f32,
     ) -> Self::AnyView<Message> {
         use iced::widget::{container, row};
-        container(row(children).spacing(spacing * scale).align_y(align_y))
-            .padding(Padding {
-                top: padding.top * scale,
-                right: padding.right * scale,
-                bottom: padding.bottom * scale,
-                left: padding.left * scale,
-            })
-            .width(width)
-            .height(height)
-            .into()
+        container(
+            row(children)
+                .spacing(spacing * scale)
+                .align_y(align_y)
+                .width(width)
+                .height(height),
+        )
+        .padding(Padding {
+            top: padding.top * scale,
+            right: padding.right * scale,
+            bottom: padding.bottom * scale,
+            left: padding.left * scale,
+        })
+        .width(width)
+        .height(height)
+        .into()
     }
 
-    fn text<Message: 'static>(
+    fn text<Message: Clone + 'static>(
         content: String,
         size: f32,
         color: Option<Color>,
@@ -234,11 +273,14 @@ impl Backend for IcedBackend {
         is_dim: bool,
         intent: Option<Intent>,
         font: Option<iced::Font>,
+        width: Length,
         alignment: Alignment,
         context: &Context,
     ) -> Self::AnyView<Message> {
-        use iced::widget::text;
-        let color = color.unwrap_or_else(|| {
+        use iced::widget::text::Span;
+        use iced::widget::{rich_text, text};
+
+        let base_color = color.unwrap_or_else(|| {
             if let Some(i) = intent {
                 match i {
                     Intent::Primary => context.theme.colors.primary,
@@ -256,20 +298,134 @@ impl Backend for IcedBackend {
             }
         });
 
-        let mut font = font.unwrap_or_default();
+        let mut base_font = font.unwrap_or_default();
         if is_bold {
-            font.weight = iced::font::Weight::Bold;
+            base_font.weight = iced::font::Weight::Bold;
         }
 
-        text(content)
-            .size(size * context.theme.scaling)
-            .color(color)
-            .font(font)
-            .align_x(alignment)
-            .into()
+        let scaled_size = size * context.theme.scaling;
+
+        // --- Simplified Markdown Parsing ---
+        let mut spans = Vec::new();
+        let mut remaining = content.as_str();
+        let mut has_parsed = false;
+
+        while !remaining.is_empty() {
+            let next_bold = remaining.find("**");
+            let next_code = remaining.find('`');
+
+            match (next_bold, next_code) {
+                (Some(b_idx), Some(c_idx)) if b_idx < c_idx => {
+                    if b_idx > 0 {
+                        spans.push(
+                            Span::new(remaining[..b_idx].to_string())
+                                .color(base_color)
+                                .font(base_font),
+                        );
+                    }
+                    if let Some(end) = remaining[b_idx + 2..].find("**") {
+                        let inner = &remaining[b_idx + 2..b_idx + 2 + end];
+                        let mut bold_font = base_font;
+                        bold_font.weight = iced::font::Weight::Bold;
+                        spans.push(
+                            Span::new(inner.to_string())
+                                .color(context.theme.colors.text_primary)
+                                .font(bold_font),
+                        );
+                        remaining = &remaining[b_idx + 2 + end + 2..];
+                        has_parsed = true;
+                    } else {
+                        spans.push(
+                            Span::new(remaining[..b_idx + 2].to_string())
+                                .color(base_color)
+                                .font(base_font),
+                        );
+                        remaining = &remaining[b_idx + 2..];
+                    }
+                }
+                (Some(b_idx), _) => {
+                    if b_idx > 0 {
+                        spans.push(
+                            Span::new(remaining[..b_idx].to_string())
+                                .color(base_color)
+                                .font(base_font),
+                        );
+                    }
+                    if let Some(end) = remaining[b_idx + 2..].find("**") {
+                        let inner = &remaining[b_idx + 2..b_idx + 2 + end];
+                        let mut bold_font = base_font;
+                        bold_font.weight = iced::font::Weight::Bold;
+                        spans.push(
+                            Span::new(inner.to_string())
+                                .color(context.theme.colors.text_primary)
+                                .font(bold_font),
+                        );
+                        remaining = &remaining[b_idx + 2 + end + 2..];
+                        has_parsed = true;
+                    } else {
+                        spans.push(
+                            Span::new(remaining[..b_idx + 2].to_string())
+                                .color(base_color)
+                                .font(base_font),
+                        );
+                        remaining = &remaining[b_idx + 2..];
+                    }
+                }
+                (_, Some(c_idx)) => {
+                    if c_idx > 0 {
+                        spans.push(
+                            Span::new(remaining[..c_idx].to_string())
+                                .color(base_color)
+                                .font(base_font),
+                        );
+                    }
+                    if let Some(end) = remaining[c_idx + 1..].find('`') {
+                        let inner = &remaining[c_idx + 1..c_idx + 1 + end];
+                        spans.push(
+                            Span::new(inner.to_string())
+                                .color(context.theme.colors.primary)
+                                .font(iced::Font::MONOSPACE),
+                        );
+                        remaining = &remaining[c_idx + 1 + end + 1..];
+                        has_parsed = true;
+                    } else {
+                        spans.push(
+                            Span::new(remaining[..c_idx + 1].to_string())
+                                .color(base_color)
+                                .font(base_font),
+                        );
+                        remaining = &remaining[c_idx + 1..];
+                    }
+                }
+                _ => {
+                    spans.push(
+                        Span::new(remaining.to_string())
+                            .color(base_color)
+                            .font(base_font),
+                    );
+                    remaining = "";
+                }
+            }
+        }
+
+        if !has_parsed {
+            text(content)
+                .size(scaled_size)
+                .color(base_color)
+                .font(base_font)
+                .width(width)
+                .align_x(alignment)
+                .into()
+        } else {
+            rich_text(spans)
+                .size(scaled_size)
+                .width(width)
+                .align_x(alignment)
+                .into()
+        }
     }
 
-    fn icon<Message: 'static>(
+    fn icon<Message: Clone + 'static>(
         name: String,
         size: f32,
         color: Option<Color>,
@@ -384,6 +540,45 @@ impl Backend for IcedBackend {
         iced::widget::Space::new(width, height).into()
     }
 
+    fn circle<Message: 'static>(radius: f32, color: Option<Color>) -> Self::AnyView<Message> {
+        use iced::widget::container;
+        container(iced::widget::Space::new(
+            Length::Fixed(radius * 2.0),
+            Length::Fixed(radius * 2.0),
+        ))
+        .width(radius * 2.0)
+        .height(radius * 2.0)
+        .style(move |_| container::Style {
+            background: color.map(iced::Background::Color),
+            border: iced::Border {
+                radius: radius.into(),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .into()
+    }
+
+    fn capsule<Message: 'static>(
+        width: Length,
+        height: Length,
+        color: Option<Color>,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::container;
+        container(iced::widget::Space::new(width, height))
+            .width(width)
+            .height(height)
+            .style(move |_| container::Style {
+                background: color.map(iced::Background::Color),
+                border: iced::Border {
+                    radius: 1000.0.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .into()
+    }
+
     fn rectangle<Message: 'static>(
         width: Length,
         height: Length,
@@ -426,7 +621,7 @@ impl Backend for IcedBackend {
         button(content).on_press_maybe(on_press).into()
     }
 
-    fn sidebar_item<Message: 'static>(
+    fn sidebar_item<Message: Clone + 'static>(
         title: String,
         icon: String,
         is_selected: bool,
@@ -512,6 +707,7 @@ impl Backend for IcedBackend {
         children: Vec<Self::AnyView<Message>>,
         width: Length,
         height: Length,
+        _alignment: Alignment,
     ) -> Self::AnyView<Message> {
         let s = iced::widget::stack(children).width(width).height(height);
         s.into()
@@ -582,6 +778,26 @@ impl Backend for IcedBackend {
             })
             .into()
     }
+
+    fn container<Message: 'static>(
+        content: Self::AnyView<Message>,
+        padding: Padding,
+        width: Length,
+        height: Length,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::container;
+        container(content)
+            .padding(padding)
+            .width(width)
+            .height(height)
+            .into()
+    }
+
+    fn scroll_view<Message: 'static>(content: Self::AnyView<Message>) -> Self::AnyView<Message> {
+        use iced::widget::scrollable;
+        scrollable(content).into()
+    }
 }
 
 /// A Terminal-based TUI backend.
@@ -615,7 +831,7 @@ impl Backend for TermBackend {
         children.join(" ")
     }
 
-    fn text<Message: 'static>(
+    fn text<Message: Clone + 'static>(
         content: String,
         _size: f32,
         _color: Option<Color>,
@@ -623,6 +839,7 @@ impl Backend for TermBackend {
         is_dim: bool,
         intent: Option<Intent>,
         _font: Option<iced::Font>,
+        _width: Length,
         _alignment: Alignment,
         _context: &Context,
     ) -> Self::AnyView<Message> {
@@ -647,7 +864,7 @@ impl Backend for TermBackend {
         out
     }
 
-    fn icon<Message: 'static>(
+    fn icon<Message: Clone + 'static>(
         name: String,
         _size: f32,
         _color: Option<Color>,
@@ -670,6 +887,18 @@ impl Backend for TermBackend {
         " ".to_string()
     }
 
+    fn circle<Message: 'static>(_radius: f32, _color: Option<Color>) -> Self::AnyView<Message> {
+        "O".to_string()
+    }
+
+    fn capsule<Message: 'static>(
+        _width: Length,
+        _height: Length,
+        _color: Option<Color>,
+    ) -> Self::AnyView<Message> {
+        "=".to_string()
+    }
+
     fn rectangle<Message: 'static>(
         _width: Length,
         _height: Length,
@@ -689,7 +918,7 @@ impl Backend for TermBackend {
         format!("[ {} ]", content)
     }
 
-    fn sidebar_item<Message: 'static>(
+    fn sidebar_item<Message: Clone + 'static>(
         title: String,
         _icon: String,
         is_selected: bool,
@@ -733,6 +962,7 @@ impl Backend for TermBackend {
         children: Vec<Self::AnyView<Message>>,
         _width: Length,
         _height: Length,
+        _alignment: Alignment,
     ) -> Self::AnyView<Message> {
         children.join("\n")
     }
@@ -752,6 +982,20 @@ impl Backend for TermBackend {
         _radius: f32,
     ) -> Self::AnyView<Message> {
         format!("[IMG: {:?}]", path)
+    }
+
+    fn container<Message: 'static>(
+        content: Self::AnyView<Message>,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        content
+    }
+
+    fn scroll_view<Message: 'static>(content: Self::AnyView<Message>) -> Self::AnyView<Message> {
+        content
     }
 }
 
@@ -838,7 +1082,7 @@ impl Backend for AIBackend {
         }
     }
 
-    fn text<Message: 'static>(
+    fn text<Message: Clone + 'static>(
         content: String,
         _size: f32,
         _color: Option<Color>,
@@ -846,6 +1090,7 @@ impl Backend for AIBackend {
         _is_dim: bool,
         _intent: Option<Intent>,
         _font: Option<iced::Font>,
+        _width: Length,
         _alignment: Alignment,
         _context: &Context,
     ) -> Self::AnyView<Message> {
@@ -857,7 +1102,7 @@ impl Backend for AIBackend {
         }
     }
 
-    fn icon<Message: 'static>(
+    fn icon<Message: Clone + 'static>(
         name: String,
         _size: f32,
         _color: Option<Color>,
@@ -883,6 +1128,28 @@ impl Backend for AIBackend {
     fn space<Message: 'static>(_width: Length, _height: Length) -> Self::AnyView<Message> {
         SemanticNode {
             role: "space".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
+
+    fn circle<Message: 'static>(_radius: f32, _color: Option<Color>) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "circle".to_string(),
+            label: None,
+            content: None,
+            children: Vec::new(),
+        }
+    }
+
+    fn capsule<Message: 'static>(
+        _width: Length,
+        _height: Length,
+        _color: Option<Color>,
+    ) -> Self::AnyView<Message> {
+        SemanticNode {
+            role: "capsule".to_string(),
             label: None,
             content: None,
             children: Vec::new(),
@@ -918,7 +1185,7 @@ impl Backend for AIBackend {
         }
     }
 
-    fn sidebar_item<Message: 'static>(
+    fn sidebar_item<Message: Clone + 'static>(
         title: String,
         icon: String,
         is_selected: bool,
@@ -983,6 +1250,7 @@ impl Backend for AIBackend {
         children: Vec<Self::AnyView<Message>>,
         _width: Length,
         _height: Length,
+        _alignment: Alignment,
     ) -> Self::AnyView<Message> {
         SemanticNode {
             role: "zstack".to_string(),
@@ -1018,6 +1286,20 @@ impl Backend for AIBackend {
             children: Vec::new(),
         }
     }
+
+    fn container<Message: 'static>(
+        content: Self::AnyView<Message>,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        content
+    }
+
+    fn scroll_view<Message: 'static>(content: Self::AnyView<Message>) -> Self::AnyView<Message> {
+        content
+    }
 }
 
 /// A responsive helper.
@@ -1036,11 +1318,11 @@ where
     .into()
 }
 
-pub struct ProxyView<Message: 'static, B: Backend = IcedBackend> {
+pub struct ProxyView<Message: Clone + 'static, B: Backend = IcedBackend> {
     view_fn: Box<dyn Fn(&Context) -> B::AnyView<Message>>,
 }
 
-impl<Message: 'static, B: Backend> ProxyView<Message, B> {
+impl<Message: Clone + 'static, B: Backend> ProxyView<Message, B> {
     pub fn new<F>(view_fn: F) -> Self
     where
         F: Fn(&Context) -> B::AnyView<Message> + 'static,
@@ -1051,7 +1333,7 @@ impl<Message: 'static, B: Backend> ProxyView<Message, B> {
     }
 }
 
-impl<Message: 'static, B: Backend> View<Message, B> for ProxyView<Message, B> {
+impl<Message: Clone + 'static, B: Backend> View<Message, B> for ProxyView<Message, B> {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
         (self.view_fn)(context)
     }

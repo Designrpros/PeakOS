@@ -1,16 +1,17 @@
 use super::super::app::Message;
+use super::super::model::Page;
 use super::super::pages;
 use crate::prelude::*;
 
 pub struct CanvasView {
-    pub active_tab: String,
+    pub active_tab: Page,
     pub navigation_mode: String,
 }
 
 use super::super::page::PageResult;
 
 impl CanvasView {
-    pub fn new(active_tab: String, navigation_mode: String) -> Self {
+    pub fn new(active_tab: Page, navigation_mode: String) -> Self {
         Self {
             active_tab,
             navigation_mode,
@@ -20,33 +21,74 @@ impl CanvasView {
     pub fn render_page(&self, context: &Context) -> PageResult {
         let is_mobile = context.size.width < 900.0;
 
-        let page = match self.active_tab.as_str() {
-            "Introduction" => pages::introduction::view(context, is_mobile),
-            "Roadmap" => pages::roadmap::view(context, is_mobile),
-            "Community" => pages::community::view(context, is_mobile),
-            "Overview" => pages::overview::view(context, is_mobile),
-            "API Schema" => pages::api_schema::view(context, is_mobile),
-            "Customizations" => pages::customizations::view(context, is_mobile),
-            "Basic Sizing" => pages::sizing::view(context, is_mobile),
-            "Typography" => pages::typography::view(context, is_mobile),
-            "Layout" => pages::layout::view(context, is_mobile),
+        let page = match &self.active_tab {
+            // Guide
+            Page::Introduction => pages::introduction::view(context, is_mobile),
+            Page::Architecture => pages::architecture::view(context, is_mobile),
+            Page::ProjectStructure => pages::project_structure::view(context, is_mobile),
 
-            // Components Gallery
-            "Buttons" | "Inputs" | "Toggles" | "Sliders" | "Pickers" => {
-                pages::components::view(context, is_mobile)
-            }
+            Page::Roadmap => pages::roadmap::view(context, is_mobile),
+
+            // Ecosystem
+            Page::PeakDB => pages::peak_db::view(context, is_mobile),
+            Page::PeakCloud => pages::peak_cloud::view(context, is_mobile),
+            Page::PeakDesktop => pages::peak_desktop::view(context, is_mobile),
+            Page::PeakOSCore => pages::peak_os_core::view(context, is_mobile),
+
+            // Legacy
+            Page::ApiSchema => pages::peak_os_core::view(context, is_mobile), // Redirect to new page
+            Page::Community => pages::community::view(context, is_mobile),
+
+            // Concepts (Overview is legacy/fallback)
+            Page::Overview => pages::introduction::view(context, is_mobile),
+            Page::Customizations => pages::customizations::view(context, is_mobile),
+            Page::BasicSizing => pages::sizing::view(context, is_mobile),
+            Page::Typography => pages::typography::view(context, is_mobile),
+            Page::Layout => pages::layout::view(context, is_mobile),
+
+            // Atoms (Phase 3/4)
+            Page::Text => pages::text::view(context),
+            Page::Icon => pages::icon::view(context),
+            Page::Button => pages::button::view(context),
+            Page::Shapes => pages::shapes::view(context, is_mobile),
+            Page::Divider => pages::divider::view(context),
+
+            // Containers (Phase 4)
+            Page::VStack => pages::vstack::view(context),
+            Page::HStack => pages::hstack::view(context),
+            Page::ZStack => pages::zstack::view(context),
+            Page::Overlay => pages::overlay::view(context),
+            Page::ScrollView => pages::scroll_view::view(context),
+            Page::Card => pages::card::view(context),
+
+            // Navigation (Phase 4)
+            Page::Sidebar => pages::sidebar_doc::view(context),
+            Page::Tabbar => pages::tabbar_doc::view(context),
+            Page::Modal => pages::modal_doc::view(context),
+            Page::NavigationSplit => pages::navigation_split::view(context),
+            Page::Section => pages::section::view(context),
+
+            // Showcase Gallery (Deprecated / Redirects)
+            Page::ShowcaseButtons => pages::button::view(context),
+            Page::ShowcaseInputs
+            | Page::ShowcaseToggles
+            | Page::ShowcaseSliders
+            | Page::ShowcasePickers => pages::introduction::view(context, is_mobile),
 
             // Hooks Gallery
-            "use_state" | "use_effect" | "use_memo" | "use_callback" => {
-                pages::hooks::view(context, is_mobile)
-            }
+            Page::UseState => pages::hooks::view(context, is_mobile),
+            Page::UseEffect => pages::side_effects::view(context, is_mobile),
+            Page::UseMemo | Page::UseCallback => pages::performance::view(context, is_mobile),
 
             // Settings Gallery
-            "Appearance" | "Scaling" | "Shortcuts" | "About" | "Updates" => {
-                pages::settings::view(context, is_mobile)
-            }
+            Page::Appearance => pages::settings::appearance::view(context, is_mobile),
+            Page::Scaling => pages::settings::scaling::view(context, is_mobile),
+            Page::Shortcuts => pages::settings::shortcuts::view(context, is_mobile),
+            Page::About | Page::Updates => pages::settings::about::view(context, is_mobile),
 
-            tab => pages::component_detail::view(tab, context, is_mobile),
+            // Strict enforcement: Fallback to introduction if something goes wrong,
+            // but the compiler will now enforce that all variants above are handled.
+            Page::Unknown(_) => pages::introduction::view(context, is_mobile),
         };
 
         if is_mobile {

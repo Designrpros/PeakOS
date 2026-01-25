@@ -205,6 +205,7 @@ pub struct ZStack<Message: 'static, B: Backend = IcedBackend> {
     children: Vec<Box<dyn View<Message, B>>>,
     width: Length,
     height: Length,
+    alignment: iced::Alignment,
 }
 
 impl<Message: 'static> ZStack<Message, IcedBackend> {
@@ -225,6 +226,7 @@ impl<Message: 'static, B: Backend> ZStack<Message, B> {
             children: Vec::new(),
             width: Length::Shrink,
             height: Length::Shrink,
+            alignment: iced::Alignment::Start,
         }
     }
 
@@ -238,6 +240,11 @@ impl<Message: 'static, B: Backend> ZStack<Message, B> {
         self
     }
 
+    pub fn align(mut self, alignment: iced::Alignment) -> Self {
+        self.alignment = alignment;
+        self
+    }
+
     pub fn push(mut self, view: impl View<Message, B> + 'static) -> Self {
         self.children.push(Box::new(view));
         self
@@ -247,7 +254,7 @@ impl<Message: 'static, B: Backend> ZStack<Message, B> {
 impl<Message: 'static, B: Backend> View<Message, B> for ZStack<Message, B> {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
         let child_views = self.children.iter().map(|c| c.view(context)).collect();
-        B::zstack(child_views, self.width, self.height)
+        B::zstack(child_views, self.width, self.height, self.alignment)
     }
 
     fn describe(&self, context: &Context) -> crate::core::SemanticNode {
@@ -259,6 +266,31 @@ impl<Message: 'static, B: Backend> View<Message, B> for ZStack<Message, B> {
             children,
         }
     }
+}
+
+/// Extension trait for layout-related modifiers.
+pub trait LayoutExt<Message: 'static, B: Backend>: View<Message, B> + Sized {
+    /// Layers the given view on top of this view using a ZStack.
+    fn overlay<V: View<Message, B> + 'static>(
+        self,
+        overlay: V,
+        alignment: iced::Alignment,
+    ) -> ZStack<Message, B>
+    where
+        Self: 'static,
+    {
+        ZStack::new_generic()
+            .push(self)
+            .push(overlay)
+            .align(alignment)
+            .width(iced::Length::Fill)
+            .height(iced::Length::Fill)
+    }
+}
+
+impl<V: View<Message, B> + Sized + 'static, Message: 'static, B: Backend> LayoutExt<Message, B>
+    for V
+{
 }
 
 pub struct ResponsiveGrid<Message: 'static, B: Backend = IcedBackend> {

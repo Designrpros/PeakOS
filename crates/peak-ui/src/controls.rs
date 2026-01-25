@@ -24,7 +24,7 @@ pub enum ButtonStyle {
     Ghost,
 }
 
-impl<Message: 'static> Button<Message> {
+impl<Message: Clone + 'static> Button<Message> {
     pub fn new(content: impl View<Message> + 'static) -> Self {
         Self {
             content: Box::new(content),
@@ -268,7 +268,7 @@ impl<Message> Toggle<Message> {
     }
 }
 
-impl<Message: 'static> View<Message> for Toggle<Message> {
+impl<Message: Clone + 'static> View<Message> for Toggle<Message> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
         let theme = context.theme;
         let on_toggle = self.on_toggle.clone();

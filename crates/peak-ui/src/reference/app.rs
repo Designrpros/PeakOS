@@ -1,21 +1,24 @@
+use super::model::Page;
 use crate::prelude::*;
 use peak_core::registry::ShellMode;
-use peak_theme::{ThemeTokens, ThemeTone};
+use peak_theme::{PeakTheme, ThemeTokens, ThemeTone};
 
 pub struct App {
-    pub active_tab: String,
+    pub active_tab: Page,
     pub show_search: bool,
     pub show_inspector: bool,
     pub show_sidebar: bool,
     pub show_user_profile: bool,
     pub navigation_mode: String,
     pub search_query: String,
-    pub expanded_sections: std::collections::HashSet<String>,
+    pub expanded_sections: std::collections::HashSet<String>, // Note: typo in original file logic or just keep it? It was `expanded_sections`.
+    pub theme_tone: ThemeTone,
+    pub theme: PeakTheme,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    SetTab(String),
+    SetTab(Page),
     ToggleSearch,
     ToggleInspector,
     ToggleSidebar,
@@ -23,19 +26,24 @@ pub enum Message {
     SetNavigationMode(String),
     ToggleSection(String),
     Search(String),
+    SetTheme(ThemeTone),
+    SetThemeKind(PeakTheme),
+    CopyCode(String),
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
-            active_tab: "Introduction".to_string(),
+            active_tab: Page::Introduction,
             show_search: false,
             show_inspector: false,
             show_sidebar: true,
             show_user_profile: false,
-            navigation_mode: "Documentation".to_string(),
+            navigation_mode: "Start".to_string(),
             search_query: "".to_string(),
-            expanded_sections: ["Components".to_string()].into_iter().collect(),
+            expanded_sections: ["COMPONENTS".to_string()].into_iter().collect(),
+            theme_tone: ThemeTone::Light,
+            theme: PeakTheme::Peak,
         }
     }
 }
@@ -70,11 +78,10 @@ impl App {
             Message::SetNavigationMode(mode) => {
                 self.navigation_mode = mode.clone();
                 self.active_tab = match mode.as_str() {
-                    "Guide" => "Introduction".to_string(),
-                    "Documentation" => "Overview".to_string(),
-                    "Components" => "Buttons".to_string(),
-                    "Hooks" => "use_state".to_string(),
-                    "Settings" => "Appearance".to_string(),
+                    "Start" => Page::Introduction,
+                    "Catalog" => Page::Button,
+                    "Data" => Page::PeakDB,
+                    "Settings" => Page::Appearance,
                     _ => self.active_tab.clone(),
                 };
                 Task::none()
@@ -91,13 +98,22 @@ impl App {
                 self.search_query = query;
                 Task::none()
             }
+            Message::SetTheme(tone) => {
+                self.theme_tone = tone;
+                Task::none()
+            }
+            Message::SetThemeKind(theme) => {
+                self.theme = theme;
+                Task::none()
+            }
+            Message::CopyCode(code) => iced::clipboard::write(code),
         }
     }
 
     pub fn view(&self) -> Element<'_, Message> {
         let mode = ShellMode::Desktop;
-        let tone = ThemeTone::Light;
-        let tokens = ThemeTokens::get(mode, tone);
+        let tone = self.theme_tone;
+        let tokens = ThemeTokens::with_theme(self.theme, tone);
 
         // 1. Prepare Content
         let content = super::views::ContentView::new(self);

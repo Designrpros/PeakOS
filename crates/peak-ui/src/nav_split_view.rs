@@ -134,7 +134,9 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                     });
 
                 // Use Stack to support Inspector Overlay
-                let mut stack = iced::widget::stack![base_content];
+                let mut stack = iced::widget::stack![base_content]
+                    .width(Length::Fill)
+                    .height(Length::Fill);
 
                 if let Some(inspector) = &self.inspector {
                     // Dimmed Background
@@ -192,7 +194,7 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
             let mut main_row = row![
                 // 1. Sidebar
                 container(self.sidebar.view(context))
-                    .width(Length::Fixed(240.0))
+                    .width(Length::Fixed(240.0 * context.theme.scaling))
                     .height(Length::Fill)
                     .style({
                         let bg = if theme.colors.background.r < 0.1 {
@@ -230,6 +232,7 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                         }
                     })
             ]
+            .width(Length::Fill)
             .height(Length::Fill);
 
             // 3. Inspector (Optional)

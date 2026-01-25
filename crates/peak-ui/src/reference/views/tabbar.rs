@@ -18,35 +18,28 @@ impl View<Message, IcedBackend> for TabBarView {
         // Expanded Tab List for "Different Purposes"
         ToolbarGroup::new()
             .padding(Padding::from([12, 16]))
-            // 1. Guide: The Narrative Book
+            // 1. Start: The Narrative Book
             .push(
                 ToolbarItem::new()
-                    .icon("book")
-                    .active(nav_mode == "Guide")
-                    .on_press(Message::SetNavigationMode("Guide".into())),
+                    .icon("sparkles")
+                    .active(nav_mode == "Start")
+                    .on_press(Message::SetNavigationMode("Start".into())),
             )
-            // 2. Documentation: API & Technical Docs
+            // 2. Catalog: Visual Gallery & Components
             .push(
                 ToolbarItem::new()
-                    .icon("file-text")
-                    .active(nav_mode == "Documentation")
-                    .on_press(Message::SetNavigationMode("Documentation".into())),
+                    .icon("grid")
+                    .active(nav_mode == "Catalog")
+                    .on_press(Message::SetNavigationMode("Catalog".into())),
             )
-            // 3. Components: Visual Gallery (NEW)
+            // 4. Data: PeakDB & Cloud
             .push(
                 ToolbarItem::new()
-                    .icon("grid") // Uses 'grid' or 'apps' icon
-                    .active(nav_mode == "Components")
-                    .on_press(Message::SetNavigationMode("Components".into())),
+                    .icon("system")
+                    .active(nav_mode == "Data")
+                    .on_press(Message::SetNavigationMode("Data".into())),
             )
-            // 5. Hooks: State Management Examples
-            .push(
-                ToolbarItem::new()
-                    .icon("zap")
-                    .active(nav_mode == "Hooks")
-                    .on_press(Message::SetNavigationMode("Hooks".into())),
-            )
-            // 6. Settings: Customization (NEW)
+            // 5. Settings: Preferences
             .push(
                 ToolbarItem::new()
                     .icon("settings")

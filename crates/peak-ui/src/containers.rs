@@ -40,6 +40,11 @@ impl<Message: 'static, B: Backend> Card<Message, B> {
         self.height = height;
         self
     }
+
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
+        self.padding = padding.into();
+        self
+    }
 }
 
 impl<Message: 'static> View<Message, IcedBackend> for Card<Message, IcedBackend> {
@@ -197,6 +202,15 @@ impl<Message: 'static> View<Message, IcedBackend> for Section<Message, IcedBacke
         .height(self.height)
         .into()
     }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "section".to_string(),
+            label: Some(self.title.clone()),
+            content: None,
+            children: vec![self.content.describe(context)],
+        }
+    }
 }
 
 impl<Message: 'static> View<Message, TermBackend> for Section<Message, TermBackend> {
@@ -244,6 +258,11 @@ impl<Message: 'static, B: Backend> GlassCard<Message, B> {
         self.height = height;
         self
     }
+
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
+        self.padding = padding.into();
+        self
+    }
 }
 
 impl<Message: 'static> View<Message, IcedBackend> for GlassCard<Message, IcedBackend> {
@@ -252,57 +271,20 @@ impl<Message: 'static> View<Message, IcedBackend> for GlassCard<Message, IcedBac
         let mut bg = theme.colors.surface;
         bg.a = theme.glass_opacity;
 
-        let glass_color = if theme.tone == peak_theme::ThemeTone::Dark {
-            Color::from_rgba(1.0, 1.0, 1.0, 0.03)
-        } else {
-            Color::from_rgba(1.0, 1.0, 1.0, 0.05)
-        };
-
         let shadow = context.shadow(
             theme.shadow_color,
             iced::Vector::new(theme.shadow_offset[0], theme.shadow_offset[1]),
             theme.shadow_blur,
         );
 
-        container(iced::widget::stack![
-            // Base Glass Layer
-            container(iced::widget::Space::new(Length::Fill, Length::Fill))
-                .width(self.width)
-                .height(self.height)
-                .style({
-                    let bg_color = bg;
-                    move |_| container::Style {
-                        background: Some(bg_color.into()),
-                        ..Default::default()
-                    }
-                }),
-            // Refraction / Shine Layer
-            container(iced::widget::Space::new(Length::Fill, Length::Fill))
-                .width(self.width)
-                .height(self.height)
-                .style({
-                    let g_color = glass_color;
-                    move |_| container::Style {
-                        background: Some(iced::Background::Gradient(
-                            iced::gradient::Linear::new(iced::Degrees(135.0))
-                                .add_stop(0.0, g_color)
-                                .add_stop(0.5, Color::TRANSPARENT)
-                                .into(),
-                        )),
-                        ..Default::default()
-                    }
-                }),
-            // Content Layer
-            container(self.content.view(context))
-                .padding(self.padding)
-                .width(self.width)
-                .height(self.height)
-        ])
-        .width(self.width)
-        .height(self.height)
-        .style({
-            let radius = context.radius(theme.radius);
-            move |_| container::Style {
+        let radius = context.radius(theme.radius);
+
+        container(self.content.view(context))
+            .padding(self.padding)
+            .width(self.width)
+            .height(self.height)
+            .style(move |_| container::Style {
+                background: Some(bg.into()),
                 border: iced::Border {
                     radius,
                     color: Color::from_rgba(1.0, 1.0, 1.0, 0.15),
@@ -310,9 +292,8 @@ impl<Message: 'static> View<Message, IcedBackend> for GlassCard<Message, IcedBac
                 },
                 shadow,
                 ..Default::default()
-            }
-        })
-        .into()
+            })
+            .into()
     }
 
     fn describe(&self, context: &Context) -> crate::core::SemanticNode {

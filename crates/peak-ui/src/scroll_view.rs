@@ -49,13 +49,12 @@ impl<Message: 'static, B: Backend> ScrollView<Message, B> {
 
 impl<Message: 'static> View<Message, IcedBackend> for ScrollView<Message, IcedBackend> {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
-        Self::apply_style(
-            iced::widget::scrollable(self.content.view(context)),
-            &context.theme,
-        )
-        .width(self.width)
-        .height(self.height)
-        .into()
+        let content = iced::widget::container(self.content.view(context)).width(Length::Fill);
+
+        Self::apply_style(iced::widget::scrollable(content), &context.theme)
+            .width(self.width)
+            .height(self.height)
+            .into()
     }
 }
 
