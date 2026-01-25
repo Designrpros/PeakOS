@@ -1,44 +1,44 @@
-# PeakOS & PeakUI Roadmap
+# PeakUI Roadmap
 
-This roadmap outlines the coordinated evolution of the PeakOS operating system and the PeakUI framework.
+This roadmap outlines the evolution of the PeakUI framework, tracking the journey from prototype to production-grade UI system.
 
-## Phase 1: Foundation & Decoupling (Current)
+## Phase 1: Foundation & Decoupling (Completed ✅)
 *Focus: Maturity, genericism, and stability.*
 
-### [PeakUI]
-- [x] **Backend Abstraction**: Generic `Backend` trait implemented.
-- [x] **Cupertino Refinement**: Premium visual polish (glassmorphism, rounded corners).
-- [ ] **Decoupling**: Remove PeakOS-specific types from `peak-ui/src/core.rs`.
-- [ ] **Layout Engine**: Improve constraint propagation to prevent "fill vs scroll" paradoxes.
-
-### [PeakOS]
-- [x] **Stability**: Resolve core compositor and layout crashes.
-- [ ] **System Apps**: Upgrade Settings and File Manager to the new "Premium" look.
-- [ ] **Shell Stability**: Ensure smooth transitions between Desktop and Mobile shell modes.
+### [PeakUI Core]
+- [x] **Backend Abstraction**: Generic `Backend` trait implemented (wGPU / Glow).
+- [x] **Web Support (WASM)**: Confirmed rendering via `trunk` and `glow`.
+- [x] **Cupertino Theme**: Glassmorphism, blurred backgrounds, and high-fidelity shadows.
+- [x] **Layout Engine**: `NavigationSplitView` with automatic mobile/desktop adaptation.
+- [x] **Showcase App**: A "Living Reference" application (`examples/showcase.rs`).
 
 ---
 
-## Phase 2: Intelligence & Ecosystem
-*Focus: AI Agent integration and developer adoption.*
+## Phase 2: Intelligence & Ecosystem (In Progress 🚧)
+*Focus: Interactive tooling, AI integration, and developer adoption.*
 
-### [PeakUI]
-- [ ] **AI-Native View**: Implement `.describe()` for semantic UI output.
-- [ ] **Universal Components**: Release the first set of "Standard Library" widgets.
-- [ ] **Documentation**: Complete the "PeakUI Guide" for external developers.
+### [Component Labs]
+- [x] **Button Lab**: Live playground for testing button variants, sizes, and intents.
+- [ ] **Typography Lab**: Interactive type scale tester.
+- [ ] **Motion Lab**: Playground for testing spring animations and transitions.
 
-### [PeakOS]
-- [ ] **Neural Link**: Integrate PeakIntelligence directly into the Shell for semantic app control.
-- [ ] **Store Infrastructure**: First-party app distribution for external PeakUI developers.
+### [AI Integration]
+- [ ] **Semantic Description**: Implement `.describe()` on Views to output UI structure for LLMs.
+- [ ] **Voice Command Loop**: Connect `peak-intelligence` to UI actions (e.g., "Open Settings").
+
+### [Documentation]
+- [ ] **Standard Library**: Finalize API docs for `DatePicker`, `RichText`, and `Charts`.
+- [ ] **Developer Guide**: Expand `PEAKUI_GUIDE.md` with "Zero to App" tutorials.
 
 ---
 
-## Phase 3: Ubiquity
+## Phase 3: Ubiquity (Future 🔮)
 *Focus: Mobile dominance and enterprise readiness.*
 
-### [PeakUI]
-- [ ] **Mobile Tooling**: Automated iOS/Android build pipelines.
-- [ ] **Visual Inspector**: Real-time layout debugging tool.
-
-### [PeakOS]
-- [ ] **Cloud Sync**: Seamless state synchronization across Desktop and Mobile instances.
+### [Platform Expansion]
+- [ ] **Mobile Native**: Automated iOS/Android build pipelines (APK/IPA generation).
 - [ ] **Enterprise Shell**: Specialized modes for Kiosks and Smart Home displays.
+
+### [Tooling]
+- [ ] **Visual Inspector**: Real-time layout debugging tool (similar to Safari Web Inspector).
+- [ ] **Cloud Sync**: Seamless state synchronization across Desktop and Mobile instances.

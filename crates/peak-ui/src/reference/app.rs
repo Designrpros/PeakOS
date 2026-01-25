@@ -122,8 +122,21 @@ impl App {
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::SetTab(tab) => {
-                self.active_tab = tab;
+                log::debug!(
+                    "Setting Tab: {:?} (Category: {})",
+                    tab,
+                    tab.navigation_mode()
+                );
+                self.navigation_mode = tab.navigation_mode();
+                self.active_tab = tab.clone();
                 self.show_search = false;
+
+                #[cfg(target_arch = "wasm32")]
+                {
+                    let path = tab.to_path();
+                    let _ = web_sys::window().and_then(|w| w.location().set_hash(&path).ok());
+                }
+
                 Task::none()
             }
             Message::ToggleSearch => {
@@ -263,5 +276,42 @@ impl App {
                 })
                 .into()
         })
+    }
+
+    pub fn subscription(&self) -> iced::Subscription<Message> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            use wasm_bindgen::JsCast;
+
+            iced::Subscription::run(|| {
+                let (mut sender, receiver) = iced::futures::channel::mpsc::channel(1);
+                let window = web_sys::window().expect("window not found");
+
+                let on_hash_change = wasm_bindgen::prelude::Closure::wrap(Box::new(move || {
+                    let hash = web_sys::window()
+                        .and_then(|w| w.location().hash().ok())
+                        .unwrap_or_default();
+
+                    let path = if hash.starts_with('#') {
+                        &hash[1..]
+                    } else {
+                        &hash
+                    };
+
+                    let page = Page::from_path(path);
+                    let _ = sender.try_send(Message::SetTab(page));
+                })
+                    as Box<dyn FnMut()>);
+
+                window.set_onhashchange(Some(on_hash_change.as_ref().unchecked_ref()));
+                on_hash_change.forget(); // Keep closure alive
+
+                receiver
+            })
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            iced::Subscription::none()
+        }
     }
 }

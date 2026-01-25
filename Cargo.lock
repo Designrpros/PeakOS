@@ -5640,6 +5640,7 @@ dependencies = [
  "peak-core",
  "peak-icons",
  "peak-theme",
+ "percent-encoding",
  "serde",
  "serde_json",
  "wasm-bindgen",

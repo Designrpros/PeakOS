@@ -1,125 +1,111 @@
-# PeakUI Developer Guide
+```markdown
+# PeakUI Developer Guide 📘
 
-PeakUI is a declarative, semantic UI framework built on top of `iced` 0.13, designed specifically for the PeakOS ecosystem. It facilitates building adaptive, theme-aware interfaces that work seamlessly across Desktop, Mobile, and TV.
+Welcome to PeakUI. This guide is designed to get you building beautiful, adaptive applications for PeakOS (and the web) immediately.
 
-## Core Concepts
+## 1. The Golden Rule
+> **"Look at the Showcase."**
 
-### 1. Declarative Views
-PeakUI uses a `View` trait instead of traditional widget composition. This allows for a more "SwiftUI-like" experience.
+The most up-to-date, comprehensive documentation is the code itself. The **Showcase Application** is not just a demo; it is the reference implementation for every feature in the framework.
+
+Open the following files to see how a real app is built:
+* **Entry Point:** `peak-ui/examples/showcase.rs`
+* **State Management:** `peak-ui/src/reference/app.rs`
+* **Routing:** `peak-ui/src/reference/model.rs`
+
+## 2. Project Structure
+
+A typical PeakUI app follows The Elm Architecture (Model-View-Update), consisting of three main parts:
+
+### A. The Model (`Page` & `State`)
+Define your application state and navigation routes in a dedicated module (e.g., `model.rs`).
 
 ```rust
-pub trait View<Message> {
-    fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer>;
+// From reference/model.rs
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum Page {
+    #[default]
+    Home,
+    Settings,
+    // Deep linking support
+    Profile(String), 
 }
+
+pub struct AppState {
+    pub theme: ThemeTone,
+    pub navigation_mode: String,
+}
+
 ```
 
-### 2. Context-Awareness
-Every view receives a `Context` containing environmental data:
-- **ThemeTokens**: Dynamic colors and metrics.
-- **ShellMode**: The current OS mode (Desktop, Mobile, etc.).
-- **DeviceType**: Categorized hardware type for layout branching.
+### B. The Update Loop (`Message`)
 
----
-
-## Basic Components
-
-### Typography
-Use the `Text` component for all textual content. It supports semantic modifiers.
+Handle events purely. The `update` function is the only place where state changes.
 
 ```rust
-Text::new("My Title").title()
-Text::new("Body content").body()
-Text::new("Subtle description").secondary()
+#[derive(Debug, Clone)]
+pub enum Message {
+    Navigate(Page),
+    ToggleSidebar,
+    // Form inputs
+    Search(String), 
+}
+
+impl App {
+    pub fn update(&mut self, message: Message) -> Task<Message> {
+        match message {
+            Message::Navigate(page) => {
+                self.active_page = page;
+                Task::none()
+            }
+            _ => Task::none()
+        }
+    }
+}
+
 ```
 
-### Layouts
-Layout primitives handle spacing and alignment automatically.
+### C. The View (`NavigationSplitView`)
 
-- **VStack**: Vertical stack.
-- **HStack**: Horizontal stack.
-- **ZStack**: Overlapping stack (layers).
+Describe your UI declaratively. Always start with a `NavigationSplitView` to get free mobile/desktop adaptation.
 
 ```rust
-VStack::new()
-    .spacing(10.0)
-    .push(Text::new("Item 1"))
-    .push(Text::new("Item 2"))
-```
-
-### Containers
-- **Card**: A styled container with background and padding.
-- **Section**: A labeled group of components.
-
-```rust
-Section::new("Profile", 
-    Card::new(
-        VStack::new()
-            .push(Text::new("Name: Peak"))
-            .push(Text::new("Status: Online"))
+fn view(&self) -> Element<Message> {
+    NavigationSplitView::new(
+        // Master (Sidebar)
+        Sidebar::new(&self.active_page),
+        
+        // Detail (Content)
+        Content::new(&self.active_page)
     )
-)
-```
-
----
-
-## Advanced: Adaptive Layouts
-
-The `NavigationSplitView` is the flagship adaptive component. It automatically switches between a two-pane layout on Desktop and a single-pane layout on Mobile/TV.
-
-```rust
-NavigationSplitView::new(sidebar_view, content_view)
-```
-
-### Stack Navigation (Mobile)
-On mobile devices, `NavigationSplitView` can behave as a stack navigator with automatic back button:
-
-```rust
-NavigationSplitView::new(sidebar_view, content_view)
-    .force_sidebar_on_slim(show_sidebar)  // Control which view shows
-    .on_back(Message::GoBack)             // Handle back navigation
-```
-
-When `force_sidebar_on_slim` is `false`, a "Back" button with chevron icon is automatically rendered, allowing users to return to the sidebar.
-
-### Buttons with Icons
-Buttons now support optional icons that adapt to the button's style and theme:
-
-```rust
-Button::new("Back")
-    .icon("chevron_left")              // Icon name from assets/icons/system/ui/
-    .style(ButtonStyle::Ghost)
-    .on_press(Message::GoBack)
-```
-
-Icons automatically receive proper theming:
-- **Primary/Destructive**: White icons
-- **Secondary/Ghost**: Theme text color
-
----
-
-## Design System Integration
-
-PeakUI is directly wired to `peak-theme`. When the OS theme changes (Dark/Light) or the mode changes (Console -> Desktop), all PeakUI components update automatically because they resolve their styles through the `Context`.
-
-### Custom Styling in Views
-If you need custom colors, access the theme via the context:
-
-```rust
-fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
-    container(self.content.view(context))
-        .style(|_theme| container::Style {
-            background: Some(context.theme.card_bg.into()),
-            ..Default::default()
-        })
-        .into()
+    .force_sidebar_on_slim(self.show_sidebar) // Handles mobile stack navigation
+    .into()
 }
+
 ```
 
----
+## 3. Common Patterns
 
-## Running the Showcase
-To see PeakUI in action, run the showcase application:
+### Responsive Design
 
-```bash
-cargo run -p peak-ui --bin peak-ui-showcase
-```
+Do not check for screen width manually. Use the environment context or responsive widgets to adapt automatically.
+
+* **`NavigationSplitView`**: Automatically switches between Sidebar (Desktop) and Stack (Mobile) layouts.
+* **`ResponsiveGrid`**: Flows content (like cards or images) based on available width, perfect for galleries.
+
+### Theming
+
+PeakUI uses a token-based design system found in `peak-theme`.
+
+* **Colors**: Use `style::Primary`, `style::Destructive`, or `style::Glass`.
+* **Typography**: Use modifiers like `.large_title()`, `.caption()`, or `.monospaced()`.
+
+### Interactive "Labs"
+
+If you need to test a component (like a Button or Slider) with various configurations, look at the **Component Labs** in the Showcase (`reference/pages/button.rs`). These show how to bind UI controls to internal state for real-time adjustments.
+
+## 4. Contributing
+
+1. Make changes to the framework in `crates/peak-ui`.
+2. Run `cargo run --example showcase` to verify your changes visually.
+3. If adding a new component, add a new page to the Showcase in `reference/pages/` so others can learn how to use it.

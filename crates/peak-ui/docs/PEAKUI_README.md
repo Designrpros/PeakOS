@@ -1,22 +1,52 @@
+```markdown
 # PeakUI Framework 🏔️
 > **"SwiftUI for Rust" - The Native App Framework of PeakOS**
 
-**PeakUI** is a high-level UI framework built on top of [Iced](https://github.com/iced-rs/iced) designed to enable rapid, beautiful, and consistent application development for PeakOS. It abstracts the complexity of raw widget composition into a declarative, modifier-based syntax inspired by SwiftUI.
+**PeakUI** is a high-level UI framework built on top of [Iced](https://github.com/iced-rs/iced) (v0.13), designed to enable rapid, beautiful, and consistent application development. It abstracts the complexity of raw widget composition into a declarative, modifier-based syntax inspired by SwiftUI.
+
+**Build Once, Run Everywhere:**
+* 🖥️ **Native Desktop:** macOS, Windows, Linux (wGPU accelerated).
+* 🌐 **Web (WASM):** Runs directly in modern browsers via WebGL.
+* 📱 **Mobile:** Adaptive layouts that switch between Sidebar and Stack navigation automatically.
+
+---
+
+## 🚀 Quick Start: The Showcase
+The best way to learn PeakUI is to run the **Showcase Application**. This is a comprehensive "Component Lab" that demonstrates every widget, layout, and hook in the framework.
+
+### Run Native (Desktop)
+```bash
+cargo run --example showcase
+
+```
+
+### Run on Web (WASM)
+
+*Requires [Trunk*](https://trunkrs.dev/)
+
+```bash
+trunk serve peak-ui/index.html
+
+```
+
+---
 
 ## 1. Core Philosophy
-1.  **Declarative Syntax**: Write code that describes *what* the UI should look like, not *how* to draw it.
-2.  **Platform Agnostic**: Apps built with PeakUI run natively on Desktop (Windowed) and Mobile (Fullscreen) without code changes.
-3.  **Visual Consistency**: All apps inherit the OS Theme (Glassmorphism, Typography, spacing) automatically.
+
+1. **Declarative Syntax**: Write code that describes *what* the UI should look like, not *how* to draw it.
+2. **Adaptive by Default**: Apps automatically switch between "Desktop Mode" (Sidebar + Content) and "Mobile Mode" (Navigation Stack) based on window width.
+3. **Visual Consistency**: All apps inherit the PeakOS Design System (Glassmorphism, Typography, Spacing) automatically.
 
 ## 2. Architecture: "The One Codebase"
-PeakUI enables a separated ecosystem where apps are libraries, not binaries.
+
+PeakUI enables a truly separated ecosystem where applications are libraries, not binaries.
 
 | Layer | Crate | Responsibilities |
-| :--- | :--- | :--- |
+| --- | --- | --- |
 | **Framework** | `crates/peak-ui` | The SDK. Widgets, layout logic, theming system, and adaptation rules. |
+| **Showcase** | `examples/showcase.rs` | The living documentation and component laboratory. |
 | **Applications** | `crates/peak-apps` | The core apps (Settings, Files). Pure logic & layout using `peak-ui`. |
-| **Desktop Shell** | `crates/peak-desktop` | Hosts apps in floating *Windows*. Renders `NavigationSplitView` as Sidebar+Detail. |
-| **Mobile Shell** | `crates/peak-mobile` | Hosts apps full-screen. Renders `NavigationSplitView` as NavigationStack. |
+| **Shells** | `modes/*` | Hosts apps in different contexts (Windowed, Fullscreen, Web). |
 
 ## 3. Example Usage
 
@@ -39,47 +69,44 @@ impl View for MyApp {
             // Detail (Content)
             VStack::new()
                 .push(Text::new("Welcome to PeakOS").large_title())
-                .push(Toggle::new("Enable Wi-Fi", &self.wifi_enabled))
+                .push(Button::new("Click Me").style(style::Primary))
                 .padding()
         )
         .force_sidebar_on_slim(self.show_sidebar)  // Stack navigation for mobile
-        .on_back(Message::GoBack)                  // Automatic back button
+        .on_back(Message::GoBack)                  // Automatic back button logic
     }
 }
+
 ```
 
-**Adaptive Behavior:**
-- **Desktop (≥600px)**: Shows sidebar + content side-by-side
-- **Mobile (<600px)**: Stack navigation with automatic back button
-  - Starts at sidebar (category list)
-  - Taps navigate to detail view with "< Back" button
-- **Icons**: Buttons support `.icon(name)` for theme-aware graphics
-
 ## 4. Design System Specs (Cupertino Theme)
-PeakUI implements a premium visual language out of the box.
+
+PeakUI implements a premium visual language out of the box:
 
 ### A. Navigation
-- **Sidebar**: Translucent glass background, rounded-rect selection (blue).
-- **Toolbar**: Unified with window chrome, large titles.
 
-### B. Controls
-- **Toggle**: Green/Grey pill (50x30px) with white shadowed knob.
-- **Slider**: Thin track, blue fill, expanding knob on drag.
-- **Button**: `style(.primary)` gives blue gradient, `style(.destructive)` gives red tint.
+* **Sidebar**: Translucent glass background, rounded-rect selection.
+* **Toolbar**: Unified with window chrome, large titles.
 
-### C. Lists
-- **Inset Grouped**: Rounded white "islands" on a light grey background (Settings style).
-- **Separators**: Inset margins (doesn't touch edges).
+### B. Controls (Interactive Labs)
 
-### D. Overlay Scrollbars
-- **Style**: Invisible track.
-- **Handle**: Thin (4px) rounded pill floating over content. Expands on hover.
+* **Toggle**: Green/Grey pill with shadowed knob.
+* **Slider**: Thin track, blue fill, expanding knob on drag.
+* **Button**: Supports `Variant` (Solid, Soft, Ghost) and `Intent` (Primary, Destructive).
+
+### C. Layouts
+
+* **NavigationSplitView**: The core adaptive container.
+* **ZStack**: For overlaying content (like toasts or modals).
+* **ResponsiveGrid**: Flows content (cards, images) based on available width.
 
 ## 5. Theming
+
 PeakUI supports dynamic theme switching at runtime:
-- **Heritage**: The classic PeakOS look.
-- **Cupertino**: The modern, glass-infused aesthetic.
-- **High Contrast**: For accessibility.
+
+* **Tone**: Light / Dark / Auto.
+* **Theme**: Heritage (Classic) / Cupertino (Modern Glass).
 
 ---
-*This document serves as the architectural blueprint for the PeakUI implementation.*
+
+*To contribute, please see `PEAKUI_GUIDE.md`.*
