@@ -13,6 +13,12 @@ pub struct ContentView {
     pub navigation_mode: String,
     pub search_query: String,
     pub expanded_sections: std::collections::HashSet<String>,
+    pub button_lab: super::super::app::ButtonLabState,
+    pub render_mode: super::super::app::RenderMode,
+    pub sidebar_width: f32,
+    pub inspector_width: f32,
+    pub is_resizing_sidebar: bool,
+    pub is_resizing_inspector: bool,
 }
 
 impl ContentView {
@@ -26,6 +32,12 @@ impl ContentView {
             navigation_mode: app.navigation_mode.clone(),
             search_query: app.search_query.clone(),
             expanded_sections: app.expanded_sections.clone(),
+            button_lab: app.button_lab.clone(),
+            render_mode: app.render_mode,
+            sidebar_width: app.sidebar_width,
+            inspector_width: app.inspector_width,
+            is_resizing_sidebar: app.is_resizing_sidebar,
+            is_resizing_inspector: app.is_resizing_inspector,
         }
     }
 
@@ -33,7 +45,12 @@ impl ContentView {
         let is_mobile = context.is_slim();
 
         // --- 1. Sub-Views (Data Collection) ---
-        let canvas_manager = CanvasView::new(self.active_tab.clone(), self.navigation_mode.clone());
+        let canvas_manager = CanvasView::new(
+            self.active_tab.clone(),
+            self.navigation_mode.clone(),
+            self.button_lab.clone(),
+            self.render_mode,
+        );
 
         let sidebar = SidebarView::new(
             self.active_tab.clone(),
@@ -60,7 +77,18 @@ impl ContentView {
         let page = canvas_manager.render_page(&content_context);
 
         let mut split_view = NavigationSplitView::new(sidebar, ScrollView::from_boxed(page.view))
-            .force_sidebar_on_slim(self.show_sidebar && is_mobile);
+            .force_sidebar_on_slim(self.show_sidebar && is_mobile)
+            .sidebar_width(self.sidebar_width)
+            .inspector_width(self.inspector_width)
+            .on_resize_sidebar(|w| Message::ResizeSidebar(w))
+            .on_resize_inspector(|w| Message::ResizeInspector(w))
+            .on_start_resize_sidebar(Message::StartResizingSidebar)
+            .on_stop_resize_sidebar(Message::StopResizingSidebar)
+            .on_start_resize_inspector(Message::StartResizingInspector)
+            .on_stop_resize_inspector(Message::StopResizingInspector)
+            .is_resizing_sidebar(self.is_resizing_sidebar)
+            .is_resizing_inspector(self.is_resizing_inspector)
+            .on_none(Message::None);
 
         // Decide which inspector to show: strictly page-specific
         let has_inspector = page.inspector.is_some();
@@ -77,7 +105,9 @@ impl ContentView {
         let show_inspector = self.show_inspector;
         let query = self.search_query.clone();
 
-        let mut notch_content = VStack::<Message, IcedBackend>::new_generic().spacing(12.0);
+        let mut notch_content = VStack::<Message, IcedBackend>::new_generic()
+            .width(Length::Shrink)
+            .spacing(12.0);
 
         if show_search {
             // Expanded Notch
@@ -89,7 +119,7 @@ impl ContentView {
                             .spacing(12.0)
                             .align_y(Alignment::Center)
                             .push(Icon::<IcedBackend>::new("search").secondary())
-                            .push(TextField::<Message>::new(
+                            .push(TextInput::<Message>::new(
                                 query.clone(),
                                 "Search docs...",
                                 |s| Message::Search(s),
@@ -115,6 +145,7 @@ impl ContentView {
         } else {
             // Idle Pill Notch
             let mut notch_row = HStack::<Message, IcedBackend>::new_generic()
+                .width(Length::Shrink)
                 .spacing(24.0)
                 .align_y(Alignment::Center);
 

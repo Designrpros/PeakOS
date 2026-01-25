@@ -31,6 +31,8 @@ pub enum PeakTheme {
     HighContrast,
     /// Cinematic mountain aesthetic
     Mountain,
+    /// Warm, beige/stone aesthetic
+    Peak,
 }
 
 impl PeakTheme {
@@ -48,6 +50,7 @@ impl PeakTheme {
             PeakTheme::Fluent => Self::fluent_colors(tone),
             PeakTheme::HighContrast => Self::high_contrast_colors(tone),
             PeakTheme::Mountain => Self::mountain_colors(tone),
+            PeakTheme::Peak => Self::peak_colors(tone),
         }
     }
 
@@ -81,6 +84,7 @@ impl PeakTheme {
             PeakTheme::Fluent => "Fluent",
             PeakTheme::HighContrast => "High Contrast",
             PeakTheme::Mountain => "Mountain",
+            PeakTheme::Peak => "Peak",
         }
     }
 
@@ -98,10 +102,90 @@ impl PeakTheme {
             PeakTheme::Fluent,
             PeakTheme::HighContrast,
             PeakTheme::Mountain,
+            PeakTheme::Peak,
         ]
     }
 
     // === Theme Color Implementations ===
+
+    fn peak_colors(tone: ThemeTone) -> PeakColors {
+        match tone {
+            ThemeTone::Light => PeakColors {
+                // Anthropic-inspired Beige Theme
+                primary: Color::from_rgb8(180, 140, 100), // Warm beige-brown accent
+                on_primary: Color::WHITE,
+                primary_container: Color::from_rgb8(245, 240, 230),
+                on_primary_container: Color::from_rgb8(90, 70, 50),
+
+                secondary: Color::from_rgb8(140, 130, 120), // Stone gray
+                on_secondary: Color::WHITE,
+                secondary_container: Color::from_rgb8(235, 230, 225),
+                on_secondary_container: Color::from_rgb8(60, 55, 50),
+
+                accent: Color::from_rgb8(210, 105, 30), // Chocolate orange
+                on_accent: Color::WHITE,
+
+                success: Color::from_rgb8(100, 160, 100), // Muted organic green
+                warning: Color::from_rgb8(220, 180, 80),  // Muted gold
+                danger: Color::from_rgb8(200, 100, 100),  // Clay red
+                info: Color::from_rgb8(100, 150, 200),    // Faded denim
+
+                surface: Color::from_rgb8(252, 250, 245), // Off-white cream paper
+                on_surface: Color::from_rgb8(60, 55, 50), // Warm dark gray text
+                surface_variant: Color::from_rgb8(245, 240, 230),
+                on_surface_variant: Color::from_rgb8(100, 95, 90),
+
+                background: Color::from_rgb8(250, 248, 242), // Very light beige
+                on_background: Color::from_rgb8(60, 55, 50),
+
+                border: Color::from_rgba8(160, 140, 120, 40.0),
+                divider: Color::from_rgba8(160, 140, 120, 0.2),
+                overlay: Color::from_rgba8(60, 55, 50, 0.1),
+
+                text_primary: Color::from_rgb8(60, 55, 50),
+                text_secondary: Color::from_rgba8(60, 55, 50, 0.7),
+                text_tertiary: Color::from_rgba8(60, 55, 50, 0.5),
+                text_disabled: Color::from_rgba8(60, 55, 50, 0.3),
+            },
+            ThemeTone::Dark => PeakColors {
+                // Stone Warm Dark Black
+                primary: Color::from_rgb8(180, 160, 140), // Light stone
+                on_primary: Color::BLACK,
+                primary_container: Color::from_rgb8(60, 55, 50),
+                on_primary_container: Color::from_rgb8(230, 220, 210),
+
+                secondary: Color::from_rgb8(120, 115, 110),
+                on_secondary: Color::WHITE,
+                secondary_container: Color::from_rgb8(50, 48, 45),
+                on_secondary_container: Color::from_rgb8(200, 195, 190),
+
+                accent: Color::from_rgb8(210, 150, 100), // Warm clay
+                on_accent: Color::BLACK,
+
+                success: Color::from_rgb8(120, 180, 120),
+                warning: Color::from_rgb8(220, 200, 120),
+                danger: Color::from_rgb8(220, 120, 120),
+                info: Color::from_rgb8(120, 160, 200),
+
+                surface: Color::from_rgb8(35, 33, 30), // Warm charcoal
+                on_surface: Color::from_rgb8(235, 230, 225),
+                surface_variant: Color::from_rgb8(45, 43, 40),
+                on_surface_variant: Color::from_rgb8(200, 195, 190),
+
+                background: Color::from_rgb8(25, 23, 20), // Deep warm black
+                on_background: Color::from_rgb8(235, 230, 225),
+
+                border: Color::from_rgba8(200, 190, 180, 0.12),
+                divider: Color::from_rgba8(200, 190, 180, 0.06),
+                overlay: Color::from_rgba(0.0, 0.0, 0.0, 0.6),
+
+                text_primary: Color::from_rgb8(235, 230, 225),
+                text_secondary: Color::from_rgba8(235, 230, 225, 0.7),
+                text_tertiary: Color::from_rgba8(235, 230, 225, 0.5),
+                text_disabled: Color::from_rgba8(235, 230, 225, 0.3),
+            },
+        }
+    }
 
     fn cupertino_colors(tone: ThemeTone) -> PeakColors {
         match tone {

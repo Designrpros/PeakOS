@@ -1,6 +1,7 @@
 use crate::atoms::{Icon, Text};
 use crate::core::{Backend, Context, IcedBackend, SemanticNode, View};
 use crate::layout::{HStack, VStack};
+use crate::modifiers::{Intent, Variant};
 use iced::{Alignment, Length, Padding};
 use std::marker::PhantomData;
 use std::sync::Arc;
@@ -176,7 +177,13 @@ impl<Message: Clone + 'static, B: Backend> View<Message, B> for NavigationLink<M
             })
             .view(context);
 
-        B::button(inner, Some(self.destination.clone()), context)
+        B::button(
+            inner,
+            Some(self.destination.clone()),
+            Variant::Ghost,
+            Intent::Neutral,
+            context,
+        )
     }
 
     fn describe(&self, _context: &Context) -> SemanticNode {
@@ -290,10 +297,10 @@ impl<Message: Clone + 'static, B: Backend> View<Message, B> for Sidebar<Message,
         );
 
         if let Some((query, on_change)) = &self.search {
-            use crate::atoms::TextField;
+            use crate::prelude::TextInput;
             // Add search bar if configured
             views.push(
-                TextField::<Message, B>::new(query.clone(), "Search...", {
+                TextInput::<Message, B>::new(query.clone(), "Search...", {
                     let cb = on_change.clone();
                     move |s| (cb)(s)
                 })

@@ -6,15 +6,24 @@ use crate::prelude::*;
 pub struct CanvasView {
     pub active_tab: Page,
     pub navigation_mode: String,
+    pub button_lab: super::super::app::ButtonLabState,
+    pub render_mode: super::super::app::RenderMode,
 }
 
 use super::super::page::PageResult;
 
 impl CanvasView {
-    pub fn new(active_tab: Page, navigation_mode: String) -> Self {
+    pub fn new(
+        active_tab: Page,
+        navigation_mode: String,
+        button_lab: super::super::app::ButtonLabState,
+        render_mode: super::super::app::RenderMode,
+    ) -> Self {
         Self {
             active_tab,
             navigation_mode,
+            button_lab,
+            render_mode,
         }
     }
 
@@ -49,7 +58,7 @@ impl CanvasView {
             // Atoms (Phase 3/4)
             Page::Text => pages::text::view(context),
             Page::Icon => pages::icon::view(context),
-            Page::Button => pages::button::view(context),
+            Page::Button => pages::button::view(context, &self.button_lab, self.render_mode),
             Page::Shapes => pages::shapes::view(context, is_mobile),
             Page::Divider => pages::divider::view(context),
 
@@ -69,7 +78,9 @@ impl CanvasView {
             Page::Section => pages::section::view(context),
 
             // Showcase Gallery (Deprecated / Redirects)
-            Page::ShowcaseButtons => pages::button::view(context),
+            Page::ShowcaseButtons => {
+                pages::button::view(context, &self.button_lab, self.render_mode)
+            }
             Page::ShowcaseInputs
             | Page::ShowcaseToggles
             | Page::ShowcaseSliders

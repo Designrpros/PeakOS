@@ -26,7 +26,7 @@ impl<Message: 'static, B: Backend> Card<Message, B> {
         Self {
             content: Box::new(content),
             padding: Padding::from(16),
-            width: Length::Shrink,
+            width: Length::Fill,
             height: Length::Shrink,
         }
     }
@@ -244,7 +244,7 @@ impl<Message: 'static, B: Backend> GlassCard<Message, B> {
         Self {
             content: Box::new(content),
             padding: Padding::from(20),
-            width: Length::Shrink,
+            width: Length::Fill,
             height: Length::Shrink,
         }
     }

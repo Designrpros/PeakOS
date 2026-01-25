@@ -3,6 +3,14 @@ use crate::prelude::*;
 use peak_core::registry::ShellMode;
 use peak_theme::{PeakTheme, ThemeTokens, ThemeTone};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum RenderMode {
+    #[default]
+    Canvas,
+    Terminal,
+    Neural,
+}
+
 pub struct App {
     pub active_tab: Page,
     pub show_search: bool,
@@ -11,9 +19,43 @@ pub struct App {
     pub show_user_profile: bool,
     pub navigation_mode: String,
     pub search_query: String,
-    pub expanded_sections: std::collections::HashSet<String>, // Note: typo in original file logic or just keep it? It was `expanded_sections`.
+    pub expanded_sections: std::collections::HashSet<String>,
     pub theme_tone: ThemeTone,
     pub theme: PeakTheme,
+
+    // Component Lab States
+    pub button_lab: ButtonLabState,
+    pub render_mode: RenderMode,
+    // Layout States
+    pub sidebar_width: f32,
+    pub inspector_width: f32,
+    pub is_resizing_sidebar: bool,
+    pub is_resizing_inspector: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct ButtonLabState {
+    pub label: String,
+    pub icon: Option<String>,
+    pub variant: Variant,
+    pub intent: Intent,
+    pub size: ControlSize,
+    pub is_full_width: bool,
+    pub is_disabled: bool,
+}
+
+impl Default for ButtonLabState {
+    fn default() -> Self {
+        Self {
+            label: "Click Me".to_string(),
+            icon: None,
+            variant: Variant::Solid,
+            intent: Intent::Primary,
+            size: ControlSize::Medium,
+            is_full_width: false,
+            is_disabled: false,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -29,6 +71,23 @@ pub enum Message {
     SetTheme(ThemeTone),
     SetThemeKind(PeakTheme),
     CopyCode(String),
+    SetRenderMode(RenderMode),
+
+    // Button Lab Messages
+    UpdateButtonLabel(String),
+    UpdateButtonIcon(Option<String>),
+    UpdateButtonSize(ControlSize),
+    UpdateButtonVariant(Variant),
+    UpdateButtonIntent(Intent),
+    ToggleButtonFullWidth(bool),
+    ToggleButtonDisabled(bool),
+    ResizeSidebar(f32),
+    ResizeInspector(f32),
+    StartResizingSidebar,
+    StopResizingSidebar,
+    StartResizingInspector,
+    StopResizingInspector,
+    None,
 }
 
 impl Default for App {
@@ -44,6 +103,12 @@ impl Default for App {
             expanded_sections: ["COMPONENTS".to_string()].into_iter().collect(),
             theme_tone: ThemeTone::Light,
             theme: PeakTheme::Peak,
+            button_lab: ButtonLabState::default(),
+            render_mode: RenderMode::Canvas,
+            sidebar_width: 240.0,
+            inspector_width: 300.0,
+            is_resizing_sidebar: false,
+            is_resizing_inspector: false,
         }
     }
 }
@@ -107,6 +172,65 @@ impl App {
                 Task::none()
             }
             Message::CopyCode(code) => iced::clipboard::write(code),
+            Message::SetRenderMode(mode) => {
+                self.render_mode = mode;
+                Task::none()
+            }
+
+            // Button Lab Handlers
+            Message::UpdateButtonLabel(label) => {
+                self.button_lab.label = label;
+                Task::none()
+            }
+            Message::UpdateButtonIcon(icon) => {
+                self.button_lab.icon = icon;
+                Task::none()
+            }
+            Message::UpdateButtonVariant(variant) => {
+                self.button_lab.variant = variant;
+                Task::none()
+            }
+            Message::UpdateButtonIntent(intent) => {
+                self.button_lab.intent = intent;
+                Task::none()
+            }
+            Message::UpdateButtonSize(size) => {
+                self.button_lab.size = size;
+                Task::none()
+            }
+            Message::ToggleButtonFullWidth(full_width) => {
+                self.button_lab.is_full_width = full_width;
+                Task::none()
+            }
+            Message::ToggleButtonDisabled(disabled) => {
+                self.button_lab.is_disabled = disabled;
+                Task::none()
+            }
+            Message::ResizeSidebar(width) => {
+                self.sidebar_width = width.max(160.0).min(400.0);
+                Task::none()
+            }
+            Message::ResizeInspector(width) => {
+                self.inspector_width = width.max(180.0).min(600.0);
+                Task::none()
+            }
+            Message::StartResizingSidebar => {
+                self.is_resizing_sidebar = true;
+                Task::none()
+            }
+            Message::StopResizingSidebar => {
+                self.is_resizing_sidebar = false;
+                Task::none()
+            }
+            Message::StartResizingInspector => {
+                self.is_resizing_inspector = true;
+                Task::none()
+            }
+            Message::StopResizingInspector => {
+                self.is_resizing_inspector = false;
+                Task::none()
+            }
+            Message::None => Task::none(),
         }
     }
 

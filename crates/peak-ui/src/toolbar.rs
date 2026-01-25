@@ -50,6 +50,7 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ToolbarItem<Messag
         let active = self.active;
 
         let mut content = crate::layout::HStack::<Message, IcedBackend>::new_generic()
+            .width(Length::Shrink)
             .spacing(8.0)
             .align_y(Alignment::Center);
 

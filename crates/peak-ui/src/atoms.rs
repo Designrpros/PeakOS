@@ -2,7 +2,6 @@ use crate::core::{Backend, Context, IcedBackend, ProxyView, View};
 use crate::modifiers::Intent;
 use iced::{Alignment, Color, Length};
 use std::marker::PhantomData;
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Text<B: Backend = IcedBackend> {
@@ -509,126 +508,6 @@ impl<Message: 'static, B: Backend> View<Message, B> for Image<B> {
             role: "image".to_string(),
             label: Some(format!("{:?}", self.path)),
             content: None,
-            children: Vec::new(),
-        }
-    }
-}
-
-pub struct TextField<Message: Clone + 'static, B: Backend = IcedBackend> {
-    value: String,
-    placeholder: String,
-    on_change: Arc<dyn Fn(String) -> Message + Send + Sync>,
-    _phantom: PhantomData<B>,
-}
-
-impl<Message: Clone + 'static, B: Backend> TextField<Message, B> {
-    pub fn new(
-        value: impl Into<String>,
-        placeholder: impl Into<String>,
-        on_change: impl Fn(String) -> Message + Send + Sync + 'static,
-    ) -> Self {
-        Self {
-            value: value.into(),
-            placeholder: placeholder.into(),
-            on_change: Arc::new(on_change),
-            _phantom: PhantomData,
-        }
-    }
-}
-
-impl<Message: Clone + 'static, B: Backend> View<Message, B> for TextField<Message, B> {
-    fn view(&self, context: &Context) -> B::AnyView<Message> {
-        let val = self.value.clone();
-        let placeholder = self.placeholder.clone();
-        let on_change = self.on_change.clone();
-        B::text_input(val, placeholder, move |s| (on_change)(s), context)
-    }
-
-    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
-        crate::core::SemanticNode {
-            role: "text_input".to_string(),
-            label: Some(self.placeholder.clone()),
-            content: Some(self.value.clone()),
-            children: Vec::new(),
-        }
-    }
-}
-
-pub struct Slider<Message: Clone + 'static, B: Backend = IcedBackend> {
-    range: std::ops::RangeInclusive<f32>,
-    value: f32,
-    on_change: Arc<dyn Fn(f32) -> Message + Send + Sync>,
-    _phantom: PhantomData<B>,
-}
-
-impl<Message: Clone + 'static, B: Backend> Slider<Message, B> {
-    pub fn new(
-        range: std::ops::RangeInclusive<f32>,
-        value: f32,
-        on_change: impl Fn(f32) -> Message + Send + Sync + 'static,
-    ) -> Self {
-        Self {
-            range,
-            value,
-            on_change: Arc::new(on_change),
-            _phantom: PhantomData,
-        }
-    }
-}
-
-impl<Message: Clone + 'static, B: Backend> View<Message, B> for Slider<Message, B> {
-    fn view(&self, context: &Context) -> B::AnyView<Message> {
-        let range = self.range.clone();
-        let val = self.value;
-        let on_change = self.on_change.clone();
-        B::slider(range, val, move |v| (on_change)(v), context)
-    }
-
-    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
-        crate::core::SemanticNode {
-            role: "slider".to_string(),
-            label: None,
-            content: Some(self.value.to_string()),
-            children: Vec::new(),
-        }
-    }
-}
-
-pub struct Toggle<Message: Clone + 'static, B: Backend = IcedBackend> {
-    label: String,
-    is_active: bool,
-    on_toggle: Arc<dyn Fn(bool) -> Message + Send + Sync>,
-    _phantom: PhantomData<B>,
-}
-
-impl<Message: Clone + 'static, B: Backend> Toggle<Message, B> {
-    pub fn new(
-        label: impl Into<String>,
-        is_active: bool,
-        on_toggle: impl Fn(bool) -> Message + Send + Sync + 'static,
-    ) -> Self {
-        Self {
-            label: label.into(),
-            is_active,
-            on_toggle: Arc::new(on_toggle),
-            _phantom: PhantomData,
-        }
-    }
-}
-
-impl<Message: Clone + 'static, B: Backend> View<Message, B> for Toggle<Message, B> {
-    fn view(&self, context: &Context) -> B::AnyView<Message> {
-        let label = self.label.clone();
-        let active = self.is_active;
-        let on_toggle = self.on_toggle.clone();
-        B::toggle(label, active, move |b| (on_toggle)(b), context)
-    }
-
-    fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
-        crate::core::SemanticNode {
-            role: "toggle".to_string(),
-            label: Some(self.label.clone()),
-            content: Some(self.is_active.to_string()),
             children: Vec::new(),
         }
     }

@@ -65,7 +65,7 @@ impl SettingsDesktopView for SettingsApp {
         let app = self.clone();
 
         responsive(mode, tokens, move |ctx| {
-            let sidebar = Sidebar::new("Settings", tokens)
+            let sidebar = Sidebar::new("Settings")
                 .with_search(app.search_query.clone(), SettingsMessage::SearchChanged)
                 .item(
                     "Network",
@@ -197,7 +197,7 @@ impl SettingsDesktopView for SettingsApp {
                             Image::new(&image_path)
                                 .width(120.0.into())
                                 .height(75.0.into())
-                                .corner_radius(8.0),
+                                .radius(8.0),
                         )
                         .on_press(SettingsMessage::WallpaperChanged(wp_clone)),
                     );
@@ -460,7 +460,7 @@ impl SettingsDesktopView for SettingsApp {
                         } else {
                             Color::from_rgb8(28, 28, 30)
                         })
-                        .corner_radius(4.0)
+                        .radius(4.0)
                         .border(
                             if is_selected { 2.0 } else { 1.0 },
                             if is_selected {
@@ -495,7 +495,7 @@ impl SettingsDesktopView for SettingsApp {
                         .push(
                             Rectangle::new(80.0.into(), 50.0.into())
                                 .color(button_bg)
-                                .corner_radius(4.0)
+                                .radius(4.0)
                                 .border(
                                     if is_selected { 2.0 } else { 0.0 },
                                     if is_selected {
@@ -533,7 +533,7 @@ impl SettingsDesktopView for SettingsApp {
                         .push(
                             Rectangle::new(80.0.into(), 50.0.into())
                                 .color(Color::from_rgba(0.5, 0.5, 0.5, 0.1))
-                                .corner_radius(4.0)
+                                .radius(4.0)
                                 .border(
                                     if is_selected { 2.0 } else { 0.0 },
                                     if is_selected {

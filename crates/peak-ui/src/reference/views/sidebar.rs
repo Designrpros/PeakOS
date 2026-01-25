@@ -288,11 +288,7 @@ impl View<Message, IcedBackend> for SidebarView {
         };
 
         container(ScrollView::new(content.width(Length::Fill)).view(context))
-            .width(if context.is_slim() {
-                Length::Fill
-            } else {
-                Length::Fixed(260.0)
-            })
+            .width(Length::Fill)
             .height(Length::Fill)
             .style({
                 let bg_color = theme.colors.surface.scale_alpha(0.5);

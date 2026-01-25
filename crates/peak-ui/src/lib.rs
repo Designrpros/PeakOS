@@ -13,7 +13,6 @@ pub mod controls;
 pub mod core;
 pub mod forms;
 pub mod gestures;
-pub mod inputs;
 pub mod layout;
 pub mod modifiers;
 pub mod motion;
@@ -26,14 +25,13 @@ pub mod prelude {
     pub use crate::catalog::{Catalog, CatalogItem, CatalogMessage};
     pub use crate::console::Console;
     pub use crate::containers::{Card, GlassCard, Section};
-    pub use crate::controls::{Button, ButtonStyle, Slider, Stepper, Toggle};
+    pub use crate::controls::{Button, ButtonStyle, Slider, Stepper, TextInput, Toggle};
     pub use crate::core::{
         responsive, AIBackend, Context, DeviceType, IcedBackend, ProxyView, SemanticNode,
         ShellMode, TermBackend, ThemeTokens, View,
     };
     pub use crate::forms::{Form, FormStyle};
     pub use crate::gestures::{Gesture, GestureDetector};
-    pub use crate::inputs::{TextField, TextInput};
     pub use crate::layout::{HStack, LayoutExt, ResponsiveGrid, VStack, ZStack};
     pub use crate::modifiers::{ControlSize, Intent, Variant};
     pub use crate::motion::{AnimationConfig, Interpolatable, MotionState, Spring};

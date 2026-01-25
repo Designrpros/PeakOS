@@ -1,8 +1,9 @@
-use crate::modifiers::Intent;
+use crate::modifiers::{Intent, Variant};
 // Force rebuild to pick up peak-icons changes
 use iced::{Alignment, Color, Length, Padding, Renderer, Shadow, Size, Theme, Vector};
 pub use peak_core::registry::ShellMode;
 pub use peak_theme::ThemeTokens;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub struct Context {
@@ -140,6 +141,8 @@ pub trait Backend: Sized + Clone + 'static {
     fn button<Message: Clone + 'static>(
         content: Self::AnyView<Message>,
         on_press: Option<Message>,
+        variant: Variant,
+        intent: Intent,
         context: &Context,
     ) -> Self::AnyView<Message>;
 
@@ -154,6 +157,8 @@ pub trait Backend: Sized + Clone + 'static {
         value: String,
         placeholder: String,
         on_change: impl Fn(String) -> Message + 'static,
+        on_submit: Option<Message>,
+        font: Option<iced::Font>,
         context: &Context,
     ) -> Self::AnyView<Message>;
 
@@ -200,6 +205,13 @@ pub trait Backend: Sized + Clone + 'static {
     ) -> Self::AnyView<Message>;
 
     fn scroll_view<Message: 'static>(content: Self::AnyView<Message>) -> Self::AnyView<Message>;
+
+    fn mouse_area<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        on_move: Option<Arc<dyn Fn(iced::Point) -> Message + Send + Sync>>,
+        on_press: Option<Message>,
+        on_release: Option<Message>,
+    ) -> Self::AnyView<Message>;
 }
 
 /// The default Iced-based GUI backend.
@@ -615,10 +627,92 @@ impl Backend for IcedBackend {
     fn button<Message: Clone + 'static>(
         content: Self::AnyView<Message>,
         on_press: Option<Message>,
-        _context: &Context,
+        variant: Variant,
+        intent: Intent,
+        context: &Context,
     ) -> Self::AnyView<Message> {
         use iced::widget::button;
-        button(content).on_press_maybe(on_press).into()
+        let theme = context.theme;
+
+        button(content)
+            .on_press_maybe(on_press)
+            .style(move |_, status| {
+                let color = match intent {
+                    Intent::Primary => theme.colors.primary,
+                    Intent::Secondary => theme.colors.secondary,
+                    Intent::Success => theme.colors.success,
+                    Intent::Warning => theme.colors.warning,
+                    Intent::Danger => theme.colors.danger,
+                    Intent::Info => theme.colors.info,
+                    Intent::Neutral => theme.colors.surface,
+                };
+
+                match variant {
+                    Variant::Solid => button::Style {
+                        background: Some(if status == button::Status::Hovered {
+                            let mut c = color;
+                            c.a = 0.8;
+                            c.into()
+                        } else {
+                            color.into()
+                        }),
+                        text_color: theme.colors.text_primary,
+                        border: iced::Border {
+                            radius: 8.0.into(),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                    Variant::Soft => button::Style {
+                        background: Some({
+                            let mut c = color;
+                            c.a = 0.1;
+                            if status == button::Status::Hovered {
+                                c.a = 0.2;
+                            }
+                            c.into()
+                        }),
+                        text_color: color,
+                        border: iced::Border {
+                            radius: 8.0.into(),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                    Variant::Outline => button::Style {
+                        background: if status == button::Status::Hovered {
+                            let mut c = color;
+                            c.a = 0.05;
+                            Some(c.into())
+                        } else {
+                            None
+                        },
+                        text_color: color,
+                        border: iced::Border {
+                            color,
+                            width: 1.0,
+                            radius: 8.0.into(),
+                        },
+                        ..Default::default()
+                    },
+                    Variant::Ghost => button::Style {
+                        background: if status == button::Status::Hovered {
+                            let mut c = color;
+                            c.a = 0.1;
+                            Some(c.into())
+                        } else {
+                            None
+                        },
+                        text_color: color,
+                        border: iced::Border {
+                            radius: 8.0.into(),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                }
+            })
+            .into()
     }
 
     fn sidebar_item<Message: Clone + 'static>(
@@ -674,12 +768,21 @@ impl Backend for IcedBackend {
         value: String,
         placeholder: String,
         on_change: impl Fn(String) -> Message + 'static,
+        on_submit: Option<Message>,
+        font: Option<iced::Font>,
         _context: &Context,
     ) -> Self::AnyView<Message> {
-        iced::widget::text_input(&placeholder, &value)
-            .on_input(on_change)
-            .padding(10)
-            .into()
+        let mut input = iced::widget::text_input(&placeholder, &value).on_input(on_change);
+
+        if let Some(msg) = on_submit {
+            input = input.on_submit(msg);
+        }
+
+        if let Some(font) = font {
+            input = input.font(font);
+        }
+
+        input.padding(10).into()
     }
 
     fn slider<Message: Clone + 'static>(
@@ -798,6 +901,27 @@ impl Backend for IcedBackend {
         use iced::widget::scrollable;
         scrollable(content).into()
     }
+
+    fn mouse_area<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        on_move: Option<Arc<dyn Fn(iced::Point) -> Message + Send + Sync>>,
+        on_press: Option<Message>,
+        on_release: Option<Message>,
+    ) -> Self::AnyView<Message> {
+        use iced::widget::mouse_area;
+        let mut area = mouse_area(content);
+        if let Some(f) = on_move {
+            let f_clone = f.clone();
+            area = area.on_move(move |p| f_clone(p));
+        }
+        if let Some(msg) = on_press {
+            area = area.on_press(msg);
+        }
+        if let Some(msg) = on_release {
+            area = area.on_release(msg);
+        }
+        area.into()
+    }
 }
 
 /// A Terminal-based TUI backend.
@@ -913,6 +1037,8 @@ impl Backend for TermBackend {
     fn button<Message: Clone + 'static>(
         content: Self::AnyView<Message>,
         _on_press: Option<Message>,
+        _variant: Variant,
+        _intent: Intent,
         _context: &Context,
     ) -> Self::AnyView<Message> {
         format!("[ {} ]", content)
@@ -933,11 +1059,13 @@ impl Backend for TermBackend {
 
     fn text_input<Message: Clone + 'static>(
         value: String,
-        placeholder: String,
+        _placeholder: String,
         _on_change: impl Fn(String) -> Message + 'static,
+        _on_submit: Option<Message>,
+        _font: Option<iced::Font>,
         _context: &Context,
     ) -> Self::AnyView<Message> {
-        format!("[ {} ] (Placeholder: {})", value, placeholder)
+        format!("[Input: {}]", value)
     }
 
     fn slider<Message: Clone + 'static>(
@@ -995,6 +1123,15 @@ impl Backend for TermBackend {
     }
 
     fn scroll_view<Message: 'static>(content: Self::AnyView<Message>) -> Self::AnyView<Message> {
+        content
+    }
+
+    fn mouse_area<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        _on_move: Option<Arc<dyn Fn(iced::Point) -> Message + Send + Sync>>,
+        _on_press: Option<Message>,
+        _on_release: Option<Message>,
+    ) -> Self::AnyView<Message> {
         content
     }
 }
@@ -1175,11 +1312,13 @@ impl Backend for AIBackend {
     fn button<Message: Clone + 'static>(
         content: Self::AnyView<Message>,
         _on_press: Option<Message>,
+        variant: Variant,
+        intent: Intent,
         _context: &Context,
     ) -> Self::AnyView<Message> {
         SemanticNode {
             role: "button".to_string(),
-            label: None,
+            label: Some(format!("{:?}_{:?}", variant, intent)),
             content: None,
             children: vec![content],
         }
@@ -1206,13 +1345,15 @@ impl Backend for AIBackend {
 
     fn text_input<Message: Clone + 'static>(
         value: String,
-        placeholder: String,
+        _placeholder: String,
         _on_change: impl Fn(String) -> Message + 'static,
+        _on_submit: Option<Message>,
+        _font: Option<iced::Font>,
         _context: &Context,
     ) -> Self::AnyView<Message> {
         SemanticNode {
             role: "text_input".to_string(),
-            label: Some(placeholder),
+            label: None,
             content: Some(value),
             children: Vec::new(),
         }
@@ -1298,6 +1439,15 @@ impl Backend for AIBackend {
     }
 
     fn scroll_view<Message: 'static>(content: Self::AnyView<Message>) -> Self::AnyView<Message> {
+        content
+    }
+
+    fn mouse_area<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        _on_move: Option<Arc<dyn Fn(iced::Point) -> Message + Send + Sync>>,
+        _on_press: Option<Message>,
+        _on_release: Option<Message>,
+    ) -> Self::AnyView<Message> {
         content
     }
 }

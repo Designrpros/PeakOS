@@ -1,16 +1,30 @@
 use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
 use iced::widget::{column, container, row};
 use iced::{Element, Length, Renderer, Theme};
+use std::sync::Arc;
 
-pub struct NavigationSplitView<Message: 'static, B: Backend = IcedBackend> {
+pub struct NavigationSplitView<Message: 'static + Send + Sync, B: Backend = IcedBackend> {
     sidebar: Box<dyn View<Message, B>>,
     content: Box<dyn View<Message, B>>,
     inspector: Option<Box<dyn View<Message, B>>>,
     force_sidebar_on_slim: bool,
     on_back: Option<Message>,
+    sidebar_width: f32,
+    inspector_width: f32,
+    on_resize_sidebar: Option<Arc<dyn Fn(f32) -> Message + Send + Sync>>,
+    on_resize_inspector: Option<Arc<dyn Fn(f32) -> Message + Send + Sync>>,
+    on_start_resize_sidebar: Option<Message>,
+    on_stop_resize_sidebar: Option<Message>,
+    on_start_resize_inspector: Option<Message>,
+    on_stop_resize_inspector: Option<Message>,
+    is_resizing_sidebar: bool,
+    is_resizing_inspector: bool,
+    sidebar_locked: bool,
+    inspector_locked: bool,
+    on_none: Option<Message>,
 }
 
-impl<Message: Clone + 'static> NavigationSplitView<Message, IcedBackend> {
+impl<Message: Clone + 'static + Send + Sync> NavigationSplitView<Message, IcedBackend> {
     pub fn new(
         sidebar: impl View<Message, IcedBackend> + 'static,
         content: impl View<Message, IcedBackend> + 'static,
@@ -19,7 +33,7 @@ impl<Message: Clone + 'static> NavigationSplitView<Message, IcedBackend> {
     }
 }
 
-impl<Message: Clone + 'static> NavigationSplitView<Message, TermBackend> {
+impl<Message: Clone + 'static + Send + Sync> NavigationSplitView<Message, TermBackend> {
     pub fn new_tui(
         sidebar: impl View<Message, TermBackend> + 'static,
         content: impl View<Message, TermBackend> + 'static,
@@ -28,7 +42,7 @@ impl<Message: Clone + 'static> NavigationSplitView<Message, TermBackend> {
     }
 }
 
-impl<Message: Clone + 'static, B: Backend> NavigationSplitView<Message, B> {
+impl<Message: Clone + 'static + Send + Sync, B: Backend> NavigationSplitView<Message, B> {
     pub fn new_generic(
         sidebar: impl View<Message, B> + 'static,
         content: impl View<Message, B> + 'static,
@@ -39,6 +53,19 @@ impl<Message: Clone + 'static, B: Backend> NavigationSplitView<Message, B> {
             inspector: None,
             force_sidebar_on_slim: false,
             on_back: None,
+            sidebar_width: 240.0,
+            inspector_width: 300.0,
+            on_resize_sidebar: None,
+            on_resize_inspector: None,
+            on_start_resize_sidebar: None,
+            on_stop_resize_sidebar: None,
+            on_start_resize_inspector: None,
+            on_stop_resize_inspector: None,
+            is_resizing_sidebar: false,
+            is_resizing_inspector: false,
+            sidebar_locked: false,
+            inspector_locked: false,
+            on_none: None,
         }
     }
 
@@ -56,12 +83,80 @@ impl<Message: Clone + 'static, B: Backend> NavigationSplitView<Message, B> {
         self.on_back = Some(msg);
         self
     }
+
+    pub fn sidebar_width(mut self, width: f32) -> Self {
+        self.sidebar_width = width;
+        self
+    }
+
+    pub fn inspector_width(mut self, width: f32) -> Self {
+        self.inspector_width = width;
+        self
+    }
+
+    pub fn on_resize_sidebar(mut self, f: impl Fn(f32) -> Message + Send + Sync + 'static) -> Self {
+        self.on_resize_sidebar = Some(Arc::new(f));
+        self
+    }
+
+    pub fn on_resize_inspector(
+        mut self,
+        f: impl Fn(f32) -> Message + Send + Sync + 'static,
+    ) -> Self {
+        self.on_resize_inspector = Some(Arc::new(f));
+        self
+    }
+
+    pub fn on_start_resize_sidebar(mut self, msg: Message) -> Self {
+        self.on_start_resize_sidebar = Some(msg);
+        self
+    }
+
+    pub fn on_stop_resize_sidebar(mut self, msg: Message) -> Self {
+        self.on_stop_resize_sidebar = Some(msg);
+        self
+    }
+
+    pub fn on_start_resize_inspector(mut self, msg: Message) -> Self {
+        self.on_start_resize_inspector = Some(msg);
+        self
+    }
+
+    pub fn on_stop_resize_inspector(mut self, msg: Message) -> Self {
+        self.on_stop_resize_inspector = Some(msg);
+        self
+    }
+
+    pub fn is_resizing_sidebar(mut self, resizing: bool) -> Self {
+        self.is_resizing_sidebar = resizing;
+        self
+    }
+
+    pub fn is_resizing_inspector(mut self, resizing: bool) -> Self {
+        self.is_resizing_inspector = resizing;
+        self
+    }
+
+    pub fn sidebar_locked(mut self, locked: bool) -> Self {
+        self.sidebar_locked = locked;
+        self
+    }
+
+    pub fn inspector_locked(mut self, locked: bool) -> Self {
+        self.inspector_locked = locked;
+        self
+    }
+
+    pub fn on_none(mut self, msg: Message) -> Self {
+        self.on_none = Some(msg);
+        self
+    }
 }
 
 #[allow(unused_imports)]
 use crate::scroll_view::ScrollView;
 
-impl<Message: Clone + 'static> View<Message, IcedBackend>
+impl<Message: Clone + 'static + Send + Sync> View<Message, IcedBackend>
     for NavigationSplitView<Message, IcedBackend>
 {
     fn view(&self, context: &Context) -> Element<'static, Message, Theme, Renderer> {
@@ -91,12 +186,13 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                     .height(Length::Fill);
 
                 if let Some(back_msg) = self.on_back.clone() {
-                    let back_button = crate::controls::Button::label("Back")
-                        .icon("chevron_left")
-                        .variant(crate::modifiers::Variant::Ghost)
-                        .on_press(back_msg)
-                        .width(Length::Shrink)
-                        .view(context);
+                    let back_button =
+                        crate::controls::Button::<Message, IcedBackend>::label("Back")
+                            .icon("chevron_left")
+                            .variant(crate::modifiers::Variant::Ghost)
+                            .on_press(back_msg)
+                            .width(Length::Shrink)
+                            .view(context);
 
                     content_col = content_col.push(
                         container(back_button)
@@ -191,10 +287,14 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
             }
         } else {
             // Desktop Layout
+            let window_width = context.size.width;
+            let sidebar_width = self.sidebar_width * context.theme.scaling;
+            let inspector_width = self.inspector_width * context.theme.scaling;
+
             let mut main_row = row![
                 // 1. Sidebar
                 container(self.sidebar.view(context))
-                    .width(Length::Fixed(240.0 * context.theme.scaling))
+                    .width(Length::Fixed(sidebar_width))
                     .height(Length::Fill)
                     .style({
                         let bg = if theme.colors.background.r < 0.1 {
@@ -211,14 +311,44 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                             ..Default::default()
                         }
                     }),
-                // Right border divider
-                container(iced::widget::Space::new(Length::Fixed(1.0), Length::Fill)).style({
-                    let div_color = theme.colors.divider;
-                    move |_| container::Style {
-                        background: Some(div_color.into()),
-                        ..Default::default()
-                    }
-                }),
+            ]
+            .width(Length::Fill)
+            .height(Length::Fill);
+
+            // Right border divider handle
+            if !self.sidebar_locked {
+                main_row = main_row.push(IcedBackend::mouse_area(
+                    container(iced::widget::Space::new(Length::Fixed(6.0), Length::Fill))
+                        .style({
+                            let div_color = if self.is_resizing_sidebar {
+                                theme.colors.primary
+                            } else {
+                                theme.colors.divider
+                            };
+                            move |_| container::Style {
+                                background: Some(div_color.into()),
+                                ..Default::default()
+                            }
+                        })
+                        .into(),
+                    None, // We don't use move here, we use global move below
+                    self.on_start_resize_sidebar.clone(),
+                    self.on_stop_resize_sidebar.clone(),
+                ));
+            } else {
+                // Fixed divider if locked
+                main_row = main_row.push(
+                    container(iced::widget::Space::new(Length::Fixed(1.0), Length::Fill)).style({
+                        let div_color = theme.colors.divider;
+                        move |_| container::Style {
+                            background: Some(div_color.into()),
+                            ..Default::default()
+                        }
+                    }),
+                );
+            }
+
+            main_row = main_row.push(
                 container(self.content.view(context))
                     .width(Length::Fill)
                     .height(Length::Fill)
@@ -230,16 +360,46 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                             text_color: Some(text_color),
                             ..Default::default()
                         }
-                    })
-            ]
-            .width(Length::Fill)
-            .height(Length::Fill);
+                    }),
+            );
 
             // 3. Inspector (Optional)
             if let Some(inspector) = &self.inspector {
+                if !self.inspector_locked {
+                    main_row = main_row.push(IcedBackend::mouse_area(
+                        container(iced::widget::Space::new(Length::Fixed(6.0), Length::Fill))
+                            .style({
+                                let div_color = if self.is_resizing_inspector {
+                                    theme.colors.primary
+                                } else {
+                                    theme.colors.divider
+                                };
+                                move |_| container::Style {
+                                    background: Some(div_color.into()),
+                                    ..Default::default()
+                                }
+                            })
+                            .into(),
+                        None,
+                        self.on_start_resize_inspector.clone(),
+                        self.on_stop_resize_inspector.clone(),
+                    ));
+                } else {
+                    main_row = main_row.push(
+                        container(iced::widget::Space::new(Length::Fixed(1.0), Length::Fill))
+                            .style({
+                                let div_color = theme.colors.divider;
+                                move |_| container::Style {
+                                    background: Some(div_color.into()),
+                                    ..Default::default()
+                                }
+                            }),
+                    );
+                }
+
                 main_row = main_row.push(
                     container(inspector.view(context))
-                        .width(Length::Fixed(220.0)) // Standard inspector width
+                        .width(Length::Fixed(inspector_width))
                         .height(Length::Fill)
                         .style({
                             let bg = if theme.colors.background.r < 0.1 {
@@ -265,22 +425,58 @@ impl<Message: Clone + 'static> View<Message, IcedBackend>
                 );
             }
 
-            container(main_row)
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .style({
-                    let bg_color = theme.colors.background;
-                    move |_| container::Style {
-                        background: Some(bg_color.into()),
-                        ..Default::default()
-                    }
-                })
-                .into()
+            if (self.is_resizing_sidebar || self.is_resizing_inspector) && self.on_none.is_some() {
+                let on_resize_sidebar = self.on_resize_sidebar.clone();
+                let on_resize_inspector = self.on_resize_inspector.clone();
+                let is_resizing_sidebar = self.is_resizing_sidebar;
+                let is_resizing_inspector = self.is_resizing_inspector;
+                let on_stop = if is_resizing_sidebar {
+                    self.on_stop_resize_sidebar.clone()
+                } else {
+                    self.on_stop_resize_inspector.clone()
+                };
+                let on_none = self.on_none.clone().unwrap();
+
+                IcedBackend::mouse_area(
+                    container(main_row)
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .padding(0)
+                        .into(),
+                    Some(Arc::new(move |p: iced::Point| {
+                        if is_resizing_sidebar {
+                            if let Some(f) = &on_resize_sidebar {
+                                return f(p.x);
+                            }
+                        } else if is_resizing_inspector {
+                            if let Some(f) = &on_resize_inspector {
+                                return f(window_width - p.x);
+                            }
+                        }
+                        on_none.clone()
+                    })
+                        as Arc<dyn Fn(iced::Point) -> Message + Send + Sync>),
+                    None, // Divider handles start
+                    on_stop,
+                )
+            } else {
+                container(main_row)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .style({
+                        let bg_color = theme.colors.background;
+                        move |_| container::Style {
+                            background: Some(bg_color.into()),
+                            ..Default::default()
+                        }
+                    })
+                    .into()
+            }
         }
     }
 }
 
-impl<Message: Clone + 'static> View<Message, TermBackend>
+impl<Message: Clone + 'static + Send + Sync> View<Message, TermBackend>
     for NavigationSplitView<Message, TermBackend>
 {
     fn view(&self, context: &Context) -> String {

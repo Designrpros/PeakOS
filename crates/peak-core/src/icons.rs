@@ -17,6 +17,7 @@ pub fn load_system_svg(
 ) -> SvgHandle {
     #[cfg(feature = "native")]
     {
+        let name = resolve_icon_alias(name);
         let rel_path = format!("icons/system/{}/{}.svg", category, name);
         let path = crate::utils::assets::get_asset_path(&rel_path);
 
@@ -172,3 +173,39 @@ pub fn get_avatar_handle(name: &str, color: &str) -> SvgHandle {
 }
 
 pub const AVATAR_OPTIONS: [&str; 5] = ["robot", "alien", "ghost", "peak", "smile"];
+
+fn resolve_icon_alias(name: &str) -> &str {
+    match name {
+        "sidebar" => "apps",
+        "book" | "book-open" => "learn",
+        "map" => "setup",
+        "users" => "media",
+        "settings" => "settings",
+        "type" => "style",
+        "image" => "image",
+        "minus" => "remove",
+        "square" => "trigger",
+        "align-justify" => "apps",
+        "columns" => "media",
+        "layers" => "folder",
+        "move" => "arrow_up",
+        "credit-card" => "document",
+        "box" => "folder",
+        "database" => "system",
+        "cloud" => "wifi_full",
+        "monitor" => "apps",
+        "command" | "cmd" => "cmd",
+        "sun" => "moon",
+        "eye" => "search",
+        "info" => "about",
+        "cpu" => "system",
+        "palette" => "palette",
+        "maximize" => "arrow_up",
+        "grid" => "apps",
+        "zap" => "trigger",
+        "activity" => "sparkles",
+        "fast-forward" => "update",
+        "lock" | "shield" => "setup",
+        _ => name,
+    }
+}

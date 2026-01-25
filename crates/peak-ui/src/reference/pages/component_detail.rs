@@ -45,10 +45,16 @@ pub fn view(name: &str, _context: &Context, is_mobile: bool) -> PageResult {
                         VStack::new_generic()
                             .spacing(12.0)
                             .push(Text::<IcedBackend>::new("Form Controls").callout().bold())
-                            .push(Toggle::new("Example Toggle", true, |_| {
-                                Message::ToggleSearch
-                            }))
-                            .push(Slider::new(0.0..=100.0, 50.0, |_| Message::ToggleSearch)),
+                            .push(Toggle::<Message, IcedBackend>::new(
+                                "Example Toggle",
+                                true,
+                                |_| Message::ToggleSearch,
+                            ))
+                            .push(Slider::<Message, IcedBackend>::new(
+                                0.0..=100.0,
+                                50.0,
+                                |_| Message::ToggleSearch,
+                            )),
                     ),
             )
             .push(Divider::<IcedBackend>::new())

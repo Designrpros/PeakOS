@@ -28,7 +28,7 @@ impl<Message: 'static, B: Backend> VStack<Message, B> {
             children: Vec::new(),
             spacing: 0.0,
             padding: iced::Padding::from(0.0),
-            width: Length::Shrink,
+            width: Length::Fill,
             height: Length::Shrink,
             align_x: iced::Alignment::Start,
         }
@@ -128,7 +128,7 @@ impl<Message: 'static, B: Backend> HStack<Message, B> {
             children: Vec::new(),
             spacing: 0.0,
             padding: iced::Padding::from(0.0),
-            width: Length::Shrink,
+            width: Length::Fill,
             height: Length::Shrink,
             align_y: iced::Alignment::Start,
         }
@@ -269,7 +269,7 @@ impl<Message: 'static, B: Backend> View<Message, B> for ZStack<Message, B> {
 }
 
 /// Extension trait for layout-related modifiers.
-pub trait LayoutExt<Message: 'static, B: Backend>: View<Message, B> + Sized {
+pub trait LayoutExt<Message: Clone + 'static, B: Backend>: View<Message, B> + Sized {
     /// Layers the given view on top of this view using a ZStack.
     fn overlay<V: View<Message, B> + 'static>(
         self,
@@ -286,11 +286,47 @@ pub trait LayoutExt<Message: 'static, B: Backend>: View<Message, B> + Sized {
             .width(iced::Length::Fill)
             .height(iced::Length::Fill)
     }
+    /// Sets an ideal width for the view, scaled by the current theme scaling.
+    fn ideal_width(self, width: f32) -> crate::core::ProxyView<Message, B>
+    where
+        Self: Sized + 'static;
+
+    fn locked(self, is_locked: bool) -> crate::core::ProxyView<Message, B>
+    where
+        Self: Sized + 'static;
 }
 
-impl<V: View<Message, B> + Sized + 'static, Message: 'static, B: Backend> LayoutExt<Message, B>
-    for V
+impl<V: View<Message, B> + Sized + 'static, Message: Clone + 'static, B: Backend>
+    LayoutExt<Message, B> for V
 {
+    fn ideal_width(self, width: f32) -> crate::core::ProxyView<Message, B>
+    where
+        Self: Sized + 'static,
+    {
+        crate::core::ProxyView::new(move |context| {
+            // Refine scaling: ensure it's not too small or large by clamping or just providing a baseline
+            let scaled_width = (width * context.theme.scaling).max(100.0).min(1200.0);
+            B::container(
+                self.view(context),
+                iced::Padding::default(),
+                iced::Length::Fixed(scaled_width),
+                iced::Length::Shrink,
+                context,
+            )
+        })
+    }
+
+    fn locked(self, _is_locked: bool) -> crate::core::ProxyView<Message, B>
+    where
+        Self: Sized + 'static,
+    {
+        crate::core::ProxyView::new(move |context| {
+            // This is a semantic modifier, it doesn't change rendering here but can be queried
+            // For now, we just pass the view through. In a real system, we'd wrap it in a struct
+            // that NavigationSplitView can detect.
+            self.view(context)
+        })
+    }
 }
 
 pub struct ResponsiveGrid<Message: 'static, B: Backend = IcedBackend> {

@@ -157,7 +157,7 @@ pub fn view(context: &Context, is_mobile: bool) -> PageResult {
                 .color(theme.colors.text_primary),
         )
         .push(
-            Button::label("View Project Structure")
+            Button::<Message, IcedBackend>::label("View Project Structure")
                 .variant(Variant::Ghost)
                 .on_press(Message::SetTab(Page::ProjectStructure)),
         );

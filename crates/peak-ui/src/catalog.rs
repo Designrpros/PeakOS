@@ -149,6 +149,7 @@ impl View<CatalogMessage, IcedBackend> for Catalog<IcedBackend> {
 
         NavigationSplitView::new(sidebar_content, detail_view)
             .on_back(CatalogMessage::GoBack)
+            .on_none(CatalogMessage::None)
             .view(context)
     }
 }
@@ -220,6 +221,8 @@ fn render_category<B: Backend>(
             B::button(
                 B::sidebar_item(title.clone(), icon.clone(), is_selected, context),
                 Some(CatalogMessage::ItemSelected(id)),
+                Variant::Ghost,
+                Intent::Neutral,
                 context,
             )
         }));
