@@ -119,10 +119,13 @@ impl PeakApp for DesktopTerminalApp {
         let input_buffer = self.0.input_buffer.clone();
 
         responsive(mode, tokens, move |ctx| {
-            let input = TextInput::new(input_buffer.clone(), TerminalMessage::InputChanged)
-                .placeholder("Type a command...")
-                .on_submit(TerminalMessage::InputSubmitted)
-                .font(iced::Font::MONOSPACE);
+            let input = TextInput::new(
+                input_buffer.clone(),
+                "Type a command...",
+                TerminalMessage::InputChanged,
+            )
+            .on_submit(TerminalMessage::InputSubmitted)
+            .font(iced::Font::MONOSPACE);
 
             let console = Console::new(content.clone()).input(input);
 

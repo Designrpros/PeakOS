@@ -2,6 +2,12 @@ use crate::modifiers::{Intent, Variant};
 // Force rebuild to pick up peak-icons changes
 use iced::{Alignment, Color, Length, Padding, Renderer, Shadow, Size, Theme, Vector};
 pub use peak_core::registry::ShellMode;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Headset {
+    VisionPro,
+    Quest3,
+    Generic,
+}
 pub use peak_theme::ThemeTokens;
 use std::sync::Arc;
 
@@ -12,6 +18,7 @@ pub struct Context {
     pub device: DeviceType,
     pub size: Size,
     pub safe_area: Padding,
+    pub focused_id: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -36,7 +43,17 @@ impl Context {
             device,
             size,
             safe_area: Padding::default(),
+            focused_id: None,
         }
+    }
+
+    pub fn is_focused(&self, id: &str) -> bool {
+        self.focused_id.as_deref() == Some(id)
+    }
+
+    pub fn with_focus(mut self, id: impl Into<String>) -> Self {
+        self.focused_id = Some(id.into());
+        self
     }
 
     pub fn is_slim(&self) -> bool {
@@ -70,6 +87,389 @@ impl Context {
     pub fn with_safe_area(mut self, padding: Padding) -> Self {
         self.safe_area = padding;
         self
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct SpatialNode {
+    pub role: String,
+    pub width: f32,
+    pub height: f32,
+    pub depth: f32,
+    pub transform: Transform3D,
+    pub is_focused: bool,
+    pub children: Vec<SpatialNode>,
+}
+
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+pub struct Transform3D {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub rotation_y: f32,
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+pub struct SpatialBackend;
+
+impl Backend for SpatialBackend {
+    type AnyView<Message: 'static> = SpatialNode;
+
+    fn vstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        spacing: f32,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _align_x: Alignment,
+        _scale: f32,
+    ) -> Self::AnyView<Message> {
+        let mut y_offset = 0.0;
+        let mut nodes = Vec::new();
+
+        for mut child in children {
+            child.transform.y = y_offset;
+            y_offset += child.height + spacing;
+            nodes.push(child);
+        }
+
+        SpatialNode {
+            role: "vstack".to_string(),
+            width: 0.0,
+            height: y_offset,
+            depth: 0.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: nodes,
+        }
+    }
+
+    fn hstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        spacing: f32,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _align_y: Alignment,
+        _scale: f32,
+    ) -> Self::AnyView<Message> {
+        let mut x_offset = 0.0;
+        let mut nodes = Vec::new();
+
+        for mut child in children {
+            child.transform.x = x_offset;
+            x_offset += child.width + spacing;
+            nodes.push(child);
+        }
+
+        SpatialNode {
+            role: "hstack".to_string(),
+            width: x_offset,
+            height: 0.0,
+            depth: 0.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: nodes,
+        }
+    }
+
+    fn text<Message: Clone + 'static>(
+        content: String,
+        size: f32,
+        _color: Option<Color>,
+        _is_bold: bool,
+        _is_dim: bool,
+        _intent: Option<Intent>,
+        _font: Option<iced::Font>,
+        _width: Length,
+        _alignment: Alignment,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "text".to_string(),
+            width: content.len() as f32 * 10.0,
+            height: size,
+            depth: 1.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn icon<Message: Clone + 'static>(
+        name: String,
+        size: f32,
+        _color: Option<Color>,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: format!("icon:{}", name),
+            width: size,
+            height: size,
+            depth: 1.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn divider<Message: 'static>(_context: &Context) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "divider".to_string(),
+            width: 100.0,
+            height: 1.0,
+            depth: 1.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn space<Message: 'static>(_width: Length, _height: Length) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "space".to_string(),
+            width: 0.0,
+            height: 0.0,
+            depth: 0.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn circle<Message: 'static>(radius: f32, _color: Option<Color>) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "circle".to_string(),
+            width: radius * 2.0,
+            height: radius * 2.0,
+            depth: 1.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn capsule<Message: 'static>(
+        _width: Length,
+        _height: Length,
+        _color: Option<Color>,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "capsule".to_string(),
+            width: 100.0,
+            height: 40.0,
+            depth: 1.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn rectangle<Message: 'static>(
+        _width: Length,
+        _height: Length,
+        _color: Option<Color>,
+        _radius: f32,
+        _border_width: f32,
+        _border_color: Option<Color>,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "rectangle".to_string(),
+            width: 100.0,
+            height: 100.0,
+            depth: 1.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn button<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        _on_press: Option<Message>,
+        _variant: Variant,
+        _intent: Intent,
+        context: &Context,
+    ) -> Self::AnyView<Message> {
+        let is_focused = context.is_focused("button");
+
+        SpatialNode {
+            role: "button".to_string(),
+            width: content.width + 16.0,
+            height: content.height + 16.0,
+            depth: if is_focused { 20.0 } else { 5.0 },
+            transform: Transform3D::default(),
+            is_focused,
+            children: vec![content],
+        }
+    }
+
+    fn sidebar_item<Message: Clone + 'static>(
+        title: String,
+        icon: String,
+        is_selected: bool,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: format!("sidebar_item:{}:{}:{}", title, icon, is_selected),
+            width: 200.0,
+            height: 40.0,
+            depth: 2.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn text_input<Message: Clone + 'static>(
+        value: String,
+        placeholder: String,
+        _on_change: impl Fn(String) -> Message + 'static,
+        _on_submit: Option<Message>,
+        _font: Option<iced::Font>,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: format!("input:{}:{}", value, placeholder),
+            width: 200.0,
+            height: 40.0,
+            depth: 2.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn slider<Message: Clone + 'static>(
+        _range: std::ops::RangeInclusive<f32>,
+        value: f32,
+        _on_change: impl Fn(f32) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: format!("slider:{}", value),
+            width: 200.0,
+            height: 20.0,
+            depth: 2.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn toggle<Message: Clone + 'static>(
+        label: String,
+        is_active: bool,
+        _on_toggle: impl Fn(bool) -> Message + 'static,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: format!("toggle:{}:{}", label, is_active),
+            width: 200.0,
+            height: 40.0,
+            depth: 2.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn zstack<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _width: Length,
+        _height: Length,
+        _alignment: Alignment,
+    ) -> Self::AnyView<Message> {
+        let mut z_offset = 0.0;
+        let mut nodes = Vec::new();
+
+        for mut child in children {
+            child.transform.z = z_offset;
+            z_offset += child.depth + 1.0;
+            nodes.push(child);
+        }
+
+        SpatialNode {
+            role: "zstack".to_string(),
+            width: 0.0,
+            height: 0.0,
+            depth: z_offset,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: nodes,
+        }
+    }
+
+    fn grid<Message: 'static>(
+        children: Vec<Self::AnyView<Message>>,
+        _columns: usize,
+        _spacing: f32,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "grid".to_string(),
+            width: 0.0,
+            height: 0.0,
+            depth: 0.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children,
+        }
+    }
+
+    fn image<Message: 'static>(
+        path: std::path::PathBuf,
+        _width: Length,
+        _height: Length,
+        _radius: f32,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: format!("image:{:?}", path),
+            width: 100.0,
+            height: 100.0,
+            depth: 1.0,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![],
+        }
+    }
+
+    fn container<Message: 'static>(
+        content: Self::AnyView<Message>,
+        _padding: Padding,
+        _width: Length,
+        _height: Length,
+        _context: &Context,
+    ) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "container".to_string(),
+            width: content.width,
+            height: content.height,
+            depth: content.depth,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![content],
+        }
+    }
+
+    fn scroll_view<Message: 'static>(content: Self::AnyView<Message>) -> Self::AnyView<Message> {
+        SpatialNode {
+            role: "scroll_view".to_string(),
+            width: content.width,
+            height: content.height,
+            depth: content.depth,
+            transform: Transform3D::default(),
+            is_focused: false,
+            children: vec![content],
+        }
+    }
+
+    fn mouse_area<Message: Clone + 'static>(
+        content: Self::AnyView<Message>,
+        _on_move: Option<Arc<dyn Fn(iced::Point) -> Message + Send + Sync>>,
+        _on_press: Option<Message>,
+        _on_release: Option<Message>,
+    ) -> Self::AnyView<Message> {
+        content
     }
 }
 
@@ -1039,9 +1439,13 @@ impl Backend for TermBackend {
         _on_press: Option<Message>,
         _variant: Variant,
         _intent: Intent,
-        _context: &Context,
+        context: &Context,
     ) -> Self::AnyView<Message> {
-        format!("[ {} ]", content)
+        if context.is_focused("button") {
+            format!("> [ {} ] <", content)
+        } else {
+            format!("  [ {} ]  ", content)
+        }
     }
 
     fn sidebar_item<Message: Clone + 'static>(

@@ -9,6 +9,7 @@ pub enum RenderMode {
     Canvas,
     Terminal,
     Neural,
+    Spatial,
 }
 
 pub struct App {
@@ -42,6 +43,7 @@ pub struct ButtonLabState {
     pub size: ControlSize,
     pub is_full_width: bool,
     pub is_disabled: bool,
+    pub is_focused: bool,
 }
 
 impl Default for ButtonLabState {
@@ -54,6 +56,7 @@ impl Default for ButtonLabState {
             size: ControlSize::Medium,
             is_full_width: false,
             is_disabled: false,
+            is_focused: false,
         }
     }
 }
@@ -81,6 +84,7 @@ pub enum Message {
     UpdateButtonIntent(Intent),
     ToggleButtonFullWidth(bool),
     ToggleButtonDisabled(bool),
+    ToggleButtonFocused(bool),
     ResizeSidebar(f32),
     ResizeInspector(f32),
     StartResizingSidebar,
@@ -204,6 +208,10 @@ impl App {
             }
             Message::ToggleButtonDisabled(disabled) => {
                 self.button_lab.is_disabled = disabled;
+                Task::none()
+            }
+            Message::ToggleButtonFocused(focused) => {
+                self.button_lab.is_focused = focused;
                 Task::none()
             }
             Message::ResizeSidebar(width) => {

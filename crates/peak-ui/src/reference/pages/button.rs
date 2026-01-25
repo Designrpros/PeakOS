@@ -1,6 +1,6 @@
 use super::super::app::{ButtonLabState, Message, RenderMode};
 use super::super::views::ComponentDoc;
-use crate::core::Backend;
+use crate::core::{Backend, SpatialBackend};
 use crate::prelude::*;
 use crate::reference::page::PageResult;
 use std::sync::Arc;
@@ -22,7 +22,14 @@ fn create_button<B: Backend>(lab: &ButtonLabState) -> Button<Message, B> {
         })
 }
 
-pub fn view(context: &Context, lab: &ButtonLabState, render_mode: RenderMode) -> PageResult {
+pub fn view(base_context: &Context, lab: &ButtonLabState, render_mode: RenderMode) -> PageResult {
+    let context = if lab.is_focused {
+        base_context.clone().with_focus("button")
+    } else {
+        base_context.clone()
+    };
+    let context = &context;
+
     let code_snippet = generate_code(lab);
 
     // 1. Canvas View (Standard GUI)
@@ -34,6 +41,9 @@ pub fn view(context: &Context, lab: &ButtonLabState, render_mode: RenderMode) ->
     // 3. Neural View (Semantic JSON)
     let neural_preview = create_button::<AIBackend>(lab).view(context);
 
+    // 4. Spatial View (3D transforms)
+    let spatial_preview = create_button::<SpatialBackend>(lab).view(context);
+
     let doc = ComponentDoc::new(
         "Button",
         "A versatile button component with support for multiple variants, icons, and reactive states.",
@@ -42,6 +52,7 @@ pub fn view(context: &Context, lab: &ButtonLabState, render_mode: RenderMode) ->
     )
     .terminal(terminal_preview)
     .neural(neural_preview)
+    .spatial(spatial_preview)
     .render_mode(render_mode)
     .on_render_mode_change(|mode| Message::SetRenderMode(mode))
     .theory(
@@ -226,6 +237,9 @@ impl View<Message, IcedBackend> for ButtonInspector {
                         }))
                         .push(Toggle::new("Disabled", self.lab.is_disabled, |b| {
                             Message::ToggleButtonDisabled(b)
+                        }))
+                        .push(Toggle::new("Simulate Focus", self.lab.is_focused, |b| {
+                            Message::ToggleButtonFocused(b)
                         })),
                 ),
         )

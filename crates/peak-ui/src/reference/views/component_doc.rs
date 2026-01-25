@@ -16,6 +16,7 @@ pub struct ComponentDoc<Message: 'static, B: Backend = IcedBackend> {
     preview: Arc<dyn View<Message, B>>,
     terminal_preview: Option<String>,
     neural_preview: Option<crate::core::SemanticNode>,
+    spatial_preview: Option<String>,
     render_mode: crate::reference::app::RenderMode,
     on_render_mode_change:
         Option<Arc<dyn Fn(crate::reference::app::RenderMode) -> Message + Send + Sync>>,
@@ -38,6 +39,7 @@ impl<Message: 'static, B: Backend> ComponentDoc<Message, B> {
             preview,
             terminal_preview: None,
             neural_preview: None,
+            spatial_preview: None,
             render_mode: crate::reference::app::RenderMode::Canvas,
             on_render_mode_change: None,
             props_table: None,
@@ -52,6 +54,14 @@ impl<Message: 'static, B: Backend> ComponentDoc<Message, B> {
 
     pub fn neural(mut self, neural: crate::core::SemanticNode) -> Self {
         self.neural_preview = Some(neural);
+        self
+    }
+
+    pub fn spatial(mut self, spatial: crate::core::SpatialNode) -> Self {
+        self.spatial_preview = Some(
+            serde_json::to_string_pretty(&spatial)
+                .unwrap_or_else(|_| "Error serializing spatial node".to_string()),
+        );
         self
     }
 
@@ -142,6 +152,17 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ComponentDoc<Messa
                             },
                         )
                         .on_press((on_change)(crate::reference::app::RenderMode::Neural)),
+                )
+                .push(
+                    Button::<Message, IcedBackend>::label("Spatial")
+                        .variant(
+                            if self.render_mode == crate::reference::app::RenderMode::Spatial {
+                                Variant::Solid
+                            } else {
+                                Variant::Ghost
+                            },
+                        )
+                        .on_press((on_change)(crate::reference::app::RenderMode::Spatial)),
                 );
         }
 
@@ -186,6 +207,20 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ComponentDoc<Messa
                 } else {
                     "No neural representation available.".to_string()
                 };
+                crate::containers::Section::<Message, IcedBackend>::new_generic(
+                    "The Lab",
+                    VStack::<Message, IcedBackend>::new_generic()
+                        .spacing(24.0)
+                        .push(mode_tabs)
+                        .push(CodeBlock::<Message>::new(json)),
+                )
+            }
+            crate::reference::app::RenderMode::Spatial => {
+                let json = self
+                    .spatial_preview
+                    .as_deref()
+                    .unwrap_or("No spatial representation available.")
+                    .to_string();
                 crate::containers::Section::<Message, IcedBackend>::new_generic(
                     "The Lab",
                     VStack::<Message, IcedBackend>::new_generic()
