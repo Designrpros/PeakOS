@@ -417,13 +417,14 @@ impl Backend for SpatialBackend {
     }
 
     fn image<Message: 'static>(
-        path: std::path::PathBuf,
+        path: impl Into<String>,
         _width: Length,
         _height: Length,
         _radius: f32,
     ) -> Self::AnyView<Message> {
+        let p = path.into();
         SpatialNode {
-            role: format!("image:{:?}", path),
+            role: format!("image:{}", p),
             width: 100.0,
             height: 100.0,
             depth: 1.0,
@@ -590,7 +591,7 @@ pub trait Backend: Sized + Clone + 'static {
     ) -> Self::AnyView<Message>;
 
     fn image<Message: 'static>(
-        path: std::path::PathBuf,
+        path: impl Into<String>,
         width: Length,
         height: Length,
         radius: f32,
@@ -858,7 +859,6 @@ impl Backend for IcedBackend {
             #[cfg(target_arch = "wasm32")]
             log::debug!("Icon '{}' found in EMBEDDED storage.", name);
 
-            // AGGRESSIVE RECOLORING: Replace various black definitions with theme color
             let colored_svg = svg_data
                 .replace("currentColor", &hex_color)
                 .replace("fill=\"#000000\"", &format!("fill=\"{}\"", hex_color))
@@ -872,68 +872,32 @@ impl Backend for IcedBackend {
             .into();
         }
 
-        // 2. WASM FIX: Smart mapping to existing assets
-        #[cfg(target_arch = "wasm32")]
-        {
-            // Determine if we need white or black icons based on brightness
-            let luminance =
-                0.2126 * final_color.r + 0.7152 * final_color.g + 0.0722 * final_color.b;
-            let folder = if luminance > 0.5 { "white" } else { "black" };
-
-            // Map abstract names to real files in your 'dist' folder
-            let filename = match name.as_str() {
-                // Sidebar mappings
-                "sidebar" => "apps", // Maps 'sidebar' -> 'apps.svg'
-                "book" => "library",
-                "map" => "map",
-                "users" => "smile",
-                "layers" => "folder",
-                "palette" => "palette",
-                "maximize" => "settings",
-                "type" => "document",
-                "grid" => "apps",
-                "monitor" => "cpu",
-                "box" => "cube",
-
-                // Toolbar / Common
-                "search" => "search",
-                "settings" => "settings",
-                "wifi" => "wifi_full",
-                "battery" => "battery",
-                "terminal" => "terminal",
-                "library" => "library",
-                "store" => "store",
-                _ => name.as_str(),
-            };
-
-            // Force path for showcase to ensure visibility
-            let best_path = if [
-                "search",
-                "settings",
-                "wifi_full",
-                "battery",
-                "library",
-                "store",
-                "terminal",
-            ]
-            .contains(&filename)
-            {
-                format!("assets/icons/menubar/{}/{}.svg", folder, filename)
-            } else {
-                format!("assets/icons/system/ui/{}.svg", filename)
-            };
-
-            return iced::widget::svg(iced::widget::svg::Handle::from_path(best_path))
+        // 2. Asset Pipeline (SystemIcon)
+        if let Some(icon) = crate::assets::SystemIcon::from_name(&name) {
+            let path = crate::assets::Asset::Icon(icon).path();
+            return iced::widget::svg(iced::widget::svg::Handle::from_path(path))
                 .width(size)
                 .height(size)
                 .into();
         }
 
-        // 3. DESKTOP FALLBACK
+        // 3. Fallback (Desktop only typically, but we unify now)
+        // If we really want to keep peak_core::icons for desktop we can:
         #[cfg(not(target_arch = "wasm32"))]
         {
             let handle = peak_core::icons::get_ui_icon(&name, &hex_color);
             iced::widget::svg(handle).width(size).height(size).into()
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            // Fallback for WASM if SystemIcon fails?
+            // Just try to load by name as relative path
+            let path = format!("assets/icons/system/ui/{}.svg", name);
+            iced::widget::svg(iced::widget::svg::Handle::from_path(path))
+                .width(size)
+                .height(size)
+                .into()
         }
     }
 
@@ -1232,54 +1196,31 @@ impl Backend for IcedBackend {
     }
 
     fn image<Message: 'static>(
-        path: std::path::PathBuf,
+        path: impl Into<String>,
         width: Length,
         height: Length,
         radius: f32,
     ) -> Self::AnyView<Message> {
         use iced::widget::container;
+        let p: String = path.into();
 
-        // WASM FIX: Ensure path starts with "assets/", but preserve subfolders!
-        let final_path = if cfg!(target_arch = "wasm32") {
-            let p_str = path.to_string_lossy();
-            let result = if p_str.starts_with("/assets") || p_str.starts_with("assets") {
-                path.clone()
-            } else {
-                std::path::PathBuf::from("assets").join(&path)
-            };
+        // 2. Asset Pipeline: No more magic path hacking.
+        // The Asset type already provides the correct path.
 
-            // --- DEBUGGING LOGS ---
-            log::info!(
-                "[IMAGE DEBUG] Orig: '{:?}' | Resolved: '{:?}'",
-                path,
-                result
-            );
-            // ---------------------
-            result
-        } else {
-            path
-        };
-
-        let img = iced::widget::image(final_path).width(width).height(height);
-
-        container(img)
-            .width(width)
-            .height(height)
-            .style({
-                let radius_val = if cfg!(target_arch = "wasm32") {
-                    0.0
-                } else {
-                    radius
-                };
-                move |_| container::Style {
-                    border: iced::Border {
-                        radius: radius_val.into(),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }
-            })
-            .into()
+        container(
+            iced::widget::image(p)
+                .width(width)
+                .height(height)
+                .content_fit(iced::ContentFit::Cover),
+        )
+        .style(move |_| container::Style {
+            border: iced::Border {
+                radius: radius.into(),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .into()
     }
 
     fn container<Message: 'static>(
@@ -1508,12 +1449,12 @@ impl Backend for TermBackend {
     }
 
     fn image<Message: 'static>(
-        path: std::path::PathBuf,
+        path: impl Into<String>,
         _width: Length,
         _height: Length,
         _radius: f32,
     ) -> Self::AnyView<Message> {
-        format!("[IMG: {:?}]", path)
+        format!("[IMG: {}]", path.into())
     }
 
     fn container<Message: 'static>(
@@ -1819,14 +1760,14 @@ impl Backend for AIBackend {
     }
 
     fn image<Message: 'static>(
-        path: std::path::PathBuf,
+        path: impl Into<String>,
         _width: Length,
         _height: Length,
         _radius: f32,
     ) -> Self::AnyView<Message> {
         SemanticNode {
             role: "image".to_string(),
-            label: Some(path.to_string_lossy().into_owned()),
+            label: Some(path.into()),
             content: None,
             children: Vec::new(),
         }

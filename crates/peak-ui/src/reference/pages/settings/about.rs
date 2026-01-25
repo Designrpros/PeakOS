@@ -9,7 +9,7 @@ pub fn view(_context: &Context, _is_mobile: bool) -> PageResult {
         .spacing(24.0)
         .align_x(Alignment::Center)
         .push(
-            Image::new("crates/peak-ui/assets/mesh_bg.png")
+            Image::new(crate::assets::Asset::MeshBackground.path())
                 .width(Length::Fixed(120.0))
                 .height(Length::Fixed(120.0))
                 .radius(60.0),

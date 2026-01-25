@@ -5,6 +5,7 @@ pub mod segmented_picker;
 pub mod toolbar;
 pub mod window_chrome;
 
+pub mod assets;
 pub mod atoms;
 pub mod catalog;
 pub mod console;

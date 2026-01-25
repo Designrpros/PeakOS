@@ -460,7 +460,7 @@ impl<Message: Clone + 'static, B: Backend> View<Message, B> for Icon<B> {
 }
 
 pub struct Image<B: Backend = IcedBackend> {
-    path: std::path::PathBuf,
+    path: String,
     width: Length,
     height: Length,
     radius: f32,
@@ -468,7 +468,7 @@ pub struct Image<B: Backend = IcedBackend> {
 }
 
 impl<B: Backend> Image<B> {
-    pub fn new(path: impl Into<std::path::PathBuf>) -> Self {
+    pub fn new(path: impl Into<String>) -> Self {
         Self {
             path: path.into(),
             width: Length::Shrink,
@@ -489,11 +489,7 @@ impl<B: Backend> Image<B> {
     }
 
     pub fn radius(mut self, radius: f32) -> Self {
-        self.radius = if cfg!(target_arch = "wasm32") {
-            0.0
-        } else {
-            radius
-        };
+        self.radius = radius;
         self
     }
 }
@@ -506,7 +502,7 @@ impl<Message: 'static, B: Backend> View<Message, B> for Image<B> {
     fn describe(&self, _context: &Context) -> crate::core::SemanticNode {
         crate::core::SemanticNode {
             role: "image".to_string(),
-            label: Some(format!("{:?}", self.path)),
+            label: Some(self.path.clone()),
             content: None,
             children: Vec::new(),
         }

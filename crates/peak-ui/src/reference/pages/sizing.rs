@@ -7,7 +7,7 @@ use std::sync::Arc;
 pub fn view(_context: &Context, _is_mobile: bool) -> PageResult {
     let preview = ZStack::new_generic()
         .push(
-            Image::new("crates/peak-ui/assets/mesh_bg.png")
+            Image::new(crate::assets::Asset::MeshBackground.path())
                 .width(Length::Fill)
                 .height(Length::Fixed(340.0))
                 .radius(16.0),
