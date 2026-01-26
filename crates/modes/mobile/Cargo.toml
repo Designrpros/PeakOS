@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 iced = { version = "0.13", default-features = false, features = ["advanced", "svg", "image"] }
 peak-core = { path = "../../peak-core", default-features = false }
-peak-ui = { path = "../../peak-ui", default-features = false }
+peak-ui = { path = "../../../../PeakUI/framework", default-features = false }
 peak-apps = { path = "../../peak-apps", default-features = false }
 peak-theme = { path = "../../peak-theme", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
