@@ -435,30 +435,35 @@ impl<Message: Clone + 'static + Send + Sync> View<Message, IcedBackend>
                 } else {
                     self.on_stop_resize_inspector.clone()
                 };
-                let on_none = self.on_none.clone().unwrap();
-
-                IcedBackend::mouse_area(
+                if let Some(on_none) = self.on_none.clone() {
+                    IcedBackend::mouse_area(
+                        container(main_row)
+                            .width(Length::Fill)
+                            .height(Length::Fill)
+                            .padding(0)
+                            .into(),
+                        Some(Arc::new(move |p: iced::Point| {
+                            if is_resizing_sidebar {
+                                if let Some(f) = &on_resize_sidebar {
+                                    return f(p.x);
+                                }
+                            } else if is_resizing_inspector {
+                                if let Some(f) = &on_resize_inspector {
+                                    return f(window_width - p.x);
+                                }
+                            }
+                            on_none.clone()
+                        })
+                            as Arc<dyn Fn(iced::Point) -> Message + Send + Sync>),
+                        None, // Divider handles start
+                        on_stop,
+                    )
+                } else {
                     container(main_row)
                         .width(Length::Fill)
                         .height(Length::Fill)
-                        .padding(0)
-                        .into(),
-                    Some(Arc::new(move |p: iced::Point| {
-                        if is_resizing_sidebar {
-                            if let Some(f) = &on_resize_sidebar {
-                                return f(p.x);
-                            }
-                        } else if is_resizing_inspector {
-                            if let Some(f) = &on_resize_inspector {
-                                return f(window_width - p.x);
-                            }
-                        }
-                        on_none.clone()
-                    })
-                        as Arc<dyn Fn(iced::Point) -> Message + Send + Sync>),
-                    None, // Divider handles start
-                    on_stop,
-                )
+                        .into()
+                }
             } else {
                 container(main_row)
                     .width(Length::Fill)
@@ -474,6 +479,24 @@ impl<Message: Clone + 'static + Send + Sync> View<Message, IcedBackend>
             }
         }
     }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        let mut children = vec![
+            self.sidebar.describe(context),
+            self.content.describe(context),
+        ];
+
+        if let Some(inspector) = &self.inspector {
+            children.push(inspector.describe(context));
+        }
+
+        crate::core::SemanticNode {
+            role: "navigation_split_view".to_string(),
+            label: Some("Main Layout".to_string()),
+            content: None,
+            children,
+        }
+    }
 }
 
 impl<Message: Clone + 'static + Send + Sync> View<Message, TermBackend>
@@ -486,5 +509,23 @@ impl<Message: Clone + 'static + Send + Sync> View<Message, TermBackend>
         out.push_str("\n=== CONTENT ===\n");
         out.push_str(&self.content.view(context));
         out
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        let mut children = vec![
+            self.sidebar.describe(context),
+            self.content.describe(context),
+        ];
+
+        if let Some(inspector) = &self.inspector {
+            children.push(inspector.describe(context));
+        }
+
+        crate::core::SemanticNode {
+            role: "navigation_split_view".to_string(),
+            label: Some("Main Layout".to_string()),
+            content: None,
+            children,
+        }
     }
 }

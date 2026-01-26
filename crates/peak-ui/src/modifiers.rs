@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub enum ControlSize {
     Small,
     #[default]
@@ -7,7 +7,7 @@ pub enum ControlSize {
     XLarge,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub enum Variant {
     #[default]
     Solid, // Full background color
@@ -16,7 +16,7 @@ pub enum Variant {
     Ghost,   // No background until hover
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub enum Intent {
     #[default]
     Primary,

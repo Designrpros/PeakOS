@@ -1,87 +1,69 @@
-# PeakOS Project Commands
+# Neural Control API Commands 🧠🎮
 
-This document provides a reference for the most common commands used to build, run, and test PeakOS components.
+This document lists all available commands for the PeakUI Neural Control API. Commands are sent by writing a JSON object to `.peak/command.json`.
 
-## 🖥️ Native Execution (Desktop)
+## Navigation Commands
 
-To run the main PeakOS desktop environment:
+### SetTab
+Navigates to a specific page in the application.
 
-```bash
-cargo run -p peak-desktop
+**Format:**
+```json
+{
+  "SetTab": "PageVariant"
+}
 ```
 
-To run the UI component showcase as a native app:
+**Common Page Variants:**
+- `Introduction`
+- `VStack`
+- `HStack`
+- `ZStack`
+- `Button`
+- `ScrollView`
+- `PeakDB`
+- `Appearance`
 
+## Component Lab Commands
+
+### UpdateButtonVariant
+Changes the visual variant of the button in the lab.
+
+**Format:**
+```json
+{
+  "UpdateButtonVariant": "VariantName"
+}
+```
+**Variants:** `Solid`, `Soft`, `Outline`, `Ghost`
+
+### UpdateButtonIntent
+Changes the semantic intent (status) of the button in the lab.
+
+**Format:**
+```json
+{
+  "UpdateButtonIntent": "IntentName"
+}
+```
+**Intents:** `Primary`, `Secondary`, `Success`, `Warning`, `Danger`, `Info`, `Neutral`
+
+## Usage Example
+To navigate to the button lab and set it to an outline danger status:
 ```bash
-cargo run -p peak-ui
+echo '{"SetTab": "Button"}' > .peak/command.json
+sleep 0.5
+echo '{"UpdateButtonVariant": "Outline"}' > .peak/command.json
+sleep 0.5
+echo '{"UpdateButtonIntent": "Danger"}' > .peak/command.json
 ```
 
-## 🌐 Web Architecture (WASM)
-
-PeakUI can be rendered in the browser using [Trunk](https://trunkrs.dev/).
-
-### Development Server
-Run the UI showcase with live reload (default port 8080):
-
+## Usage Example
+To navigate to the VStack documentation:
 ```bash
-cd crates/peak-ui
-trunk serve --port 8080
+echo '{"SetTab": "VStack"}' > .peak/command.json
 ```
 
-### Production Build
-Compile the WASM and glue code for static hosting:
-
-```bash
-cd crates/peak-ui
-trunk build --release
-```
-
-### WASM Compatibility Check
-Verify that the codebase compiles for the `wasm32-unknown-unknown` target:
-
-```bash
-cargo check --target wasm32-unknown-unknown --all-features
-```
-
-### WASM Development
-- `trunk serve --port 8080` (Run the WASM Showcase)
-- `./scripts/detect_wasm_leaks.sh` (Audit for non-'static captures)
-
-## 📦 Deployment & ISO Generation
-
-Scripts for creating bootable PeakOS images (Alpine-based).
-
-### ARM Architecture (Raspberry Pi, Pine64, etc.)
-```bash
-./crates/peak-deploy/build.sh --arm
-```
-
-### Intel Architecture (x86_64)
-```bash
-./crates/peak-deploy/build.sh --intel
-```
-
-### Options
-- `--native`: Force a native build on the host (requires Linux/Alpine).
-- `--docker`: Force a Docker-based build (recommended for macOS).
-- `--skip-check`: Skip pre-build environment validation.
-
-## 🧪 Testing & Quality
-
-Run the full project test suite:
-
-```bash
-cargo test --workspace
-```
-
-Run linting checks (Clippy):
-
-```bash
-cargo clippy --workspace -- -D warnings
-```
-
-Format the codebase:
-
-```bash
-cargo fmt --all
-```
+---
+*Note: This API is currently enabled only in the Desktop build.*
+ Wildebeest

@@ -115,56 +115,73 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ComponentDoc<Messa
             );
 
         // 2. Playground / Preview Area (The Lab)
-        let mut mode_tabs = HStack::<Message, IcedBackend>::new_generic().spacing(12.0);
+        let render_mode = self.render_mode;
+        let on_render_mode_change = self.on_render_mode_change.clone();
 
-        if let Some(on_change) = &self.on_render_mode_change {
-            let on_change = on_change.clone();
-            mode_tabs = mode_tabs
-                .push(
-                    Button::<Message, IcedBackend>::label("Canvas")
-                        .variant(
-                            if self.render_mode == crate::reference::app::RenderMode::Canvas {
-                                Variant::Solid
-                            } else {
-                                Variant::Ghost
-                            },
-                        )
-                        .on_press((on_change)(crate::reference::app::RenderMode::Canvas)),
-                )
-                .push(
-                    Button::<Message, IcedBackend>::label("Terminal")
-                        .variant(
-                            if self.render_mode == crate::reference::app::RenderMode::Terminal {
-                                Variant::Solid
-                            } else {
-                                Variant::Ghost
-                            },
-                        )
-                        .on_press((on_change)(crate::reference::app::RenderMode::Terminal)),
-                )
-                .push(
-                    Button::<Message, IcedBackend>::label("Neural")
-                        .variant(
-                            if self.render_mode == crate::reference::app::RenderMode::Neural {
-                                Variant::Solid
-                            } else {
-                                Variant::Ghost
-                            },
-                        )
-                        .on_press((on_change)(crate::reference::app::RenderMode::Neural)),
-                )
-                .push(
-                    Button::<Message, IcedBackend>::label("Spatial")
-                        .variant(
-                            if self.render_mode == crate::reference::app::RenderMode::Spatial {
-                                Variant::Solid
-                            } else {
-                                Variant::Ghost
-                            },
-                        )
-                        .on_press((on_change)(crate::reference::app::RenderMode::Spatial)),
-                );
-        }
+        let scrollable_tabs = move |ctx: &Context| {
+            let mut mode_tabs = HStack::<Message, IcedBackend>::new_generic()
+                .spacing(12.0)
+                .width(Length::Shrink); // Must be Shrink for horizontal scrollable
+
+            if let Some(on_change) = &on_render_mode_change {
+                let on_change = on_change.clone();
+                mode_tabs = mode_tabs
+                    .push(
+                        Button::<Message, IcedBackend>::label("Canvas")
+                            .variant(
+                                if render_mode == crate::reference::app::RenderMode::Canvas {
+                                    Variant::Solid
+                                } else {
+                                    Variant::Ghost
+                                },
+                            )
+                            .on_press((on_change)(crate::reference::app::RenderMode::Canvas)),
+                    )
+                    .push(
+                        Button::<Message, IcedBackend>::label("Terminal")
+                            .variant(
+                                if render_mode == crate::reference::app::RenderMode::Terminal {
+                                    Variant::Solid
+                                } else {
+                                    Variant::Ghost
+                                },
+                            )
+                            .on_press((on_change)(crate::reference::app::RenderMode::Terminal)),
+                    )
+                    .push(
+                        Button::<Message, IcedBackend>::label("Neural")
+                            .variant(
+                                if render_mode == crate::reference::app::RenderMode::Neural {
+                                    Variant::Solid
+                                } else {
+                                    Variant::Ghost
+                                },
+                            )
+                            .on_press((on_change)(crate::reference::app::RenderMode::Neural)),
+                    )
+                    .push(
+                        Button::<Message, IcedBackend>::label("Spatial")
+                            .variant(
+                                if render_mode == crate::reference::app::RenderMode::Spatial {
+                                    Variant::Solid
+                                } else {
+                                    Variant::Ghost
+                                },
+                            )
+                            .on_press((on_change)(crate::reference::app::RenderMode::Spatial)),
+                    );
+            }
+
+            iced::widget::scrollable(mode_tabs.view(ctx))
+                .direction(iced::widget::scrollable::Direction::Horizontal(
+                    iced::widget::scrollable::Scrollbar::new()
+                        .width(4)
+                        .scroller_width(4)
+                        .margin(2),
+                ))
+                .width(Length::Fill)
+                .into()
+        };
 
         let preview_area = match self.render_mode {
             crate::reference::app::RenderMode::Canvas => {
@@ -173,14 +190,27 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ComponentDoc<Messa
                     "The Lab",
                     VStack::<Message, IcedBackend>::new_generic()
                         .spacing(24.0)
-                        .push(mode_tabs)
+                        .push(crate::core::ProxyView::new(scrollable_tabs.clone()))
                         .push(
                             crate::containers::Card::<Message, IcedBackend>::new_generic(
                                 crate::core::ProxyView::new(move |ctx| {
-                                    iced::widget::container(preview.view(ctx))
-                                        .width(Length::Fill)
-                                        .center_x(Length::Fill)
-                                        .into()
+                                    let preview_view = preview.view(ctx);
+                                    crate::scroll_view::ScrollView::apply_style(
+                                        iced::widget::scrollable(
+                                            iced::widget::container(preview_view)
+                                                .width(Length::Shrink),
+                                        ),
+                                        &ctx.theme,
+                                        true,
+                                    )
+                                    .direction(iced::widget::scrollable::Direction::Horizontal(
+                                        iced::widget::scrollable::Scrollbar::new()
+                                            .width(4)
+                                            .scroller_width(4)
+                                            .margin(2),
+                                    ))
+                                    .width(Length::Fill)
+                                    .into()
                                 }),
                             ),
                         ),
@@ -196,7 +226,7 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ComponentDoc<Messa
                     "The Lab",
                     VStack::<Message, IcedBackend>::new_generic()
                         .spacing(24.0)
-                        .push(mode_tabs)
+                        .push(crate::core::ProxyView::new(scrollable_tabs.clone()))
                         .push(CodeBlock::<Message>::new(ansi)),
                 )
             }
@@ -211,7 +241,7 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ComponentDoc<Messa
                     "The Lab",
                     VStack::<Message, IcedBackend>::new_generic()
                         .spacing(24.0)
-                        .push(mode_tabs)
+                        .push(crate::core::ProxyView::new(scrollable_tabs.clone()))
                         .push(CodeBlock::<Message>::new(json)),
                 )
             }
@@ -225,7 +255,7 @@ impl<Message: Clone + 'static> View<Message, IcedBackend> for ComponentDoc<Messa
                     "The Lab",
                     VStack::<Message, IcedBackend>::new_generic()
                         .spacing(24.0)
-                        .push(mode_tabs)
+                        .push(crate::core::ProxyView::new(scrollable_tabs.clone()))
                         .push(CodeBlock::<Message>::new(json)),
                 )
             }

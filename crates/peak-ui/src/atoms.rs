@@ -1,7 +1,8 @@
 use crate::core::{Backend, Context, IcedBackend, ProxyView, View};
 use crate::modifiers::Intent;
-use iced::{Alignment, Color, Length};
+use iced::{Alignment, Color, Length, Padding};
 use std::marker::PhantomData;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Text<B: Backend = IcedBackend> {
@@ -139,6 +140,11 @@ impl<B: Backend> Text<B> {
 
     pub fn primary(mut self) -> Self {
         self.intent = Some(Intent::Primary);
+        self
+    }
+
+    pub fn italic(mut self) -> Self {
+        self.font.style = iced::font::Style::Italic;
         self
     }
 
@@ -505,6 +511,91 @@ impl<Message: 'static, B: Backend> View<Message, B> for Image<B> {
             label: Some(self.path.clone()),
             content: None,
             children: Vec::new(),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct Container<Message: 'static, B: Backend = IcedBackend> {
+    content: Arc<dyn View<Message, B>>,
+    padding: Padding,
+    width: Length,
+    height: Length,
+    background: Option<Color>,
+    border_radius: f32,
+    border_width: f32,
+    border_color: Option<Color>,
+    _phantom: PhantomData<B>,
+}
+
+impl<Message: 'static, B: Backend> Container<Message, B> {
+    pub fn new(content: impl View<Message, B> + 'static) -> Self {
+        Self {
+            content: Arc::new(content),
+            padding: Padding::default(),
+            width: Length::Shrink,
+            height: Length::Shrink,
+            background: None,
+            border_radius: 0.0,
+            border_width: 0.0,
+            border_color: None,
+            _phantom: PhantomData,
+        }
+    }
+
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
+        self.padding = padding.into();
+        self
+    }
+
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
+        self
+    }
+
+    pub fn height(mut self, height: Length) -> Self {
+        self.height = height;
+        self
+    }
+
+    pub fn background(mut self, color: Color) -> Self {
+        self.background = Some(color);
+        self
+    }
+
+    pub fn radius(mut self, radius: f32) -> Self {
+        self.border_radius = radius;
+        self
+    }
+
+    pub fn border(mut self, width: f32, color: Color) -> Self {
+        self.border_width = width;
+        self.border_color = Some(color);
+        self
+    }
+}
+
+impl<Message: 'static, B: Backend> View<Message, B> for Container<Message, B> {
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        // Since Backend trait's container doesn't support background/border directly in its current signature
+        // (it's very minimal), we just use it for layout.
+        // In a more complete system, Backend::container would take a style object.
+        // For now, we'll just use it for padding/sizing.
+        B::container(
+            self.content.view(context),
+            self.padding,
+            self.width,
+            self.height,
+            context,
+        )
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        crate::core::SemanticNode {
+            role: "container".to_string(),
+            label: None,
+            content: None,
+            children: vec![self.content.describe(context)],
         }
     }
 }

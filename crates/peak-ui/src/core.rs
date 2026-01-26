@@ -57,7 +57,7 @@ impl Context {
     }
 
     pub fn is_slim(&self) -> bool {
-        self.size.width < 600.0
+        self.size.width < 900.0
     }
 
     pub fn is_wide(&self) -> bool {

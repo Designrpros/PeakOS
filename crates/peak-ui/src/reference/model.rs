@@ -1,6 +1,6 @@
 use percent_encoding;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default, serde::Serialize, serde::Deserialize)]
 pub enum Page {
     // Guide ("Guide" mode)
     #[default]

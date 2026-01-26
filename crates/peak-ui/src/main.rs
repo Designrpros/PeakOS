@@ -12,6 +12,7 @@ fn main() -> Result {
             reference::App::update,
             reference::App::view,
         )
+        .subscription(reference::App::subscription)
         .run()
     }
 
@@ -28,6 +29,30 @@ pub fn run() {
     console_log::init_with_level(log::Level::Debug).expect("Console log failed");
     log::info!("PeakUI Showcase WASM started");
 
+    // Enable context menu in WASM by preventing default on the window
+    // to allow right-click to work even if iced/winit tries to block it.
+    #[cfg(target_arch = "wasm32")]
+    {
+        use wasm_bindgen::JsCast;
+        let window = web_sys::window().expect("window not found");
+        let document = window.document().expect("document not found");
+        let body = document.body().expect("body not found");
+
+        let on_context_menu =
+            wasm_bindgen::prelude::Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
+                e.prevent_default();
+                e.stop_propagation();
+            })
+                as Box<dyn FnMut(web_sys::MouseEvent)>);
+
+        body.add_event_listener_with_callback(
+            "contextmenu",
+            on_context_menu.as_ref().unchecked_ref(),
+        )
+        .expect("failed to add context menu listener");
+        on_context_menu.forget();
+    }
+
     let result = iced::application(
         "PeakUI Showcase",
         reference::App::update,
@@ -35,6 +60,10 @@ pub fn run() {
     )
     .window(iced::window::Settings {
         visible: true,
+        #[cfg(target_arch = "wasm32")]
+        platform_specific: iced::window::settings::PlatformSpecific {
+            target: None, // Use the default canvas target
+        },
         ..Default::default()
     })
     .style(|_theme, _style| iced::application::Appearance {

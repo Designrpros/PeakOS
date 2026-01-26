@@ -14,6 +14,9 @@ pub struct ContentView {
     pub search_query: String,
     pub expanded_sections: std::collections::HashSet<String>,
     pub button_lab: super::super::app::ButtonLabState,
+    pub typography_lab: super::super::app::TypographyLabState,
+    pub layout_lab: super::super::app::LayoutLabState,
+    pub sizing_lab: super::super::app::SizingLabState,
     pub render_mode: super::super::app::RenderMode,
     pub sidebar_width: f32,
     pub inspector_width: f32,
@@ -33,6 +36,9 @@ impl ContentView {
             search_query: app.search_query.clone(),
             expanded_sections: app.expanded_sections.clone(),
             button_lab: app.button_lab.clone(),
+            typography_lab: app.typography_lab.clone(),
+            layout_lab: app.layout_lab.clone(),
+            sizing_lab: app.sizing_lab.clone(),
             render_mode: app.render_mode,
             sidebar_width: app.sidebar_width,
             inspector_width: app.inspector_width,
@@ -49,6 +55,9 @@ impl ContentView {
             self.active_tab.clone(),
             self.navigation_mode.clone(),
             self.button_lab.clone(),
+            self.typography_lab.clone(),
+            self.layout_lab.clone(),
+            self.sizing_lab.clone(),
             self.render_mode,
         );
 
@@ -255,5 +264,45 @@ impl ContentView {
         .into();
 
         final_view
+    }
+
+    pub fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        let is_mobile = context.is_slim();
+
+        let canvas_manager = CanvasView::new(
+            self.active_tab.clone(),
+            self.navigation_mode.clone(),
+            self.button_lab.clone(),
+            self.typography_lab.clone(),
+            self.layout_lab.clone(),
+            self.sizing_lab.clone(),
+            self.render_mode,
+        );
+
+        let sidebar = SidebarView::new(
+            self.active_tab.clone(),
+            self.navigation_mode.clone(),
+            self.expanded_sections.clone(),
+        );
+
+        let page = canvas_manager.render_page(context);
+
+        let mut split_view = NavigationSplitView::new(sidebar, ScrollView::from_boxed(page.view))
+            .force_sidebar_on_slim(self.show_sidebar && is_mobile)
+            .sidebar_width(self.sidebar_width)
+            .inspector_width(self.inspector_width);
+
+        if self.show_inspector {
+            if let Some(inspector) = page.inspector {
+                split_view = split_view.inspector(inspector);
+            }
+        }
+
+        crate::core::SemanticNode {
+            role: "content_view".to_string(),
+            label: Some(format!("Page: {:?}", self.active_tab)),
+            content: None,
+            children: vec![split_view.describe(context)],
+        }
     }
 }

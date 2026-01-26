@@ -7,6 +7,9 @@ pub struct CanvasView {
     pub active_tab: Page,
     pub navigation_mode: String,
     pub button_lab: super::super::app::ButtonLabState,
+    pub typography_lab: super::super::app::TypographyLabState,
+    pub layout_lab: super::super::app::LayoutLabState,
+    pub sizing_lab: super::super::app::SizingLabState,
     pub render_mode: super::super::app::RenderMode,
 }
 
@@ -17,12 +20,18 @@ impl CanvasView {
         active_tab: Page,
         navigation_mode: String,
         button_lab: super::super::app::ButtonLabState,
+        typography_lab: super::super::app::TypographyLabState,
+        layout_lab: super::super::app::LayoutLabState,
+        sizing_lab: super::super::app::SizingLabState,
         render_mode: super::super::app::RenderMode,
     ) -> Self {
         Self {
             active_tab,
             navigation_mode,
             button_lab,
+            typography_lab,
+            layout_lab,
+            sizing_lab,
             render_mode,
         }
     }
@@ -50,10 +59,18 @@ impl CanvasView {
 
             // Concepts (Overview is legacy/fallback)
             Page::Overview => pages::introduction::view(context, is_mobile),
-            Page::Customizations => pages::customizations::view(context, is_mobile),
-            Page::BasicSizing => pages::sizing::view(context, is_mobile),
-            Page::Typography => pages::typography::view(context, is_mobile),
-            Page::Layout => pages::layout::view(context, is_mobile),
+            Page::Customizations => {
+                pages::customizations::view(context, is_mobile, self.render_mode)
+            }
+            Page::BasicSizing => {
+                pages::sizing::view(context, is_mobile, &self.sizing_lab, self.render_mode)
+            }
+            Page::Typography => {
+                pages::typography::view(context, &self.typography_lab, self.render_mode)
+            }
+            Page::Layout => {
+                pages::layout::view(context, is_mobile, &self.layout_lab, self.render_mode)
+            }
 
             // Atoms (Phase 3/4)
             Page::Text => pages::text::view(context),
@@ -118,5 +135,10 @@ impl View<Message, IcedBackend> for CanvasView {
             .width(Length::Fill)
             .height(Length::Fill)
             .into()
+    }
+
+    fn describe(&self, context: &Context) -> crate::core::SemanticNode {
+        let page = self.render_page(context);
+        page.view.describe(context)
     }
 }

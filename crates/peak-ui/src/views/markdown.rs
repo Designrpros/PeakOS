@@ -25,8 +25,31 @@ where
         let mut current_language: Option<String> = None;
         let mut code_buffer = String::new();
 
+        let mut table_buffer: Vec<String> = Vec::new();
+
         for line in self.content.lines() {
             let trimmed = line.trim();
+
+            // Table detection
+            if trimmed.starts_with('|') {
+                table_buffer.push(line.to_string());
+                continue;
+            } else if !table_buffer.is_empty() {
+                // Table ended, flush it
+                if table_buffer.len() >= 2 && is_separator_line(&table_buffer[1]) {
+                    children.push(render_table(table_buffer.clone(), context));
+                } else {
+                    for l in &table_buffer {
+                        children.push(
+                            container(render_rich_text(l.trim(), context))
+                                .width(Length::Fill)
+                                .into(),
+                        );
+                    }
+                }
+                table_buffer.clear();
+            }
+
             if trimmed.starts_with("```") {
                 if in_code_block {
                     // Render code block
@@ -165,6 +188,21 @@ where
                         .width(Length::Fill)
                         .into(),
                 );
+            }
+        }
+
+        // Final flushes
+        if !table_buffer.is_empty() {
+            if table_buffer.len() >= 2 && is_separator_line(&table_buffer[1]) {
+                children.push(render_table(table_buffer, context));
+            } else {
+                for l in table_buffer {
+                    children.push(
+                        container(render_rich_text(l.trim(), context))
+                            .width(Length::Fill)
+                            .into(),
+                    );
+                }
             }
         }
 
@@ -353,5 +391,171 @@ where
             },
             ..Default::default()
         })
+        .into()
+}
+
+fn is_separator_line(line: &str) -> bool {
+    let trimmed = line.trim();
+    if !trimmed.starts_with('|') {
+        return false;
+    }
+    // Check if it's a separator line (contains only |, -, :, whitespace)
+    // and at least one dash
+    let mut has_dash = false;
+    for c in trimmed.chars() {
+        match c {
+            '|' | ':' | ' ' | '\t' | '\r' | '\n' => {}
+            '-' => has_dash = true,
+            _ => return false,
+        }
+    }
+    has_dash
+}
+
+fn render_table<'a, Message>(
+    lines: Vec<String>,
+    context: &Context,
+) -> Element<'a, Message, Theme, iced::Renderer>
+where
+    Message: 'static + Clone,
+{
+    // 1. Parse rows
+    let mut rows: Vec<Vec<String>> = lines
+        .into_iter()
+        .map(|line| {
+            let line = line.trim();
+            let line = if line.starts_with('|') {
+                &line[1..]
+            } else {
+                line
+            };
+            let line = if line.ends_with('|') {
+                &line[..line.len() - 1]
+            } else {
+                line
+            };
+            line.split('|').map(|s| s.trim().to_string()).collect()
+        })
+        .collect();
+
+    if rows.len() < 2 {
+        return Column::new().into();
+    }
+
+    let header = rows.remove(0);
+    let separator = rows.remove(0);
+    let data_rows = rows;
+
+    // 2. Parse alignments
+    let alignments: Vec<iced::Alignment> = separator
+        .iter()
+        .map(|s| {
+            let s = s.trim();
+            let starts = s.starts_with(':');
+            let ends = s.ends_with(':');
+            if starts && ends {
+                iced::Alignment::Center
+            } else if ends {
+                iced::Alignment::End
+            } else {
+                iced::Alignment::Start
+            }
+        })
+        .collect();
+
+    // 3. Build the UI
+    let mut table_col = Column::new().width(Length::Fill);
+    let tokens = context.theme;
+
+    // Header Row
+    let mut header_row = Row::new().spacing(12).width(Length::Fill);
+    for (i, cell) in header.iter().enumerate() {
+        let align = alignments.get(i).cloned().unwrap_or(iced::Alignment::Start);
+        header_row = header_row.push(
+            container(
+                text(cell.clone())
+                    .font(font::Font {
+                        weight: font::Weight::Bold,
+                        ..Default::default()
+                    })
+                    .color(tokens.colors.text_primary),
+            )
+            .width(Length::FillPortion(1))
+            .align_x(align),
+        );
+    }
+
+    table_col =
+        table_col.push(
+            container(header_row)
+                .padding([12, 16])
+                .style(move |_| container::Style {
+                    background: Some(tokens.colors.surface_variant.scale_alpha(0.2).into()),
+                    ..Default::default()
+                }),
+        );
+
+    // Data Rows
+    for (r_idx, row_data) in data_rows.iter().enumerate() {
+        let mut row = Row::new().spacing(12).width(Length::Fill);
+        for (i, cell) in row_data.iter().enumerate() {
+            let align = alignments.get(i).cloned().unwrap_or(iced::Alignment::Start);
+            row = row.push(
+                container(render_rich_text(cell, context))
+                    .width(Length::FillPortion(1))
+                    .align_x(align),
+            );
+        }
+
+        let row_container = container(row).padding([8, 16]);
+
+        // Optional zebra striping
+        if r_idx % 2 == 1 {
+            table_col = table_col.push(row_container.style(move |_| container::Style {
+                background: Some(tokens.colors.surface_variant.scale_alpha(0.05).into()),
+                ..Default::default()
+            }));
+        } else {
+            table_col = table_col.push(row_container);
+        }
+
+        // Divider
+        if r_idx < data_rows.len() - 1 {
+            table_col = table_col.push(
+                container(iced::widget::Space::new(Length::Fill, 1.0)).style(move |_| {
+                    container::Style {
+                        background: Some(tokens.colors.divider.scale_alpha(0.5).into()),
+                        ..Default::default()
+                    }
+                }),
+            );
+        }
+    }
+
+    let border_color = tokens.colors.divider.scale_alpha(0.3);
+
+    // Calculate a reasonable minimum width for the table based on column count
+    // This ensures that even on narrow screens, the table remains readable by scrolling
+    let min_table_width = (header.len() as f32 * 160.0).max(600.0);
+
+    let table_container = container(table_col)
+        .width(Length::Fixed(min_table_width)) // Force a minimum width to enable scrolling
+        .style(move |_| container::Style {
+            border: iced::Border {
+                color: border_color,
+                width: 1.0,
+                radius: 8.0.into(),
+            },
+            ..Default::default()
+        });
+
+    iced::widget::scrollable(table_container)
+        .direction(iced::widget::scrollable::Direction::Horizontal(
+            iced::widget::scrollable::Scrollbar::new()
+                .width(4)
+                .scroller_width(4)
+                .margin(2),
+        ))
+        .width(Length::Fill)
         .into()
 }

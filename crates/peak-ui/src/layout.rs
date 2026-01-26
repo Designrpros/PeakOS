@@ -1,6 +1,7 @@
 use crate::core::{Backend, Context, IcedBackend, TermBackend, View};
 use iced::Length;
 
+/// A vertical stack layout that arranges children from top to bottom.
 pub struct VStack<Message: 'static, B: Backend = IcedBackend> {
     children: Vec<Box<dyn View<Message, B>>>,
     spacing: f32,
@@ -101,6 +102,7 @@ impl<Message: 'static, B: Backend> View<Message, B> for VStack<Message, B> {
     }
 }
 
+/// A horizontal stack layout that arranges children from left to right.
 pub struct HStack<Message: 'static, B: Backend = IcedBackend> {
     children: Vec<Box<dyn View<Message, B>>>,
     spacing: f32,
@@ -201,6 +203,7 @@ impl<Message: 'static, B: Backend> View<Message, B> for HStack<Message, B> {
     }
 }
 
+/// A stack layout that layers children on top of each other (Z-axis).
 pub struct ZStack<Message: 'static, B: Backend = IcedBackend> {
     children: Vec<Box<dyn View<Message, B>>>,
     width: Length,

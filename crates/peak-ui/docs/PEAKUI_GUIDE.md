@@ -8,12 +8,40 @@ Welcome to PeakUI. This guide is designed to get you building beautiful, adaptiv
 
 The most up-to-date, comprehensive documentation is the code itself. The **Showcase Application** is not just a demo; it is the reference implementation for every feature in the framework.
 
-Open the following files to see how a real app is built:
+## 2. Common Components
+
+### ScrollView
+The `ScrollView` provides Safari-style thin, auto-hiding scrollbars.
+
+```rust
+ScrollView::new(my_content)
+    .hide_indicators() // Completely hide scrollbars
+    .width(Length::Fill)
+```
+
+### ContextMenu
+A custom cross-platform context menu that bypasses browser defaults.
+
+```rust
+// In your view
+if let Some(pos) = self.context_menu_pos {
+    ContextMenu::new()
+        .item("Inspect", "search", Message::Inspect)
+        .into()
+}
+```
+
+## 3. The Golden Rule
+> **"Look at the Showcase."**
+
+The most up-to-date, comprehensive documentation is the code itself. Open `src/reference/app.rs` to see how the whole app connects.
+
+### Reference Files:
 * **Entry Point:** `peak-ui/examples/showcase.rs`
 * **State Management:** `peak-ui/src/reference/app.rs`
 * **Routing:** `peak-ui/src/reference/model.rs`
 
-## 2. Project Structure
+## 4. Project Structure
 
 A typical PeakUI app follows The Elm Architecture (Model-View-Update), consisting of three main parts:
 

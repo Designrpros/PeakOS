@@ -1,112 +1,46 @@
-```markdown
-# PeakUI Framework 🏔️
-> **"SwiftUI for Rust" - The Native App Framework of PeakOS**
+# PeakUI 🏔️
+> **The Universal Interface Framework for Rust.**
+>
+> *Build for Pixels. Build for Terminals. Build for Intelligence.*
 
-**PeakUI** is a high-level UI framework built on top of [Iced](https://github.com/iced-rs/iced) (v0.13), designed to enable rapid, beautiful, and consistent application development. It abstracts the complexity of raw widget composition into a declarative, modifier-based syntax inspired by SwiftUI.
+**PeakUI** is a high-performance, declarative UI framework tailored for building professional-grade applications. It combines the ergonomics of **SwiftUI** with the system-level power of **Rust**, enabling you to write a single view hierarchy that renders natively across every dimension of computing.
 
-**Build Once, Run Everywhere:**
-* 🖥️ **Native Desktop:** macOS, Windows, Linux (wGPU accelerated).
-* 🌐 **Web (WASM):** Runs directly in modern browsers via WebGL.
-* 📱 **Mobile:** Adaptive layouts that switch between Sidebar and Stack navigation automatically.
+[![License](https://img.shields.io/badge/license-BSL--1.1-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
+[![WASM Ready](https://img.shields.io/badge/platform-native%20%7C%20web%20%7C%20tui-brightgreen)](Trunk.toml)
 
 ---
 
-## 🚀 Quick Start: The Showcase
-The best way to learn PeakUI is to run the **Showcase Application**. This is a comprehensive "Component Lab" that demonstrates every widget, layout, and hook in the framework.
+## 🌟 Why PeakUI?
 
-### Run Native (Desktop)
+Most frameworks force you to choose: *Performance vs. Productivity* or *Web vs. Native*. PeakUI chooses **Physics**.
+
+### 1. The "One Codebase" Promise
+Write your component logic once. Run it everywhere.
+* 🖥️ **Native Desktop:** Metal/Vulkan accelerated rendering with Glassmorphism.
+* 🌐 **Web (WASM):** Compiles to lightweight WASM for edge-deployed interfaces.
+* 📟 **Terminal (TUI):** **Exclusive Feature.** The *exact same code* renders as a high-fidelity ASCII/ANSI interface for SSH sessions.
+
+### 2. AI-Native Architecture 🧠
+PeakUI is the first framework built for the **Agentic Era**.
+* **MCP Integration:** Implements the [Model Context Protocol](https://modelcontextprotocol.io/) out of the box.
+* **Semantic State:** Your UI tree is automatically exposed as structured context to LLMs.
+* **Agent Control:** AI agents can read the screen and trigger `Message` events to navigate or control the app autonomously.
+
+### 3. Spatial & Motion Design
+* **Spring Physics:** integrated `motion.rs` engine for fluid, interruptible animations.
+* **Z-Index Layering:** First-class `ZStack` and `Overlay` support for complex, depth-aware interfaces.
+* **Gesture System:** Unified touch and mouse handling for advanced interactions.
+
+---
+
+## 🚀 Quick Start
+
+The best way to experience PeakUI is the **Showcase App**, a "Component Lab" simulating a full Operating System.
+
+### Option A: The Desktop Experience (GUI)
+Runs with full GPU acceleration (Metal/DX12).
+
 ```bash
-cargo run --example showcase
-
-```
-
-### Run on Web (WASM)
-
-*Requires [Trunk*](https://trunkrs.dev/)
-
-```bash
-trunk serve peak-ui/index.html
-
-```
-
----
-
-## 1. Core Philosophy
-
-1. **Declarative Syntax**: Write code that describes *what* the UI should look like, not *how* to draw it.
-2. **Adaptive by Default**: Apps automatically switch between "Desktop Mode" (Sidebar + Content) and "Mobile Mode" (Navigation Stack) based on window width.
-3. **Visual Consistency**: All apps inherit the PeakOS Design System (Glassmorphism, Typography, Spacing) automatically.
-
-## 2. Architecture: "The One Codebase"
-
-PeakUI enables a truly separated ecosystem where applications are libraries, not binaries.
-
-| Layer | Crate | Responsibilities |
-| --- | --- | --- |
-| **Framework** | `crates/peak-ui` | The SDK. Widgets, layout logic, theming system, and adaptation rules. |
-| **Showcase** | `examples/showcase.rs` | The living documentation and component laboratory. |
-| **Applications** | `crates/peak-apps` | The core apps (Settings, Files). Pure logic & layout using `peak-ui`. |
-| **Shells** | `modes/*` | Hosts apps in different contexts (Windowed, Fullscreen, Web). |
-
-## 3. Example Usage
-
-```rust
-use peak_ui::prelude::*;
-
-struct MyApp {
-    show_sidebar: bool,
-}
-
-impl View for MyApp {
-    fn body(&self) -> impl View {
-        NavigationSplitView::new(
-            // Master (Sidebar)
-            List::new()
-                .header("General")
-                .item(Label::new("Profile", icon("person.circle")))
-                .item(Label::new("Network", icon("wifi"))),
-            
-            // Detail (Content)
-            VStack::new()
-                .push(Text::new("Welcome to PeakOS").large_title())
-                .push(Button::new("Click Me").style(style::Primary))
-                .padding()
-        )
-        .force_sidebar_on_slim(self.show_sidebar)  // Stack navigation for mobile
-        .on_back(Message::GoBack)                  // Automatic back button logic
-    }
-}
-
-```
-
-## 4. Design System Specs (Cupertino Theme)
-
-PeakUI implements a premium visual language out of the box:
-
-### A. Navigation
-
-* **Sidebar**: Translucent glass background, rounded-rect selection.
-* **Toolbar**: Unified with window chrome, large titles.
-
-### B. Controls (Interactive Labs)
-
-* **Toggle**: Green/Grey pill with shadowed knob.
-* **Slider**: Thin track, blue fill, expanding knob on drag.
-* **Button**: Supports `Variant` (Solid, Soft, Ghost) and `Intent` (Primary, Destructive).
-
-### C. Layouts
-
-* **NavigationSplitView**: The core adaptive container.
-* **ZStack**: For overlaying content (like toasts or modals).
-* **ResponsiveGrid**: Flows content (cards, images) based on available width.
-
-## 5. Theming
-
-PeakUI supports dynamic theme switching at runtime:
-
-* **Tone**: Light / Dark / Auto.
-* **Theme**: Heritage (Classic) / Cupertino (Modern Glass).
-
----
-
-*To contribute, please see `PEAKUI_GUIDE.md`.*
+# Run the visual showcase
+cargo run --release --example showcase

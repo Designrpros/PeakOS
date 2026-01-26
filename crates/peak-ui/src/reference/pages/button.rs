@@ -33,7 +33,14 @@ pub fn view(base_context: &Context, lab: &ButtonLabState, render_mode: RenderMod
     let code_snippet = generate_code(lab);
 
     // 1. Canvas View (Standard GUI)
-    let canvas_preview = create_button::<IcedBackend>(lab);
+    let button = create_button::<IcedBackend>(lab);
+    let canvas_preview = VStack::<Message, IcedBackend>::new()
+        .width(if lab.is_full_width {
+            Length::Fixed(400.0)
+        } else {
+            Length::Shrink
+        })
+        .push(button);
 
     // 2. Terminal View (ANSI Text)
     let terminal_preview = create_button::<TermBackend>(lab).view(context);

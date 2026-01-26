@@ -176,13 +176,16 @@ impl View<CatalogMessage, TermBackend> for Catalog<TermBackend> {
             ));
 
         let detail = if let Some(sid) = selected_id {
-            let item = items.iter().find(|i| i.id == sid).unwrap();
-            format!(
-                "\x1b[1m{}\x1b[0m\n{}\n────────────────────\n{}",
-                item.title,
-                item.description,
-                (item.render)(context).view(context)
-            )
+            if let Some(item) = items.iter().find(|i| i.id == sid) {
+                format!(
+                    "\x1b[1m{}\x1b[0m\n{}\n────────────────────\n{}",
+                    item.title,
+                    item.description,
+                    (item.render)(context).view(context)
+                )
+            } else {
+                "\x1b[31;1mError: Item not found\x1b[0m".to_string()
+            }
         } else {
             "\x1b[2mSelect an item to view\x1b[0m".to_string()
         };

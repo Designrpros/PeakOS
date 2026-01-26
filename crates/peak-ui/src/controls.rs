@@ -3,6 +3,7 @@ use crate::modifiers::{ControlSize, Intent, Variant};
 use iced::{Alignment, Length, Padding};
 use std::sync::Arc;
 
+/// A customizable button component that supports labels, icons, and various intents/variants.
 pub struct Button<Message, B: crate::core::Backend = crate::core::IcedBackend> {
     content: Box<dyn View<Message, B>>,
     icon: Option<String>,
