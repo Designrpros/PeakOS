@@ -7,7 +7,7 @@ use peak_core::registry::ShellMode;
 ///
 /// Each theme provides a complete visual identity with semantic colors
 /// that can be applied to any OS mode.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum PeakTheme {
     /// macOS-inspired clean design (current Desktop theme)
     Cupertino,

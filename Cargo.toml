@@ -11,7 +11,7 @@ members = [
     "crates/modes/auto",
     "crates/modes/fireplace",
     "crates/modes/smarthome",
-    "crates/peak-browser", "crates/peak-ui", "crates/peak-apps",
+    "crates/peak-browser", "crates/peak-apps",
     "crates/peak-compositor", "crates/peak-shell-protocol",
     "crates/peak-system", "crates/peak-theme",
     "crates/peak-shell",

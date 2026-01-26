@@ -1,0 +1,160 @@
+{
+  "active_tab": "Introduction",
+  "navigation_mode": "Start",
+  "tree": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": null,
+                    "neural_tag": null,
+                    "role": "view"
+                  },
+                  {
+                    "children": [],
+                    "content": "ACTIVE",
+                    "documentation": null,
+                    "label": "Introduction (page=Introduction)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": "Architecture (page=Architecture)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": "Project Structure (page=ProjectStructure)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": null,
+                    "neural_tag": null,
+                    "role": "space"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": null,
+                    "neural_tag": null,
+                    "role": "view"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": "Roadmap (page=Roadmap)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": "Community (page=Community)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": null,
+                    "neural_tag": null,
+                    "role": "space"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": null,
+                    "neural_tag": null,
+                    "role": "view"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": "Typography (page=Typography)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": "Theming (page=Customizations)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": "Sizing (page=BasicSizing)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  },
+                  {
+                    "children": [],
+                    "content": null,
+                    "documentation": null,
+                    "label": "Layout (page=Layout)",
+                    "neural_tag": null,
+                    "role": "sidebar_item"
+                  }
+                ],
+                "content": null,
+                "documentation": null,
+                "label": null,
+                "neural_tag": null,
+                "role": "vstack"
+              }
+            ],
+            "content": null,
+            "documentation": null,
+            "label": "Start",
+            "neural_tag": null,
+            "role": "sidebar"
+          },
+          {
+            "children": [],
+            "content": null,
+            "documentation": null,
+            "label": null,
+            "neural_tag": null,
+            "role": "view"
+          }
+        ],
+        "content": null,
+        "documentation": null,
+        "label": "Main Layout",
+        "neural_tag": null,
+        "role": "navigation_split_view"
+      }
+    ],
+    "content": null,
+    "documentation": null,
+    "label": "Page: Introduction",
+    "neural_tag": null,
+    "role": "content_view"
+  }
+}
