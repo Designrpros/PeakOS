@@ -11,10 +11,11 @@ serde_yaml = "0.9"
 rodio = { version = "0.17", optional = true }
 rand = "0.8"
 portable-pty = { version = "0.8", optional = true }
-peak-intelligence = { path = "../peak-intelligence", default-features = false }
-peak-core = { path = "../peak-core", default-features = false }
+peak-intelligence = { package = "peak-os-intelligence", path = "../peak-intelligence", default-features = false }
+peak-core = { package = "peak-os-core", path = "../peak-core", default-features = false }
 peak-ui = { path = "../../../PeakUI/framework", default-features = false }
-peak-theme = { path = "../peak-theme", default-features = false }
+peak-theme = { package = "peak-os-theme", path = "../peak-theme", default-features = false }
+peak-ui-theme = { package = "peak-theme", path = "../../../PeakUI/crates/peak-theme", default-features = false }
 tokio = { version = "1", features = ["full"], optional = true }
 chrono = "0.4"
 sysinfo = { version = "0.30", optional = true }

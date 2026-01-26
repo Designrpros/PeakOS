@@ -8,3 +8,6 @@ pub mod omnibar;
 pub mod sidebar;
 pub mod spaces_strip;
 pub mod vapor_grid;
+pub mod wizard;
+pub mod login;
+pub mod window_compositor;

@@ -46,13 +46,13 @@ impl PeakApp for PeakUIApp {
 
     fn view(&self, theme: &peak_core::theme::Theme) -> Element<'_, Self::Message> {
         let tone = match theme {
-            peak_core::theme::Theme::Dark => ThemeTone::Dark,
-            peak_core::theme::Theme::Light => ThemeTone::Light,
-            _ => ThemeTone::Dark,
+            peak_core::theme::Theme::Dark => peak_ui_theme::ThemeTone::Dark,
+            peak_core::theme::Theme::Light => peak_ui_theme::ThemeTone::Light,
+            _ => peak_ui_theme::ThemeTone::Dark,
         };
 
-        let mode = ShellMode::Desktop;
-        let tokens = ThemeTokens::get(mode, tone);
+        let mode = peak_ui::core::ShellMode::Desktop;
+        let tokens = peak_ui_theme::ThemeTokens::get(mode, tone);
         let catalog = self.catalog.clone();
 
         responsive(mode, tokens, move |context| {

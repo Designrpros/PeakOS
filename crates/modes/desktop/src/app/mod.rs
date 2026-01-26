@@ -7,6 +7,7 @@ use crate::pages::Page;
 use iced::futures::SinkExt;
 use iced::Theme as IcedTheme;
 use peak_shell::app_switcher::AppSwitcher;
+use peak_ui::core::App as PeakApp;
 
 use peak_core::models::MediaItem;
 use peak_core::registry::ShellMode;
@@ -467,4 +468,52 @@ fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
             }
         }),
     )
+}
+
+impl PeakApp for PeakNative {
+    type Message = Message;
+    type Flags = PeakNativeFlags;
+
+    fn new(flags: Self::Flags) -> (Self, iced::Task<Self::Message>) {
+        Self::new(flags)
+    }
+
+    fn update(&mut self, message: Self::Message) -> iced::Task<Self::Message> {
+        Self::update(self, message)
+    }
+
+    fn view(&self) -> iced::Element<'_, Self::Message> {
+        Self::view(self)
+    }
+
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        Self::subscription(self)
+    }
+
+    fn theme(&self) -> IcedTheme {
+        Self::theme(self)
+    }
+
+    fn title(&self) -> String {
+        Self::title(self)
+    }
+
+    fn window_settings(flags: &Self::Flags) -> iced::window::Settings {
+        iced::window::Settings {
+            decorations: false,
+            transparent: true,
+            size: match flags.launch_mode {
+                LaunchMode::Bar => iced::Size::new(1920.0, 48.0),
+                LaunchMode::Dock => iced::Size::new(800.0, 100.0),
+                _ => iced::Size::new(1280.0, 720.0),
+            },
+            resizable: true,
+            #[cfg(target_os = "linux")]
+            platform_specific: iced::window::settings::PlatformSpecific {
+                application_id: "peak-desktop".to_string(),
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
 }

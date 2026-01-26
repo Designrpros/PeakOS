@@ -84,3 +84,9 @@ pub enum Message {
     AiInputChange(String),
     AiSubmit,
 }
+
+impl From<peak_apps::wizard::WizardMessage> for Message {
+    fn from(msg: peak_apps::wizard::WizardMessage) -> Self {
+        Message::Wizard(msg)
+    }
+}

@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 iced = { version = "0.13", default-features = false, features = ["advanced"] }
-peak-core = { path = "../peak-core", default-features = false }
+peak-core = { package = "peak-os-core", path = "../peak-core", default-features = false }
 sysinfo = { version = "0.30", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 

@@ -88,27 +88,8 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(|e| e.into());
     }
 
-    iced::application(PeakNative::title, PeakNative::update, PeakNative::view)
-        .theme(PeakNative::theme)
-        .subscription(PeakNative::subscription)
-        .window(iced::window::Settings {
-            decorations: false,
-            transparent: true,
-            size: match launch_mode {
-                app::LaunchMode::Bar => iced::Size::new(1920.0, 48.0),
-                app::LaunchMode::Dock => iced::Size::new(800.0, 100.0),
-                _ => iced::Size::new(1280.0, 720.0),
-            },
-            resizable: true,
-            #[cfg(target_os = "linux")]
-            platform_specific: iced::window::settings::PlatformSpecific {
-                application_id: "peak-desktop".to_string(),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .run_with(move || PeakNative::new(flags))
-        .map_err(|e| e.into())
+    use peak_ui::core::App;
+    PeakNative::run(flags).map_err(|e| e.into())
 }
 
 #[cfg(target_arch = "wasm32")]

@@ -107,13 +107,13 @@ impl PeakApp for DesktopTerminalApp {
 
     fn view(&self, theme: &Theme) -> Element<'_, Self::Message> {
         let tone = match theme {
-            Theme::Dark => peak_theme::ThemeTone::Dark,
-            Theme::Light => peak_theme::ThemeTone::Light,
-            _ => peak_theme::ThemeTone::Dark,
+            Theme::Dark => peak_ui_theme::ThemeTone::Dark,
+            Theme::Light => peak_ui_theme::ThemeTone::Light,
+            _ => peak_ui_theme::ThemeTone::Dark,
         };
 
-        let mode = peak_core::registry::ShellMode::Desktop;
-        let tokens = peak_theme::ThemeTokens::get(mode, tone);
+        let mode = peak_ui::core::ShellMode::Desktop;
+        let tokens = peak_ui_theme::ThemeTokens::get(mode, tone);
 
         let content = self.0.content.clone();
         let input_buffer = self.0.input_buffer.clone();

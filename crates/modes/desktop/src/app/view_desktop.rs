@@ -132,11 +132,72 @@ impl PeakNative {
             }
         };
 
-        use peak_ui::window_chrome;
+        // Convert PeakOS ThemeTokens to PeakUI ThemeTokens
+        let ui_tokens = peak_ui_theme::ThemeTokens {
+            colors: peak_ui_theme::PeakColors {
+                primary: self.tokens.colors.primary,
+                on_primary: self.tokens.colors.on_primary,
+                primary_container: self.tokens.colors.primary_container,
+                on_primary_container: self.tokens.colors.on_primary_container,
+
+                secondary: self.tokens.colors.secondary,
+                on_secondary: self.tokens.colors.on_secondary,
+                secondary_container: self.tokens.colors.secondary_container,
+                on_secondary_container: self.tokens.colors.on_secondary_container,
+
+                accent: self.tokens.colors.accent,
+                on_accent: self.tokens.colors.on_accent,
+
+                success: self.tokens.colors.success,
+                warning: self.tokens.colors.warning,
+                danger: self.tokens.colors.danger,
+                info: self.tokens.colors.info,
+
+                surface: self.tokens.colors.surface,
+                on_surface: self.tokens.colors.on_surface,
+                surface_variant: self.tokens.colors.surface_variant,
+                on_surface_variant: self.tokens.colors.on_surface_variant,
+
+                background: self.tokens.colors.background,
+                on_background: self.tokens.colors.on_background,
+
+                border: self.tokens.colors.border,
+                divider: self.tokens.colors.divider,
+                overlay: self.tokens.colors.overlay,
+
+                text_primary: self.tokens.colors.text_primary,
+                text_secondary: self.tokens.colors.text_secondary,
+                text_tertiary: self.tokens.colors.text_tertiary,
+                text_disabled: self.tokens.colors.text_disabled,
+            },
+            tone: match self.tokens.tone {
+                peak_theme::ThemeTone::Light => peak_ui_theme::ThemeTone::Light,
+                peak_theme::ThemeTone::Dark => peak_ui_theme::ThemeTone::Dark,
+            },
+            glass_opacity: self.tokens.glass_opacity,
+            blur_radius: self.tokens.blur_radius,
+            radius: self.tokens.radius,
+            shadow_color: self.tokens.shadow_color,
+            shadow_offset: self.tokens.shadow_offset,
+            shadow_blur: self.tokens.shadow_blur,
+            spacing_unit: self.tokens.spacing_unit,
+            scaling: self.tokens.scaling,
+        };
 
         // Dynamic z-order Workspace Rendering
-        let mut workspace_stack =
-            Stack::new().push(self.desktop.view(self.tokens).map(Message::Desktop));
+        let context = peak_ui::core::Context::new(
+            peak_ui::core::ShellMode::Desktop,
+            ui_tokens,
+            self.window_manager.screen_size,
+        );
+
+        let mut workspace_stack = Stack::new().push(
+            peak_ui::core::View::<
+                crate::components::desktop::DesktopMessage,
+                peak_ui::core::IcedBackend,
+            >::view(&self.desktop, &context)
+            .map(Message::Desktop),
+        );
 
         // Integrated Desktop UI
         // For Linux, we only do this in Desktop mode (to show the frame/rail over the wallpaper)
@@ -451,99 +512,16 @@ impl PeakNative {
                 }
             }
         }
-
-        for &app_id in &self.window_manager.z_order {
-            if let Some(state) = self.window_manager.window_states.get(&app_id) {
-                // Workspace Filtering
-                if !state.is_sticky
-                    && (state.reality != self.mode || state.desktop_idx != self.current_desktop)
-                {
-                    continue;
-                }
-
-                let content: Element<'_, Message> =
-                    if let Some(app) = self.registry.running_apps.get(&app_id) {
-                        app.view(&self.theme)
-                    } else {
-                        container(iced::widget::text("UNSUPPORTED")).into()
-                    };
-
-                let title = if let Some(all_app) = self.registry.running_apps.get(&app_id) {
-                    all_app.title()
-                } else {
-                    match app_id {
-                        peak_core::registry::AppId::Terminal => "System Console".to_string(),
-                        peak_core::registry::AppId::Library => "The Arcade".to_string(),
-                        peak_core::registry::AppId::Turntable => "The Jukebox".to_string(),
-                        peak_core::registry::AppId::Settings => "Core Sync".to_string(),
-                        peak_core::registry::AppId::FileManager => "File System".to_string(),
-                        peak_core::registry::AppId::Store => "App Store".to_string(),
-                        peak_core::registry::AppId::Editor => "Simple Text".to_string(),
-                        peak_core::registry::AppId::Browser => "Netscape Navigator".to_string(),
-                        _ => "Application".to_string(),
-                    }
-                };
-                let title = title.as_str();
-
-                let on_close = match app_id {
-                    peak_core::registry::AppId::Terminal => Message::ToggleTerminal,
-                    peak_core::registry::AppId::Library => Message::ToggleArcade,
-                    peak_core::registry::AppId::Turntable => Message::ToggleJukebox,
-                    peak_core::registry::AppId::Settings => Message::ToggleSettings,
-                    peak_core::registry::AppId::FileManager => Message::ToggleExplorer,
-                    peak_core::registry::AppId::Store => Message::ToggleStore,
-                    peak_core::registry::AppId::Editor => Message::ToggleEditor,
-                    peak_core::registry::AppId::Browser => {
-                        Message::LaunchBrowser("about:blank".into())
-                    }
-                    _ => Message::Exit,
-                };
-
-                let on_close = match app_id {
-                    peak_core::registry::AppId::Browser => Message::CloseBrowser,
-                    _ => on_close,
-                };
-
-                let mut win_x = state.x;
-                let mut win_y = state.y.max(40.0); // Safe guard for menubar
-
-                if self.is_desktop_revealed {
-                    let screen_center_x = self.window_manager.screen_size.width / 2.0;
-                    win_y = -state.height + 60.0;
-                    win_x = screen_center_x - (state.width / 2.0);
-
-                    if let Some(pos) = self
-                        .window_manager
-                        .z_order
-                        .iter()
-                        .position(|&id| id == app_id)
-                    {
-                        let offset = pos as f32 * 4.0;
-                        win_x += offset;
-                        win_y += offset;
-                    }
-                }
-
-                workspace_stack = workspace_stack.push(
-                    container(
-                        container(window_chrome::view(
-                            title.to_string(),
-                            content,
-                            on_close,
-                            Some(Message::Maximize(app_id)),
-                            is_light,
-                        ))
-                        .width(state.width)
-                        .height(state.height),
-                    )
-                    .padding(iced::Padding {
-                        top: win_y,
-                        left: win_x,
-                        ..Default::default()
-                    }),
-                );
-            }
-        }
+        use crate::components::window_compositor::WindowCompositor;
+        let compositor = WindowCompositor::new(
+            &self.window_manager,
+            &self.registry,
+            &self.theme,
+            self.mode,
+            self.current_desktop,
+            self.is_desktop_revealed,
+        );
+        let workspace_stack = compositor.view(workspace_stack.into());
 
         // Simplification: We remove Dock/Bar from THIS view.
 

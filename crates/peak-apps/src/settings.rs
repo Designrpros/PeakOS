@@ -2,8 +2,8 @@ use iced::{Alignment, Color, Element, Length, Task};
 pub use peak_core::apps::settings::{SettingsApp, SettingsMessage, SettingsTab, ThemeMode};
 use peak_core::registry::ShellMode;
 use peak_core::theme::Theme;
-use peak_theme::{ThemeTokens, ThemeTone};
 use peak_ui::prelude::*;
+use peak_ui_theme::{ThemeTokens, ThemeTone};
 
 pub trait SettingsDesktopView {
     fn view(
@@ -59,7 +59,7 @@ impl SettingsDesktopView for SettingsApp {
         } else {
             ThemeTone::Dark
         };
-        let mode = peak_core::registry::ShellMode::Desktop;
+        let mode = peak_ui::core::ShellMode::Desktop;
         let tokens = ThemeTokens::get(mode, tone);
         let handles_clone = handles.clone();
         let app = self.clone();

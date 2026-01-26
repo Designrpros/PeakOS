@@ -1,5 +1,5 @@
 [package]
-name = "peak-core"
+name = "peak-os-core"
 version = "0.1.0"
 edition = "2021"
 
@@ -13,8 +13,8 @@ lazy_static = "1.4"
 regex = "1.10"
 chrono = "0.4"
 thiserror = "1.0"
-peak-intelligence = { path = "../peak-intelligence", default-features = false }
-peak-icons = { path = "../peak-icons" }
+peak-intelligence = { package = "peak-os-intelligence", path = "../peak-intelligence", default-features = false }
+peak-icons = { package = "peak-os-icons", path = "../peak-icons" }
 directories = { version = "5.0", optional = true }
 dirs = { version = "5.0", optional = true }
 sysinfo = { version = "0.30", optional = true }

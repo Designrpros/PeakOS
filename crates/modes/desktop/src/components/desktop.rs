@@ -1,5 +1,6 @@
 use iced::widget::{button, column, container, svg, text};
 use iced::{Element, Length, Point};
+use peak_ui::prelude::*;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
@@ -79,90 +80,8 @@ impl Desktop {
         }
     }
 
-    pub fn view<'a>(&'a self, tokens: peak_theme::ThemeTokens) -> Element<'a, DesktopMessage> {
-        let mut stack = iced::widget::Stack::new();
-
-        // 0. The background is handled in app.rs.
-        // We avoid putting a button here to ensure mouse release is captured globally.
-
-        for item in &self.items {
-            let is_selected = self.selected.contains(&item.path);
-            let path = item.path.clone();
-            let name = item.name.clone();
-            let pos = item.position;
-
-            let icon = view_icon(&path, tokens);
-            let label = text(name)
-                .size(10)
-                .color(iced::Color::WHITE)
-                .align_x(iced::alignment::Horizontal::Center);
-
-            let column = column![icon, label]
-                .spacing(5)
-                .align_x(iced::Alignment::Center);
-
-            let button = button(column)
-                .on_press(DesktopMessage::Select(path, false)) // Default single select
-                .style(move |_, status| button::Style {
-                    background: if is_selected {
-                        Some(iced::Color::from_rgba(1.0, 1.0, 1.0, 0.2).into())
-                    } else if status == iced::widget::button::Status::Hovered {
-                        Some(iced::Color::from_rgba(1.0, 1.0, 1.0, 0.1).into())
-                    } else {
-                        None
-                    },
-                    text_color: iced::Color::WHITE,
-                    border: iced::Border {
-                        radius: 4.0.into(),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .padding(8);
-
-            stack = stack.push(
-                container(button)
-                    .width(Length::Fixed(80.0))
-                    .height(Length::Fixed(80.0))
-                    .padding(iced::Padding {
-                        top: pos.y,
-                        left: pos.x,
-                        ..Default::default()
-                    }),
-            );
-        }
-
-        // Marquee selection overlay
-        if let Some(rect) = self.selection_rect {
-            stack = stack.push(
-                container(
-                    container(iced::widget::Space::new(
-                        Length::Fixed(rect.width),
-                        Length::Fixed(rect.height),
-                    ))
-                    .style(|_| container::Style {
-                        background: Some(iced::Color::from_rgba(0.0, 0.5, 1.0, 0.1).into()),
-                        border: iced::Border {
-                            color: iced::Color::from_rgba(0.0, 0.5, 1.0, 0.5),
-                            width: 1.0,
-                            radius: 2.0.into(),
-                        },
-                        ..Default::default()
-                    }),
-                )
-                .padding(iced::Padding {
-                    top: rect.y,
-                    left: rect.x,
-                    ..Default::default()
-                }),
-            );
-        }
-
-        container(stack)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into()
-    }
+    // Legacy method for non-generic usage if any?
+    // We should implement View instead.
 
     pub fn update(&mut self, message: DesktopMessage) -> Option<DesktopMessage> {
         match message {
@@ -251,11 +170,130 @@ impl Desktop {
     }
 }
 
+impl peak_ui::core::View<DesktopMessage, peak_ui::core::IcedBackend> for Desktop {
+    fn view(&self, context: &Context) -> Element<'static, DesktopMessage> {
+        // Reimplement view logic using Backend
+        let mut stack_children = Vec::new();
+
+        // Icons
+        for item in &self.items {
+            let is_selected = self.selected.contains(&item.path);
+            let path = item.path.clone();
+            let name = item.name.clone();
+            let pos = item.position;
+
+            // Icon
+            // We need to convert ThemeTokens? No, context.theme IS peak_ui_theme.
+            // view_icon expects peak_ui_theme (as updated imports?).
+            // Wait, previous error said view_icon expects peak_theme::ThemeTokens (PeakUI one).
+            // And context.theme IS peak_theme::ThemeTokens.
+            // So this matches!
+            let icon = view_icon(&path, context.theme);
+            // Label
+            let label = text(name)
+                .size(10)
+                .color(iced::Color::WHITE)
+                .align_x(iced::alignment::Horizontal::Center);
+
+            let col = column![icon, label]
+                .spacing(5)
+                .align_x(iced::Alignment::Center);
+
+            // Button wrapper
+            let btn = button(col)
+                .on_press(DesktopMessage::Select(path, false))
+                .style(move |_, status| button::Style {
+                    background: if is_selected {
+                        Some(iced::Color::from_rgba(1.0, 1.0, 1.0, 0.2).into())
+                    } else if status == iced::widget::button::Status::Hovered {
+                        Some(iced::Color::from_rgba(1.0, 1.0, 1.0, 0.1).into())
+                    } else {
+                        None
+                    },
+                    text_color: iced::Color::WHITE,
+                    border: iced::Border {
+                        radius: 4.0.into(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .padding(8);
+
+            // Absolute positioning container
+            let positioned_icon = container(btn)
+                .width(Length::Fixed(80.0))
+                .height(Length::Fixed(80.0))
+                .padding(iced::Padding {
+                    top: pos.y,
+                    left: pos.x,
+                    ..Default::default()
+                });
+
+            stack_children.push(positioned_icon.into());
+        }
+
+        // Marquee Selection
+        if let Some(rect) = self.selection_rect {
+            let marquee = container(
+                container(iced::widget::Space::new(
+                    Length::Fixed(rect.width),
+                    Length::Fixed(rect.height),
+                ))
+                .style(|_| container::Style {
+                    background: Some(iced::Color::from_rgba(0.0, 0.5, 1.0, 0.1).into()),
+                    border: iced::Border {
+                        color: iced::Color::from_rgba(0.0, 0.5, 1.0, 0.5),
+                        width: 1.0,
+                        radius: 2.0.into(),
+                    },
+                    ..Default::default()
+                }),
+            )
+            .padding(iced::Padding {
+                top: rect.y,
+                left: rect.x,
+                ..Default::default()
+            });
+            stack_children.push(marquee.into());
+        }
+
+        // Using Iced Stack directly since we are specialized
+        iced::widget::Stack::with_children(stack_children)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
+    }
+
+    fn describe(&self, _context: &Context) -> SemanticNode {
+        let children: Vec<SemanticNode> = self
+            .items
+            .iter()
+            .map(|item| {
+                SemanticNode {
+                    role: "button".to_string(),
+                    label: Some(item.name.clone()),
+                    content: Some(format!("Desktop item: {}", item.name)),
+                    // No actions/value/bounds/id in SemanticNode
+                    children: vec![],
+                    ..Default::default()
+                }
+            })
+            .collect();
+
+        SemanticNode {
+            role: "grid".to_string(),
+            label: Some("Desktop".to_string()),
+            children,
+            ..Default::default()
+        }
+    }
+}
+
 // Reuse the icon logic from explorer.rs or move to a common place
-fn view_icon<'a>(
+fn view_icon(
     path: &std::path::Path,
-    tokens: peak_theme::ThemeTokens,
-) -> Element<'a, DesktopMessage> {
+    tokens: peak_ui_theme::ThemeTokens,
+) -> Element<'static, DesktopMessage> {
     let is_dir = path.is_dir();
     let ext = path
         .extension()
