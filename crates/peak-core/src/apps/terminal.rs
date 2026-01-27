@@ -91,9 +91,9 @@ impl TerminalApp {
             }
         }
 
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         Self {
-            content: String::from("Terminal is not supported on WASM"),
+            content: String::from("Terminal is not supported on this platform"),
             input_buffer: String::new(),
             is_open: false,
         }
@@ -170,7 +170,7 @@ impl PeakApp for TerminalApp {
             )
         }
 
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(not(feature = "native"))]
         iced::Subscription::none()
     }
 }

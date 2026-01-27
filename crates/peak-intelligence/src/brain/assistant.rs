@@ -31,6 +31,7 @@ impl Assistant {
         file: model::File,
         backend: Backend,
     ) -> impl Straw<Self, BootEvent, Error> {
+        use std::sync::atomic::{AtomicBool, Ordering};
         use tokio::io::{self, AsyncBufReadExt};
         use tokio::task;
 
@@ -169,6 +170,49 @@ impl Assistant {
                 )
                 .await?;
 
+            let child_pid = instance.process.id();
+            let killed_by_guardian = Arc::new(AtomicBool::new(false));
+            let killed_by_guardian_clone = killed_by_guardian.clone();
+
+            // --- RESOURCE GUARDIAN TASK ---
+            task::spawn(async move {
+                use sysinfo::System;
+                let mut sys = System::new_all();
+                let pid = sysinfo::Pid::from(child_pid.unwrap_or(0) as usize);
+
+                loop {
+                    tokio::time::sleep(Duration::from_secs(2)).await;
+                    sys.refresh_all();
+
+                    // 1. Check System-wide pressure
+                    let total_mem = sys.total_memory();
+                    let used_mem = sys.used_memory();
+                    let mem_percent = (used_mem as f32 / total_mem as f32) * 100.0;
+
+                    // 2. Check Process-specific usage
+                    let proc_mem = sys.process(pid).map(|p| p.memory()).unwrap_or(0);
+                    let proc_mem_percent = (proc_mem as f32 / total_mem as f32) * 100.0;
+
+                    // Safety Thresholds
+                    const CRITICAL_SYSTEM_MEM: f32 = 92.0; // 92% System RAM
+                    const CRITICAL_PROC_MEM: f32 = 80.0; // 80% System RAM for just this process
+
+                    if mem_percent > CRITICAL_SYSTEM_MEM || proc_mem_percent > CRITICAL_PROC_MEM {
+                        log::error!(
+                            "RESOURCE GUARDIAN: Critical memory pressure detected ({:.1}% system, {:.1}% process). Killing AI to save machine.",
+                            mem_percent, proc_mem_percent
+                        );
+
+                        // Mark as killed by guardian before killing
+                        killed_by_guardian_clone.store(true, Ordering::SeqCst);
+
+                        // Kill the process immediately
+                        let _ = sys.process(pid).map(|p| p.kill());
+                        break;
+                    }
+                }
+            });
+
             let stdout = instance.process.stdout.take();
             let stderr = instance.process.stderr.take();
 
@@ -205,7 +249,14 @@ impl Assistant {
             };
 
             let log_handle = task::spawn(log_output);
-            instance.wait_until_ready().await?;
+
+            if let Err(e) = instance.wait_until_ready().await {
+                log_handle.abort();
+                if killed_by_guardian.load(Ordering::SeqCst) {
+                    return Err(Error::ResourceLimitExceeded("Safety Shutdown: System is under critical memory pressure. Please use a smaller model (e.g. 3B instead of 7B).".to_string()));
+                }
+                return Err(e.into());
+            }
             log_handle.abort();
 
             Ok(Self {
@@ -226,7 +277,7 @@ impl Assistant {
 
     pub fn reply(
         self,
-        prompt: String,
+        system_prompt: String,
         messages: Vec<Message>,
         append: Vec<Message>,
     ) -> impl Straw<Reply, (Reply, Token), Error> + 'static {
@@ -236,7 +287,7 @@ impl Assistant {
             let mut content = String::new();
             let mut reasoning_content = String::new();
 
-            let mut completion = self.complete(prompt, messages, append).pin();
+            let mut completion = self.complete(system_prompt, messages, append).pin();
 
             while let Some(token) = completion.sip().await {
                 match &token {

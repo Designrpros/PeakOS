@@ -8,14 +8,14 @@ use crate::voice::VoiceManager;
 #[cfg(feature = "voice")]
 use voice::VOICE;
 
-use crate::mcp::{
+use mcp::{
     CallToolParams, CallToolResult, JsonRpcRequest, JsonRpcResponse, ListToolsResult, Tool,
     ToolContent,
 };
-use crate::terminal::TerminalManager;
 use once_cell::sync::Lazy;
-use peak_intelligence::kernel;
+use peak_os_intelligence::kernel;
 use serde_json::json;
+use terminal::TerminalManager;
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
@@ -26,7 +26,7 @@ static TERMINAL: Lazy<TerminalManager> = Lazy::new(TerminalManager::new);
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Verify Icebreaker Core Linkage
-    let lib = peak_intelligence::brain::model::Library::default();
+    let lib = peak_os_intelligence::brain::model::Library::default();
     println!("Peak Intelligence initialized.");
     println!("🤖 AI Model Directory: {:?}", lib.directory());
 

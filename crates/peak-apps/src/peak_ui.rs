@@ -1,7 +1,5 @@
 use iced::{Element, Task};
 use peak_core::app_traits::{PeakApp, ShellContext};
-use peak_core::registry::ShellMode;
-use peak_theme::{ThemeTokens, ThemeTone};
 use peak_ui::prelude::*;
 
 #[derive(Debug, Clone)]

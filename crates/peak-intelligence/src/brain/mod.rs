@@ -46,6 +46,8 @@ pub enum Error {
     NoExecutorAvailable,
     #[error("operation not supported on WASM: {0}")]
     WasmError(String),
+    #[error("resource limit exceeded: {0}")]
+    ResourceLimitExceeded(String),
 }
 
 #[cfg(feature = "native")]

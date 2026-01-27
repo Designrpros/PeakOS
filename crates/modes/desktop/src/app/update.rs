@@ -1391,10 +1391,17 @@ impl PeakNative {
                         ));
                     }
                     Err(e) => {
-                        self.alert = Some((
-                            "AI Boot Failed".into(),
-                            format!("Could not start AI: {}", e),
-                        ));
+                        let (title, message) = match e {
+                            peak_intelligence::brain::Error::ResourceLimitExceeded(msg) => {
+                                ("Safety Shutdown".into(), msg)
+                            }
+                            _ => (
+                                "AI Boot Failed".into(),
+                                format!("Could not start AI: {}", e),
+                            ),
+                        };
+
+                        self.alert = Some((title, message));
                         self.pending_chat = None;
                     }
                 }
@@ -1431,8 +1438,79 @@ impl PeakNative {
                 )
             }
             Message::AssistantFinished => {
+                let mut tasks = Vec::new();
+                if let Some((role, content)) = self.inspector.chat_history.last_mut() {
+                    if role == "assistant" {
+                        // 1. ToggleTheme
+                        if content.contains("[Action: ToggleTheme]") {
+                            tasks.push(Task::done(Message::ToggleTheme));
+                            *content = content.replace("[Action: ToggleTheme]", "");
+                        }
+
+                        // 2. Navigate
+                        if let Some(start) = content.find("[Action: Navigate(") {
+                            if let Some(end) = content[start..].find(")]") {
+                                let page_str = &content[start + 18..start + end];
+                                let page = match page_str {
+                                    "Home" => Some(Page::Home),
+                                    "Arcade" | "Library" => Some(Page::Library),
+                                    "Cortex" => Some(Page::Cortex),
+                                    "Settings" => Some(Page::Settings),
+                                    "Poolside" => Some(Page::Poolside),
+                                    _ => None,
+                                };
+                                if let Some(p) = page {
+                                    tasks.push(Task::done(Message::Navigate(p)));
+                                    let tag = format!("[Action: Navigate({})]", page_str);
+                                    *content = content.replace(&tag, "");
+                                }
+                            }
+                        }
+
+                        // 3. LaunchApp / CloseWindow
+                        let actions = [
+                            ("[Action: LaunchApp(", true),
+                            ("[Action: CloseWindow(", false),
+                        ];
+
+                        for (prefix, is_launch) in actions {
+                            if let Some(start) = content.find(prefix) {
+                                if let Some(end) = content[start..].find(")]") {
+                                    let app_str = &content[start + prefix.len()..start + end];
+                                    let app_id = match app_str {
+                                        "Terminal" => Some(AppId::Terminal),
+                                        "PeakUI" => Some(AppId::PeakUI),
+                                        "Browser" => Some(AppId::Browser),
+                                        "Library" => Some(AppId::Library),
+                                        "Settings" => Some(AppId::Settings),
+                                        "Turntable" => Some(AppId::Turntable),
+                                        "FileManager" => Some(AppId::FileManager),
+                                        "Store" => Some(AppId::Store),
+                                        "Editor" => Some(AppId::Editor),
+                                        _ => None,
+                                    };
+                                    if let Some(id) = app_id {
+                                        if is_launch {
+                                            tasks.push(Task::done(Message::DockInteraction(
+                                                peak_shell::dock::DockMessage::Launch(id),
+                                            )));
+                                        } else {
+                                            tasks.push(Task::done(Message::DockInteraction(
+                                                peak_shell::dock::DockMessage::Quit(id),
+                                            )));
+                                        }
+                                        let tag = format!("{}{})]", prefix, app_str);
+                                        *content = content.replace(&tag, "");
+                                    }
+                                }
+                            }
+                        }
+
+                        *content = content.trim().to_string();
+                    }
+                }
                 self.pending_chat = None;
-                Task::none()
+                Task::batch(tasks)
             }
             Message::ConsoleCategory(msg) => {
                 // Handle Console category selection

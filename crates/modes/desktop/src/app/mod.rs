@@ -162,7 +162,14 @@ impl PeakNative {
         // 2. Chat Reply Subscription
         if let Some(prompt) = &self.pending_chat {
             if let Some(assistant) = &self.assistant {
-                subs.push(reply_subscription(assistant.clone(), prompt.clone()));
+                let history = self.inspector.chat_history.clone();
+                let system_prompt = self.get_ai_system_prompt();
+                subs.push(reply_subscription(
+                    assistant.clone(),
+                    system_prompt,
+                    history,
+                    prompt.clone(),
+                ));
             } else if let Some(model_id) = &self.active_model_id {
                 subs.push(boot_subscription(model_id.clone()));
             }
@@ -347,15 +354,27 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
 
 fn reply_subscription(
     assistant: peak_intelligence::brain::Assistant,
+    system_prompt: String,
+    history: Vec<(String, String)>,
     prompt: String,
 ) -> iced::Subscription<Message> {
     use iced::futures::StreamExt;
+    use peak_intelligence::brain::assistant::Message as LLMMessage;
 
     iced::Subscription::run_with_id(
         format!("chat-{}", prompt),
         iced::stream::channel(100, move |mut output| async move {
-            let messages = vec![];
-            let mut stream = Box::pin(assistant.reply(prompt, messages, vec![]));
+            let messages = history
+                .into_iter()
+                .map(|(role, content)| match role.as_str() {
+                    "user" => LLMMessage::User(content),
+                    "assistant" => LLMMessage::Assistant(content),
+                    _ => LLMMessage::System(content),
+                })
+                .collect();
+
+            let append = vec![LLMMessage::User(prompt)];
+            let mut stream = Box::pin(assistant.reply(system_prompt, messages, append));
 
             while let Some((reply, token)) = stream.next().await {
                 output
@@ -372,6 +391,34 @@ fn reply_subscription(
             output.send(Message::AssistantFinished).await.ok();
         }),
     )
+}
+
+impl PeakNative {
+    pub fn get_ai_system_prompt(&self) -> String {
+        format!(
+            "You are Peak Intelligence, the AI core of PeakOS.
+             You have direct access to the system and can perform actions.
+             
+             To perform an action, append a tag to the end of your response:
+             - To navigate to a page: [Action: Navigate(PAGE)]
+             - To launch an app: [Action: LaunchApp(APP_ID)]
+             - To close a window: [Action: CloseWindow(APP_ID)]
+             - To change theme: [Action: ToggleTheme]
+             
+             VALID PAGES: Home, Arcade, Turntable, Cortex, Explorer, Settings, Store.
+             VALID APP_IDs: Terminal, PeakUI, Browser, Library, Settings, Turntable, FileManager, Store, Editor.
+             
+             Current System State:
+             - Mode: {mode:?}
+             - Theme: {theme:?}
+             - Current Desktop: {desktop}
+             
+             Always explain what you are doing. Use the action tag as part of your natural response.",
+            mode = self.mode,
+            theme = self.theme,
+            desktop = self.current_desktop
+        )
+    }
 }
 
 fn boot_subscription(model_id: String) -> iced::Subscription<Message> {

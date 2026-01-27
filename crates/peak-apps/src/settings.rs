@@ -1,632 +1,1137 @@
-use iced::{Alignment, Color, Element, Length, Task};
 pub use peak_core::apps::settings::{SettingsApp, SettingsMessage, SettingsTab, ThemeMode};
-use peak_core::registry::ShellMode;
-use peak_core::theme::Theme;
-use peak_ui::prelude::*;
-use peak_ui_theme::{ThemeTokens, ThemeTone};
+pub use peak_ui::core::Backend;
 
-pub trait SettingsDesktopView {
-    fn view(
-        &self,
-        theme: &Theme,
-        handles: &std::collections::HashMap<String, iced::widget::image::Handle>,
-    ) -> Element<'static, SettingsMessage, iced::Theme, iced::Renderer>;
+// --- Pure PeakUI View Implementation ---
 
-    fn view_tab_content(
+trait SettingsHelpers {
+    fn view_tab_content<B: peak_ui::core::Backend>(
         &self,
-        ctx: &Context,
-        handles: &std::collections::HashMap<String, iced::widget::image::Handle>,
-    ) -> Box<dyn View<SettingsMessage>>;
-
-    fn labeled_row(
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
+    fn card<B: peak_ui::core::Backend>(
         &self,
-        ctx: &Context,
+        context: &peak_ui::core::Context,
+        content: B::AnyView<SettingsMessage>,
+    ) -> B::AnyView<SettingsMessage>;
+    fn labeled_row<B: peak_ui::core::Backend>(
+        &self,
+        context: &peak_ui::core::Context,
         label: &str,
-        widget: impl View<SettingsMessage> + 'static,
-    ) -> Box<dyn View<SettingsMessage>>;
-
-    fn theme_preview(
+        widget: B::AnyView<SettingsMessage>,
+    ) -> B::AnyView<SettingsMessage>;
+    fn view_general<B: peak_ui::core::Backend>(
         &self,
-        ctx: &Context,
-        label: &str,
-        mode: ThemeMode,
-    ) -> Box<dyn View<SettingsMessage>>;
-
-    fn mode_preview(
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
+    fn view_appearance<B: peak_ui::core::Backend>(
         &self,
-        ctx: &Context,
-        label: &str,
-        mode: ShellMode,
-    ) -> Box<dyn View<SettingsMessage>>;
-
-    fn shell_style_preview(
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
+    fn view_display<B: peak_ui::core::Backend>(
         &self,
-        ctx: &Context,
-        label: &str,
-        style: peak_core::registry::ShellStyle,
-    ) -> Box<dyn View<SettingsMessage>>;
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
+    fn view_wifi<B: peak_ui::core::Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
+    fn view_bluetooth<B: peak_ui::core::Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
+    fn view_sound<B: peak_ui::core::Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
+    fn view_intelligence<B: peak_ui::core::Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
+    fn view_modes<B: peak_ui::core::Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage>;
 }
 
-impl SettingsDesktopView for SettingsApp {
-    fn view(
-        &self,
-        theme: &Theme,
-        handles: &std::collections::HashMap<String, iced::widget::image::Handle>,
-    ) -> Element<'static, SettingsMessage, iced::Theme, iced::Renderer> {
-        let is_light = *theme == Theme::Light;
-        let tone = if is_light {
-            ThemeTone::Light
-        } else {
-            ThemeTone::Dark
-        };
-        let mode = peak_ui::core::ShellMode::Desktop;
-        let tokens = ThemeTokens::get(mode, tone);
-        let handles_clone = handles.clone();
-        let app = self.clone();
+impl<B> peak_ui::core::View<SettingsMessage, B> for DesktopSettingsApp
+where
+    B: peak_ui::core::Backend,
+    peak_ui::prelude::NavigationSplitView<SettingsMessage, B>:
+        peak_ui::core::View<SettingsMessage, B>,
+{
+    fn view(&self, context: &peak_ui::core::Context) -> B::AnyView<SettingsMessage> {
+        let app = self.app.clone();
 
-        responsive(mode, tokens, move |ctx| {
-            let sidebar = Sidebar::new("Settings")
-                .with_search(app.search_query.clone(), SettingsMessage::SearchChanged)
-                .item(
-                    "Network",
-                    "wifi_full",
-                    SettingsMessage::TabChanged(SettingsTab::WiFi),
-                    app.current_tab == SettingsTab::WiFi,
-                )
-                .item(
-                    "Bluetooth",
-                    "wifi_off",
-                    SettingsMessage::TabChanged(SettingsTab::Bluetooth),
-                    app.current_tab == SettingsTab::Bluetooth,
-                )
-                .item(
-                    "General",
-                    "settings",
-                    SettingsMessage::TabChanged(SettingsTab::General),
-                    app.current_tab == SettingsTab::General,
-                )
-                .item(
-                    "Appearance",
-                    "palette",
-                    SettingsMessage::TabChanged(SettingsTab::Appearance),
-                    app.current_tab == SettingsTab::Appearance,
-                )
-                .item(
-                    "Display",
-                    "about",
-                    SettingsMessage::TabChanged(SettingsTab::Display),
-                    app.current_tab == SettingsTab::Display,
-                )
-                .item(
-                    "Sound",
-                    "media",
-                    SettingsMessage::TabChanged(SettingsTab::Sound),
-                    app.current_tab == SettingsTab::Sound,
-                )
-                .item(
-                    "Focus",
-                    "moon",
-                    SettingsMessage::TabChanged(SettingsTab::Focus),
-                    app.current_tab == SettingsTab::Focus,
-                )
-                .item(
-                    "Intelligence",
-                    "sparkles",
-                    SettingsMessage::TabChanged(SettingsTab::Intelligence),
-                    app.current_tab == SettingsTab::Intelligence,
-                )
-                .item(
-                    "Modes",
-                    "trigger",
-                    SettingsMessage::TabChanged(SettingsTab::Modes),
-                    app.current_tab == SettingsTab::Modes,
-                );
-
-            let tab_title = Text::new(format!("{:?}", app.current_tab)).title2();
-
-            // FIX: Add .height(Length::Shrink) to VStack and ensure NO COMMA before the dot
-            let content = ScrollView::new(
-                VStack::new()
-                    .spacing(24.0)
-                    .push(tab_title)
-                    .push(app.view_tab_content(&ctx, &handles_clone))
-                    .height(Length::Shrink),
+        // Sidebar Content
+        let sidebar = peak_ui::prelude::Sidebar::<SettingsMessage, B>::new("Settings")
+            .with_search(app.search_query.clone(), SettingsMessage::SearchChanged)
+            .item(
+                "Network",
+                "wifi_full",
+                SettingsMessage::TabChanged(SettingsTab::WiFi),
+                app.current_tab == SettingsTab::WiFi,
+            )
+            .item(
+                "Bluetooth",
+                "bluetooth",
+                SettingsMessage::TabChanged(SettingsTab::Bluetooth),
+                app.current_tab == SettingsTab::Bluetooth,
+            )
+            .item(
+                "General",
+                "settings",
+                SettingsMessage::TabChanged(SettingsTab::General),
+                app.current_tab == SettingsTab::General,
+            )
+            .item(
+                "Appearance",
+                "palette",
+                SettingsMessage::TabChanged(SettingsTab::Appearance),
+                app.current_tab == SettingsTab::Appearance,
+            )
+            .item(
+                "Display",
+                "image",
+                SettingsMessage::TabChanged(SettingsTab::Display),
+                app.current_tab == SettingsTab::Display,
+            )
+            .item(
+                "Sound",
+                "media",
+                SettingsMessage::TabChanged(SettingsTab::Sound),
+                app.current_tab == SettingsTab::Sound,
+            )
+            .item(
+                "Focus",
+                "moon",
+                SettingsMessage::TabChanged(SettingsTab::Focus),
+                app.current_tab == SettingsTab::Focus,
+            )
+            .item(
+                "Intelligence",
+                "sparkles",
+                SettingsMessage::TabChanged(SettingsTab::Intelligence),
+                app.current_tab == SettingsTab::Intelligence,
+            )
+            .item(
+                "Modes",
+                "trigger",
+                SettingsMessage::TabChanged(SettingsTab::Modes),
+                app.current_tab == SettingsTab::Modes,
             );
 
-            let is_sidebar = app.current_tab == SettingsTab::Sidebar;
+        // Main Content View Closure
+        let app_for_closure = app.clone();
+        let content_view = peak_ui::core::ProxyView::new(move |ctx| {
+            let app = app_for_closure.clone();
+            let tab_title = B::text(
+                format!("{:?}", app.current_tab),
+                28.0, // Larger premium title
+                None,
+                true, // Bold
+                false,
+                None,
+                None,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                ctx,
+            );
 
-            NavigationSplitView::new(sidebar, content)
-                .force_sidebar_on_slim(is_sidebar)
-                .on_back(SettingsMessage::TabChanged(SettingsTab::Sidebar))
-                .view(&ctx)
-        })
+            let content = app.view_tab_content::<B>(ctx);
+
+            let vstack = B::vstack(
+                vec![tab_title, content],
+                32.0, // Generous spacing
+                iced::Padding::from(0.0),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            );
+
+            // Add generous padding to the scrollable content
+            B::container(
+                B::scroll_view(vstack),
+                iced::Padding::from([24, 32]), // Standard premium padding
+                iced::Length::Fill,
+                iced::Length::Fill,
+                ctx,
+            )
+        });
+
+        let is_sidebar = app.current_tab == SettingsTab::Sidebar;
+
+        let split_view = peak_ui::prelude::NavigationSplitView::new_generic(sidebar, content_view)
+            .force_sidebar_on_slim(is_sidebar)
+            .sidebar_width(260.0) // Slightly wider sidebar for premium feel
+            .on_back(SettingsMessage::TabChanged(SettingsTab::Sidebar));
+
+        peak_ui::core::View::<SettingsMessage, B>::view(&split_view, context)
     }
 
-    fn view_tab_content(
+    fn describe(&self, _context: &peak_ui::core::Context) -> peak_ui::core::SemanticNode {
+        // AI Integration: Describe the current state
+        let mut children = vec![];
+        let app = &self.app;
+
+        // Describe SideBar items (Navigation)
+        let sidebar_node = peak_ui::core::SemanticNode {
+            role: "navigation".into(),
+            label: Some("Sidebar".into()),
+            children: vec![
+                peak_ui::core::SemanticNode {
+                    role: "button".into(),
+                    label: Some("Network".into()),
+                    ..Default::default()
+                },
+                peak_ui::core::SemanticNode {
+                    role: "button".into(),
+                    label: Some("Bluetooth".into()),
+                    ..Default::default()
+                },
+                peak_ui::core::SemanticNode {
+                    role: "button".into(),
+                    label: Some("General".into()),
+                    ..Default::default()
+                },
+                peak_ui::core::SemanticNode {
+                    role: "button".into(),
+                    label: Some("Appearance".into()),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        children.push(sidebar_node);
+
+        // Describe Current Tab Content
+        children.push(peak_ui::core::SemanticNode {
+            role: "main".into(),
+            label: Some(format!("{:?} Settings", app.current_tab)),
+            content: Some(match app.current_tab {
+                SettingsTab::WiFi => if app.wifi_enabled {
+                    "WiFi On"
+                } else {
+                    "WiFi Off"
+                }
+                .into(),
+                SettingsTab::Bluetooth => if app.bluetooth_enabled {
+                    "Bluetooth On"
+                } else {
+                    "Bluetooth Off"
+                }
+                .into(),
+                SettingsTab::Sound => format!("Volume: {:.0}%", app.volume * 100.0),
+                _ => "".into(),
+            }),
+            ..Default::default()
+        });
+
+        peak_ui::core::SemanticNode {
+            role: "window".into(),
+            label: Some("Settings".into()),
+            children,
+            ..Default::default()
+        }
+    }
+}
+
+impl SettingsHelpers for SettingsApp {
+    fn view_tab_content<B: Backend>(
         &self,
-        ctx: &Context,
-        _handles: &std::collections::HashMap<String, iced::widget::image::Handle>,
-    ) -> Box<dyn View<SettingsMessage>> {
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
         match self.current_tab {
-            SettingsTab::Sidebar => VStack::new().into_box(),
-            SettingsTab::General => VStack::new()
-                .spacing(24.0)
-                .push(Section::new(
-                    "About",
-                    Card::new(
-                        VStack::new()
-                            .push(self.labeled_row(
-                                ctx,
-                                "Name",
-                                Text::new("PeakOS Device").secondary(),
-                            ))
-                            .push(Divider::new())
-                            .push(self.labeled_row(
-                                ctx,
-                                "Model",
-                                Text::new("Peak Native (Apple Silicon)").secondary(),
-                            ))
-                            .push(Divider::new())
-                            .push(self.labeled_row(
-                                ctx,
-                                "Version",
-                                Text::new("1.0.0 (Alpha)").secondary(),
-                            )),
-                    ),
-                ))
-                .push(Section::new(
-                    "Software Update",
-                    Card::new(self.labeled_row(
-                        ctx,
-                        "Automatic Updates",
-                        Text::new("On").secondary(),
-                    )),
-                ))
-                .into_box(),
-
-            SettingsTab::Appearance => {
-                let mut grid = ResponsiveGrid::new().spacing(12.0);
-
-                for wp in &self.wallpapers {
-                    let wp_clone = wp.clone();
-                    let image_path =
-                        peak_core::utils::assets::get_asset_path(&format!("wallpapers/{}", wp));
-
-                    grid = grid.push(
-                        Button::new(
-                            Image::new(image_path.to_string_lossy().to_string())
-                                .width(120.0.into())
-                                .height(75.0.into())
-                                .radius(8.0),
-                        )
-                        .on_press(SettingsMessage::WallpaperChanged(wp_clone)),
-                    );
-                }
-
-                VStack::new()
-                    .spacing(24.0)
-                    .push(Section::new(
-                        "Theme",
-                        Card::new(
-                            VStack::new()
-                                .push(
-                                    self.labeled_row(
-                                        ctx,
-                                        "Appearance",
-                                        HStack::new()
-                                            .spacing(12.0)
-                                            .push(self.theme_preview(
-                                                ctx,
-                                                "Light",
-                                                ThemeMode::Light,
-                                            ))
-                                            .push(self.theme_preview(ctx, "Dark", ThemeMode::Dark)),
-                                    ),
-                                )
-                                .push(Divider::new())
-                                .push(self.labeled_row(
-                                    ctx,
-                                    "Dynamic Theme",
-                                    Toggle::new("Auto", true, |b| SettingsMessage::ToggleWiFi(b)),
-                                )),
-                        ),
-                    ))
-                    .push(Section::new("Wallpaper", grid))
-                    .into_box()
-            }
-
-            SettingsTab::Display => {
-                let mut grid = ResponsiveGrid::new().spacing(12.0);
-                for s in vec![
-                    peak_core::registry::ShellStyle::Cupertino,
-                    peak_core::registry::ShellStyle::Redmond,
-                    peak_core::registry::ShellStyle::AI,
-                    peak_core::registry::ShellStyle::Console,
-                    peak_core::registry::ShellStyle::TV,
-                ] {
-                    grid = grid.push(self.shell_style_preview(ctx, &format!("{:?}", s), s));
-                }
-
-                VStack::new()
-                    .spacing(24.0)
-                    .push(Section::new("Shell Style", Card::new(grid)))
-                    .push(Section::new(
-                        "Night Shift",
-                        Card::new(self.labeled_row(
-                            ctx,
-                            "Scheduled",
-                            Toggle::new("Active", false, |b| SettingsMessage::ToggleWiFi(b)),
-                        )),
-                    ))
-                    .into_box()
-            }
-
-            SettingsTab::WiFi => VStack::new()
-                .spacing(24.0)
-                .push(Section::new(
-                    "Wi-Fi",
-                    Card::new(self.labeled_row(
-                        ctx,
-                        "Wi-Fi",
-                        Toggle::new("Enable", self.wifi_enabled, |b| {
-                            SettingsMessage::ToggleWiFi(b)
-                        }),
-                    )),
-                ))
-                .push(if self.wifi_enabled {
-                    Section::new(
-                        "Known Networks",
-                        Card::new(
-                            VStack::new()
-                                .push(self.labeled_row(
-                                    ctx,
-                                    "Home WiFi",
-                                    Text::new("Connected").intent(Intent::Success),
-                                ))
-                                .push(Divider::new())
-                                .push(self.labeled_row(
-                                    ctx,
-                                    "Office",
-                                    Text::new("Saved").secondary(),
-                                )),
-                        ),
-                    )
-                } else {
-                    Section::new("Information", Text::new("Wi-Fi is off").secondary())
-                })
-                .into_box(),
-
-            SettingsTab::Bluetooth => VStack::new()
-                .spacing(24.0)
-                .push(Section::new(
-                    "Bluetooth",
-                    Card::new(self.labeled_row(
-                        ctx,
-                        "Bluetooth",
-                        Toggle::new("Enable", self.bluetooth_enabled, |b| {
-                            SettingsMessage::ToggleBluetooth(b)
-                        }),
-                    )),
-                ))
-                .push(if self.bluetooth_enabled {
-                    Section::new(
-                        "My Devices",
-                        Card::new(
-                            VStack::new()
-                                .push(self.labeled_row(
-                                    ctx,
-                                    "AirPods Pro",
-                                    Text::new("Not Connected").secondary(),
-                                ))
-                                .push(Divider::new())
-                                .push(self.labeled_row(
-                                    ctx,
-                                    "Magic Keyboard",
-                                    Text::new("Connected").intent(Intent::Success),
-                                )),
-                        ),
-                    )
-                } else {
-                    Section::new("Information", Text::new("Bluetooth is off").secondary())
-                })
-                .into_box(),
-
-            SettingsTab::Sound => VStack::new()
-                .spacing(24.0)
-                .push(Section::new(
-                    "Output & Input",
-                    Card::new(self.labeled_row(
-                        ctx,
-                        "Output Volume",
-                        Slider::new(0.0..=1.0, self.volume, |v| {
-                            SettingsMessage::VolumeChanged(v)
-                        }),
-                    )),
-                ))
-                .into_box(),
-
-            SettingsTab::Intelligence => {
-                let active_model = self
-                    .recommended_models
-                    .iter()
-                    .chain(self.custom_models.iter())
-                    .find(|m| m.is_active);
-
-                VStack::new()
-                    .spacing(24.0)
-                    .push(Section::new(
-                        "Settings",
-                        Card::new(
-                            VStack::new()
-                                .push(
-                                    self.labeled_row(
-                                        ctx,
-                                        "Status",
-                                        match active_model {
-                                            Some(m) => Text::new(format!("Active ({})", m.name))
-                                                .intent(Intent::Success),
-                                            None => Text::new("No Active Model").secondary(),
-                                        },
-                                    ),
-                                )
-                                .push(Divider::new())
-                                .push(self.labeled_row(
-                                    ctx,
-                                    "Captions",
-                                    Toggle::new("Enable", self.captions_enabled, |b| {
-                                        SettingsMessage::ToggleCaptions(b)
-                                    }),
-                                ))
-                                .push(Divider::new())
-                                .push(self.labeled_row(
-                                    ctx,
-                                    "Voice",
-                                    Toggle::new("Enable", self.voice_enabled, |b| {
-                                        SettingsMessage::ToggleVoice(b)
-                                    }),
-                                )),
-                        ),
-                    ))
-                    .push(Section::new(
-                        "Models",
-                        VStack::new().spacing(12.0).push(
-                            VStack::new()
-                                .push(Text::new("Llama 3 8B").size(13.0))
-                                .push(Text::new("Mistral 7B").size(13.0)),
-                        ),
-                    ))
-                    .into_box()
-            }
-
-            SettingsTab::Modes => {
-                let mut grid = ResponsiveGrid::new().spacing(12.0);
-                for m in vec![
-                    ShellMode::Desktop,
-                    ShellMode::Mobile,
-                    ShellMode::TV,
-                    ShellMode::Console,
-                    ShellMode::Kiosk,
-                    ShellMode::Fireplace,
-                    ShellMode::Auto,
-                    ShellMode::Robot,
-                    ShellMode::Server,
-                    ShellMode::SmartHome,
-                ] {
-                    grid = grid.push(self.mode_preview(ctx, &format!("{:?}", m), m));
-                }
-
-                VStack::new()
-                    .spacing(24.0)
-                    .push(Section::new("OS Modes", Card::new(grid)))
-                    .into_box()
-            }
-
-            _ => Text::new("Placeholder for future settings.")
-                .secondary()
-                .into_box(),
+            SettingsTab::Sidebar => B::space(iced::Length::Shrink, iced::Length::Shrink),
+            SettingsTab::General => self.view_general::<B>(context),
+            SettingsTab::Appearance => self.view_appearance::<B>(context),
+            SettingsTab::Display => self.view_display::<B>(context),
+            SettingsTab::WiFi => self.view_wifi::<B>(context),
+            SettingsTab::Bluetooth => self.view_bluetooth::<B>(context),
+            SettingsTab::Sound => self.view_sound::<B>(context),
+            SettingsTab::Intelligence => self.view_intelligence::<B>(context),
+            SettingsTab::Modes => self.view_modes::<B>(context),
+            _ => B::text(
+                "".into(),
+                16.0,
+                None,
+                false,
+                false,
+                None,
+                None,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                context,
+            ),
         }
     }
 
-    fn labeled_row(
+    fn card<B: Backend>(
         &self,
-        _ctx: &Context,
-        label: &str,
-        widget: impl View<SettingsMessage> + 'static,
-    ) -> Box<dyn View<SettingsMessage>> {
-        HStack::new()
-            .align_y(Alignment::Center)
-            .push(Text::new(label).size(13.0))
-            .push(Space::new(Length::Fill, Length::Shrink))
-            .push(widget)
-            .into_box()
+        context: &peak_ui::core::Context,
+        content: B::AnyView<SettingsMessage>,
+    ) -> B::AnyView<SettingsMessage> {
+        let _radius = context.radius(12.0);
+        let _border_color = context.theme.colors.divider;
+        let _bg_color = context.theme.colors.surface;
+
+        B::container(
+            content,
+            iced::Padding::from(16.0),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            context,
+        )
+        // Note: Generic Backend might not support complex borders yet,
+        // but we'll use container as the base.
+        // In a real PeakUI impl, B::container would have a style/variant.
     }
 
-    fn theme_preview(
+    fn labeled_row<B: Backend>(
         &self,
-        _ctx: &Context,
+        context: &peak_ui::core::Context,
         label: &str,
-        mode: ThemeMode,
-    ) -> Box<dyn View<SettingsMessage>> {
-        let is_selected = self.theme_mode == mode;
-        let is_light = mode == ThemeMode::Light;
+        widget: B::AnyView<SettingsMessage>,
+    ) -> B::AnyView<SettingsMessage> {
+        B::hstack(
+            vec![
+                B::text(
+                    label.into(),
+                    14.0,
+                    None,
+                    false,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Center,
+                    context,
+                ),
+                B::space(iced::Length::Fill, iced::Length::Shrink),
+                widget,
+            ],
+            0.0,
+            iced::Padding::default(),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            iced::Alignment::Center,
+            1.0,
+        )
+    }
+    fn view_general<B: Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
+        let about_card = self.card::<B>(
+            context,
+            B::vstack(
+                vec![
+                    self.labeled_row::<B>(
+                        context,
+                        "Version",
+                        B::text(
+                            "1.0.0-alpha.5".into(),
+                            14.0,
+                            None,
+                            false,
+                            false,
+                            None,
+                            None,
+                            iced::Length::Shrink,
+                            iced::Alignment::End,
+                            context,
+                        ),
+                    ),
+                    B::space(iced::Length::Shrink, iced::Length::Fixed(8.0)),
+                    self.labeled_row::<B>(
+                        context,
+                        "Kernel",
+                        B::text(
+                            "PeakOS 6.1.0-generic".into(),
+                            14.0,
+                            None,
+                            false,
+                            false,
+                            None,
+                            None,
+                            iced::Length::Shrink,
+                            iced::Alignment::End,
+                            context,
+                        ),
+                    ),
+                ],
+                8.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
 
-        Button::new(
-            VStack::new()
-                .spacing(8.0)
-                .push(
-                    Rectangle::new(80.0.into(), 50.0.into())
-                        .color(if is_light {
-                            Color::WHITE
-                        } else {
-                            Color::from_rgb8(28, 28, 30)
-                        })
-                        .radius(4.0)
-                        .border(
-                            if is_selected { 2.0 } else { 1.0 },
-                            if is_selected {
-                                Color::from_rgb8(0, 122, 255)
-                            } else {
-                                Color::from_rgba(0.0, 0.0, 0.0, 0.1)
+        B::vstack(
+            vec![
+                B::text(
+                    "General".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                about_card,
+            ],
+            12.0,
+            iced::Padding::default(),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            iced::Alignment::Start,
+            1.0,
+        )
+    }
+
+    fn view_appearance<B: Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
+        let theme_card = self.card::<B>(
+            context,
+            B::vstack(
+                vec![
+                    self.labeled_row::<B>(
+                        context,
+                        "Dark Mode",
+                        B::toggle(
+                            "".into(),
+                            self.theme_mode == ThemeMode::Dark,
+                            |b| {
+                                if b {
+                                    SettingsMessage::ThemeChanged(ThemeMode::Dark)
+                                } else {
+                                    SettingsMessage::ThemeChanged(ThemeMode::Light)
+                                }
                             },
+                            context,
                         ),
-                )
-                .push(Text::new(label).size(12.0).center()),
+                    ),
+                    B::space(iced::Length::Shrink, iced::Length::Fixed(8.0)),
+                    B::text(
+                        "Automatically switch between light and dark themes based on system settings or schedule.".into(),
+                        12.0,
+                        None,
+                        false,
+                        false,
+                        None,
+                        None,
+                        iced::Length::Fill,
+                        iced::Alignment::Start,
+                        context,
+                    ),
+                ],
+                0.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        B::vstack(
+            vec![
+                B::text(
+                    "Theme".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                theme_card,
+            ],
+            12.0,
+            iced::Padding::default(),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            iced::Alignment::Start,
+            1.0,
         )
-        .on_press(SettingsMessage::ThemeChanged(mode))
-        .into_box()
     }
 
-    fn mode_preview(
+    fn view_display<B: Backend>(
         &self,
-        ctx: &Context,
-        label: &str,
-        mode: ShellMode,
-    ) -> Box<dyn View<SettingsMessage>> {
-        let is_selected = self.current_mode == mode;
-        let tokens = ctx.theme;
-
-        let button_bg = tokens.colors.primary;
-
-        Button::new(
-            VStack::new()
-                .spacing(8.0)
-                .push(
-                    ZStack::new()
-                        .push(
-                            Rectangle::new(80.0.into(), 50.0.into())
-                                .color(button_bg)
-                                .radius(4.0)
-                                .border(
-                                    if is_selected { 2.0 } else { 0.0 },
-                                    if is_selected {
-                                        Color::from_rgb8(0, 122, 255)
-                                    } else {
-                                        Color::TRANSPARENT
-                                    },
-                                ),
-                        )
-                        .push(
-                            Icon::new(peak_core::icons::get_mode_icon_name(mode))
-                                .size(24.0)
-                                .color(Color::WHITE),
-                        ),
-                )
-                .push(Text::new(label).size(11.0).center()),
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
+        B::text(
+            "Display Settings".into(),
+            16.0,
+            None,
+            false,
+            false,
+            None,
+            None,
+            iced::Length::Shrink,
+            iced::Alignment::Start,
+            context,
         )
-        .on_press(SettingsMessage::ModeChanged(mode))
-        .into_box()
     }
 
-    fn shell_style_preview(
+    fn view_wifi<B: Backend>(
         &self,
-        _ctx: &Context,
-        label: &str,
-        style: peak_core::registry::ShellStyle,
-    ) -> Box<dyn View<SettingsMessage>> {
-        let is_selected = self.current_shell_style == style;
-
-        Button::new(
-            VStack::new()
-                .spacing(8.0)
-                .push(
-                    ZStack::new()
-                        .push(
-                            Rectangle::new(80.0.into(), 50.0.into())
-                                .color(Color::from_rgba(0.5, 0.5, 0.5, 0.1))
-                                .radius(4.0)
-                                .border(
-                                    if is_selected { 2.0 } else { 0.0 },
-                                    if is_selected {
-                                        Color::from_rgb8(0, 122, 255)
-                                    } else {
-                                        Color::TRANSPARENT
-                                    },
-                                ),
-                        )
-                        .push(
-                            Text::new(match style {
-                                peak_core::registry::ShellStyle::Cupertino => "◈",
-                                peak_core::registry::ShellStyle::Redmond => "⊞",
-                                peak_core::registry::ShellStyle::AI => "✧",
-                                peak_core::registry::ShellStyle::Console => "🎮",
-                                peak_core::registry::ShellStyle::TV => "📺",
-                            })
-                            .size(20.0)
-                            .center(),
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
+        let wifi_card = self.card::<B>(
+            context,
+            B::vstack(
+                vec![
+                    self.labeled_row::<B>(
+                        context,
+                        "Wi-Fi",
+                        B::toggle(
+                            "".into(),
+                            self.wifi_enabled,
+                            |b| SettingsMessage::ToggleWiFi(b),
+                            context,
                         ),
-                )
-                .push(Text::new(label).size(11.0).center()),
+                    ),
+                    B::space(iced::Length::Shrink, iced::Length::Fixed(8.0)),
+                    B::text(
+                        if self.wifi_enabled {
+                            "Connected to 'Peak_5G'"
+                        } else {
+                            "Turn on Wi-Fi to see available networks"
+                        }
+                        .into(),
+                        12.0,
+                        None,
+                        false,
+                        false,
+                        None,
+                        None,
+                        iced::Length::Fill,
+                        iced::Alignment::Start,
+                        context,
+                    ),
+                ],
+                0.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        B::vstack(
+            vec![
+                B::text(
+                    "Network".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                wifi_card,
+            ],
+            12.0,
+            iced::Padding::default(),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            iced::Alignment::Start,
+            1.0,
         )
-        .on_press(SettingsMessage::ShellStyleChanged(style))
-        .into_box()
+    }
+
+    fn view_bluetooth<B: Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
+        let bt_card = self.card::<B>(
+            context,
+            B::vstack(
+                vec![
+                    self.labeled_row::<B>(
+                        context,
+                        "Bluetooth",
+                        B::toggle(
+                            "".into(),
+                            self.bluetooth_enabled,
+                            |b| SettingsMessage::ToggleBluetooth(b),
+                            context,
+                        ),
+                    ),
+                    B::space(iced::Length::Shrink, iced::Length::Fixed(8.0)),
+                    B::text(
+                        if self.bluetooth_enabled {
+                            "Visible as 'Peak_Workstation'"
+                        } else {
+                            "Bluetooth is disabled"
+                        }
+                        .into(),
+                        12.0,
+                        None,
+                        false,
+                        false,
+                        None,
+                        None,
+                        iced::Length::Fill,
+                        iced::Alignment::Start,
+                        context,
+                    ),
+                ],
+                0.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        B::vstack(
+            vec![
+                B::text(
+                    "Devices".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                bt_card,
+            ],
+            12.0,
+            iced::Padding::default(),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            iced::Alignment::Start,
+            1.0,
+        )
+    }
+
+    fn view_sound<B: Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
+        let volume_card = self.card::<B>(
+            context,
+            B::vstack(
+                vec![
+                    self.labeled_row::<B>(
+                        context,
+                        "Output Volume",
+                        B::slider(
+                            0.0..=1.0,
+                            self.volume,
+                            |v| SettingsMessage::VolumeChanged(v),
+                            context,
+                        ),
+                    ),
+                    B::space(iced::Length::Shrink, iced::Length::Fixed(8.0)),
+                    self.labeled_row::<B>(
+                        context,
+                        "Mute",
+                        B::toggle(
+                            "".into(),
+                            self.volume == 0.0,
+                            |b| {
+                                if b {
+                                    SettingsMessage::VolumeChanged(0.0)
+                                } else {
+                                    SettingsMessage::VolumeChanged(0.5)
+                                }
+                            },
+                            context,
+                        ),
+                    ),
+                ],
+                8.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        B::vstack(
+            vec![
+                B::text(
+                    "Audio".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                volume_card,
+            ],
+            12.0,
+            iced::Padding::default(),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            iced::Alignment::Start,
+            1.0,
+        )
+    }
+
+    fn view_intelligence<B: Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
+        let app = self;
+
+        // --- Local Intelligence Card ---
+        let local_card = self.card::<B>(
+            context,
+            B::vstack(
+                app.recommended_models
+                    .iter()
+                    .map(|m| {
+                        let status_text = if m.is_active {
+                            "Active"
+                        } else if let Some(prog) = m.download_progress {
+                            &format!("Downloading {:.0}%", prog * 100.0)
+                        } else if m.is_downloaded {
+                            "Downloaded"
+                        } else {
+                            &m.size_estimate
+                        };
+
+                        B::hstack(
+                            vec![
+                                B::vstack(
+                                    vec![
+                                        B::text(
+                                            m.name.clone(),
+                                            14.0,
+                                            None,
+                                            true,
+                                            false,
+                                            None,
+                                            None,
+                                            iced::Length::Shrink,
+                                            iced::Alignment::Start,
+                                            context,
+                                        ),
+                                        B::text(
+                                            m.description.clone(),
+                                            12.0,
+                                            None,
+                                            false,
+                                            false,
+                                            None,
+                                            None,
+                                            iced::Length::Shrink,
+                                            iced::Alignment::Start,
+                                            context,
+                                        ),
+                                    ],
+                                    2.0,
+                                    iced::Padding::default(),
+                                    iced::Length::Shrink,
+                                    iced::Length::Shrink,
+                                    iced::Alignment::Start,
+                                    1.0,
+                                ),
+                                B::space(iced::Length::Fill, iced::Length::Shrink),
+                                B::button(
+                                    B::text(
+                                        status_text.into(),
+                                        13.0,
+                                        None,
+                                        false,
+                                        false,
+                                        None,
+                                        None,
+                                        iced::Length::Shrink,
+                                        iced::Alignment::Center,
+                                        context,
+                                    ),
+                                    if m.is_active {
+                                        None
+                                    } else if m.is_downloaded {
+                                        Some(SettingsMessage::ModelActivate(m.id.clone()))
+                                    } else {
+                                        Some(SettingsMessage::ModelDownload(m.id.clone()))
+                                    },
+                                    if m.is_active {
+                                        peak_ui::modifiers::Variant::Soft
+                                    } else {
+                                        peak_ui::modifiers::Variant::Ghost
+                                    },
+                                    if m.is_active {
+                                        peak_ui::modifiers::Intent::Success
+                                    } else {
+                                        peak_ui::modifiers::Intent::Neutral
+                                    },
+                                    context,
+                                ),
+                            ],
+                            0.0,
+                            iced::Padding::default(),
+                            iced::Length::Fill,
+                            iced::Length::Shrink,
+                            iced::Alignment::Center,
+                            1.0,
+                        )
+                    })
+                    .collect(),
+                12.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        // --- Cloud Intelligence Card ---
+        let cloud_card = self.card::<B>(
+            context,
+            B::vstack(
+                vec![
+                    self.labeled_row::<B>(
+                        context,
+                        "OpenRouter Access",
+                        B::toggle(
+                            "".into(),
+                            app.cloud_intelligence_enabled,
+                            |b| SettingsMessage::ToggleCloudIntelligence(b),
+                            context,
+                        ),
+                    ),
+                    B::space(iced::Length::Shrink, iced::Length::Fixed(8.0)),
+                    B::text("Connect to high-performance cloud models (Claude 3.5, GPT-4o) via OpenRouter.".into(), 12.0, None, false, false, None, None, iced::Length::Fill, iced::Alignment::Start, context),
+                    // B::input_field placeholder if Backend supports it?
+                    // For now let's assume B::text as a placeholder for the API key if no input tool exists
+                    B::text(if app.openrouter_key.is_empty() { "API Key: Not Set".into() } else { "API Key: ••••••••••••".into() }, 13.0, None, false, false, None, None, iced::Length::Shrink, iced::Alignment::Start, context),
+                ],
+                4.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        // --- Preferences Card ---
+        let prefs_card = self.card::<B>(
+            context,
+            B::vstack(
+                vec![
+                    self.labeled_row::<B>(
+                        context,
+                        "Subtitles & Captions",
+                        B::toggle(
+                            "".into(),
+                            app.captions_enabled,
+                            |b| SettingsMessage::ToggleCaptions(b),
+                            context,
+                        ),
+                    ),
+                    B::space(iced::Length::Shrink, iced::Length::Fixed(4.0)),
+                    self.labeled_row::<B>(
+                        context,
+                        "Voice Feedback",
+                        B::toggle(
+                            "".into(),
+                            app.voice_enabled,
+                            |b| SettingsMessage::ToggleVoice(b),
+                            context,
+                        ),
+                    ),
+                ],
+                8.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        B::vstack(
+            vec![
+                B::text(
+                    "Local Intelligence".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                local_card,
+                B::space(iced::Length::Shrink, iced::Length::Fixed(16.0)),
+                B::text(
+                    "Cloud Intelligence".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                cloud_card,
+                B::space(iced::Length::Shrink, iced::Length::Fixed(16.0)),
+                B::text(
+                    "Preferences".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                prefs_card,
+            ],
+            12.0,
+            iced::Padding::default(),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            iced::Alignment::Start,
+            1.0,
+        )
+    }
+
+    fn view_modes<B: Backend>(
+        &self,
+        context: &peak_ui::core::Context,
+    ) -> B::AnyView<SettingsMessage> {
+        let modes = [
+            peak_core::registry::ShellMode::Desktop,
+            peak_core::registry::ShellMode::Mobile,
+            peak_core::registry::ShellMode::TV,
+            peak_core::registry::ShellMode::Console,
+            peak_core::registry::ShellMode::Auto,
+        ];
+
+        let styles = [
+            peak_core::registry::ShellStyle::Cupertino,
+            peak_core::registry::ShellStyle::Redmond,
+            peak_core::registry::ShellStyle::AI,
+            peak_core::registry::ShellStyle::TV,
+        ];
+
+        let mode_card = self.card::<B>(
+            context,
+            B::vstack(
+                modes
+                    .into_iter()
+                    .map(|m| {
+                        B::button(
+                            B::hstack(
+                                vec![
+                                    B::text(
+                                        format!("{}", m),
+                                        14.0,
+                                        None,
+                                        false,
+                                        false,
+                                        None,
+                                        None,
+                                        iced::Length::Shrink,
+                                        iced::Alignment::Start,
+                                        context,
+                                    ),
+                                    B::space(iced::Length::Fill, iced::Length::Shrink),
+                                    if self.current_mode == m {
+                                        B::text(
+                                            "Active".into(),
+                                            12.0,
+                                            Some(context.theme.colors.primary.into()),
+                                            true,
+                                            false,
+                                            None,
+                                            None,
+                                            iced::Length::Shrink,
+                                            iced::Alignment::End,
+                                            context,
+                                        )
+                                    } else {
+                                        B::space(iced::Length::Shrink, iced::Length::Shrink)
+                                    },
+                                ],
+                                0.0,
+                                iced::Padding::default(),
+                                iced::Length::Fill,
+                                iced::Length::Shrink,
+                                iced::Alignment::Center,
+                                1.0,
+                            ),
+                            Some(SettingsMessage::ModeChanged(m)),
+                            if self.current_mode == m {
+                                peak_ui::modifiers::Variant::Soft
+                            } else {
+                                peak_ui::modifiers::Variant::Ghost
+                            },
+                            peak_ui::modifiers::Intent::Neutral,
+                            context,
+                        )
+                    })
+                    .collect(),
+                4.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        let style_card = self.card::<B>(
+            context,
+            B::vstack(
+                styles
+                    .into_iter()
+                    .map(|s| {
+                        B::button(
+                            B::hstack(
+                                vec![
+                                    B::text(
+                                        format!("{}", s),
+                                        14.0,
+                                        None,
+                                        false,
+                                        false,
+                                        None,
+                                        None,
+                                        iced::Length::Shrink,
+                                        iced::Alignment::Start,
+                                        context,
+                                    ),
+                                    B::space(iced::Length::Fill, iced::Length::Shrink),
+                                    if self.current_shell_style == s {
+                                        B::text(
+                                            "Active".into(),
+                                            12.0,
+                                            Some(context.theme.colors.primary.into()),
+                                            true,
+                                            false,
+                                            None,
+                                            None,
+                                            iced::Length::Shrink,
+                                            iced::Alignment::End,
+                                            context,
+                                        )
+                                    } else {
+                                        B::space(iced::Length::Shrink, iced::Length::Shrink)
+                                    },
+                                ],
+                                0.0,
+                                iced::Padding::default(),
+                                iced::Length::Fill,
+                                iced::Length::Shrink,
+                                iced::Alignment::Center,
+                                1.0,
+                            ),
+                            Some(SettingsMessage::ShellStyleChanged(s)),
+                            if self.current_shell_style == s {
+                                peak_ui::modifiers::Variant::Soft
+                            } else {
+                                peak_ui::modifiers::Variant::Ghost
+                            },
+                            peak_ui::modifiers::Intent::Neutral,
+                            context,
+                        )
+                    })
+                    .collect(),
+                4.0,
+                iced::Padding::default(),
+                iced::Length::Fill,
+                iced::Length::Shrink,
+                iced::Alignment::Start,
+                1.0,
+            ),
+        );
+
+        B::vstack(
+            vec![
+                B::text(
+                    "Experience".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                mode_card,
+                B::space(iced::Length::Shrink, iced::Length::Fixed(16.0)),
+                B::text(
+                    "Interface Style".into(),
+                    14.0,
+                    None,
+                    true,
+                    false,
+                    None,
+                    None,
+                    iced::Length::Shrink,
+                    iced::Alignment::Start,
+                    context,
+                ),
+                style_card,
+            ],
+            12.0,
+            iced::Padding::default(),
+            iced::Length::Fill,
+            iced::Length::Shrink,
+            iced::Alignment::Start,
+            1.0,
+        )
     }
 }
-// Wrapper for Registry
+
 pub struct DesktopSettingsApp {
     pub app: SettingsApp,
-    pub handles: std::collections::HashMap<String, iced::widget::image::Handle>,
+}
+
+impl DesktopSettingsApp {
+    pub fn new() -> Self {
+        Self {
+            app: SettingsApp::new(),
+        }
+    }
 }
 
 impl Default for DesktopSettingsApp {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-impl DesktopSettingsApp {
-    pub fn new() -> Self {
-        // Dynamically scan wallpapers directory
-        #[cfg(not(target_arch = "wasm32"))]
-        let wallpapers_dir = peak_core::utils::assets::get_asset_path("wallpapers");
-
-        #[cfg(not(target_arch = "wasm32"))]
-        let wallpapers: Vec<String> = std::fs::read_dir(&wallpapers_dir)
-            .ok()
-            .map(|entries| {
-                let mut list: Vec<String> = entries
-                    .filter_map(|e| e.ok())
-                    .filter_map(|e| {
-                        let path = e.path();
-                        if path.is_file() {
-                            let ext = path.extension()?.to_str()?.to_lowercase();
-                            if ["jpg", "jpeg", "png", "webp"].contains(&ext.as_str()) {
-                                return Some(e.file_name().to_string_lossy().to_string());
-                            }
-                        }
-                        None
-                    })
-                    .collect();
-                list.sort();
-                list
-            })
-            .unwrap_or_else(|| {
-                // Fallback to known wallpapers if dir scan fails
-                vec![
-                    "mountain_classic.jpg".to_string(),
-                    "mountain_classic_light.jpg".to_string(),
-                ]
-            });
-
-        #[cfg(target_arch = "wasm32")]
-        let wallpapers: Vec<String> = vec![
-            "mountain_classic.jpg".to_string(),
-            "mountain_classic_light.jpg".to_string(),
-        ];
-
-        // Pre-load handles
-        let mut handles = std::collections::HashMap::new();
-        #[cfg(not(target_arch = "wasm32"))]
-        for wp in &wallpapers {
-            let path = wallpapers_dir.join(wp);
-            handles.insert(wp.clone(), iced::widget::image::Handle::from_path(path));
-        }
-
-        #[cfg(target_arch = "wasm32")]
-        let _ = handles; // Avoid unused warning if truly empty or just remove mut if possible
-
-        let mut app = SettingsApp::new();
-        app.wallpapers = wallpapers;
-        Self { app, handles }
     }
 }
 
@@ -643,11 +1148,21 @@ impl PeakApp for DesktopSettingsApp {
         &mut self,
         message: Self::Message,
         context: &dyn ShellContext,
-    ) -> Task<Self::Message> {
+    ) -> iced::Task<Self::Message> {
         self.app.update(message, context)
     }
 
-    fn view(&self, theme: &Theme) -> Element<'static, Self::Message> {
-        SettingsDesktopView::view(&self.app, theme, &self.handles)
+    fn view(&self, theme: &peak_core::theme::Theme) -> iced::Element<'static, Self::Message> {
+        let mode = peak_ui::core::ShellMode::Desktop;
+        let tone = if *theme == peak_core::theme::Theme::Light {
+            peak_ui_theme::ThemeTone::Light
+        } else {
+            peak_ui_theme::ThemeTone::Dark
+        };
+        let tokens = peak_ui::core::ThemeTokens::get(mode, tone);
+        let context = peak_ui::core::Context::new(mode, tokens, iced::Size::new(1920.0, 1080.0));
+
+        peak_ui::core::View::<SettingsMessage, peak_ui::core::IcedBackend>::view(self, &context)
+            .into()
     }
 }
