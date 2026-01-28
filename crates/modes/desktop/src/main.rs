@@ -72,20 +72,24 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     #[cfg(target_os = "linux")]
     if args.iter().any(|r| r == "--layer") {
-        use iced_layershell::Application;
-
         let layer_settings = match launch_mode {
             app::LaunchMode::Bar => layer_app::get_menubar_settings(),
             app::LaunchMode::Dock => layer_app::get_dock_settings(),
-            app::LaunchMode::Desktop => layer_app::get_desktop_settings(), // Integrated Desktop (Wallpaper)
+            app::LaunchMode::Desktop => layer_app::get_desktop_settings(),
         };
 
-        return layer_app::PeakLayerShell::run(iced_layershell::settings::Settings {
-            flags,
-            layer_settings,
-            ..Default::default()
-        })
-        .map_err(|e| e.into());
+        let f = flags.clone();
+        return iced_layershell::application(
+            move || layer_app::PeakLayerShell::new(f.clone()),
+            "PeakOS",
+            layer_app::PeakLayerShell::update,
+            layer_app::PeakLayerShell::view,
+        )
+        .theme(layer_app::PeakLayerShell::theme)
+        .subscription(layer_app::PeakLayerShell::subscription)
+        .layer_settings(layer_settings)
+        .run()
+        .map_err(|e| anyhow::anyhow!("{:?}", e).into());
     }
 
     use peak_ui::core::App;

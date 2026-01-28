@@ -1,0 +1,8 @@
+target/
+.git/
+*.tmp
+node_modules/
+dist/
+build/
+bin/
+obj/

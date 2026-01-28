@@ -1,22 +1,21 @@
 #![cfg(target_os = "linux")]
 
 use crate::app::{Message, PeakNative};
-use iced_layershell::actions::LayershellCustomActions;
+use iced_layershell::actions::LayershellCustomActionWithId;
 use iced_layershell::reexport::{Anchor, KeyboardInteractivity, Layer};
 use iced_layershell::settings::LayerShellSettings;
-use iced_layershell::Application;
 
 pub const ID_DOCK: &str = "dock";
 
 #[derive(Debug, Clone)]
 pub enum LayerMessage {
     App(Message),
-    Shell(LayershellCustomActions),
+    Shell(LayershellCustomActionWithId),
 }
 
-impl TryInto<LayershellCustomActions> for LayerMessage {
+impl TryInto<LayershellCustomActionWithId> for LayerMessage {
     type Error = Self;
-    fn try_into(self) -> Result<LayershellCustomActions, Self> {
+    fn try_into(self) -> Result<LayershellCustomActionWithId, Self> {
         match self {
             LayerMessage::Shell(action) => Ok(action),
             _ => Err(self),
@@ -28,35 +27,33 @@ pub struct PeakLayerShell {
     pub native: PeakNative,
 }
 
-impl Application for PeakLayerShell {
-    type Message = LayerMessage;
-    type Flags = crate::app::PeakNativeFlags;
-    type Theme = iced::Theme;
-    type Executor = iced::executor::Default;
-
-    fn new(flags: Self::Flags) -> (Self, iced::Task<Self::Message>) {
+impl PeakLayerShell {
+    pub fn new(flags: crate::app::PeakNativeFlags) -> (Self, iced::Task<LayerMessage>) {
         let (native, command) = PeakNative::new(flags);
         (Self { native }, command.map(LayerMessage::App))
     }
 
-    fn update(&mut self, message: Self::Message) -> iced::Task<Self::Message> {
+    pub fn update(&mut self, message: LayerMessage) -> iced::Task<LayerMessage> {
         match message {
             LayerMessage::App(msg) => self.native.update(msg).map(LayerMessage::App),
             LayerMessage::Shell(_) => iced::Task::none(),
         }
     }
 
-    fn namespace(&self) -> String {
-        "PeakOS".to_string()
-    }
-
-    fn view(&self) -> iced::Element<Self::Message> {
-        // Multi-surface support not implemented yet
+    pub fn view(&self) -> iced::Element<'_, LayerMessage> {
         self.native.view().map(LayerMessage::App)
     }
 
-    fn theme(&self) -> Self::Theme {
+    pub fn theme(&self) -> iced::Theme {
         self.native.theme()
+    }
+
+    pub fn subscription(&self) -> iced::Subscription<LayerMessage> {
+        self.native.subscription().map(LayerMessage::App)
+    }
+
+    pub fn title(_state: &PeakLayerShell) -> String {
+        "PeakOS".to_string()
     }
 }
 
