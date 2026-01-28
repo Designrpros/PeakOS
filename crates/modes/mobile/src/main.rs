@@ -5,7 +5,8 @@ use peak_core::registry::AppId;
 mod view_mobile;
 
 pub fn main() -> iced::Result {
-    iced::application("Peak Mobile", PeakMobile::update, PeakMobile::view)
+    iced::application(PeakMobile::new, PeakMobile::update, PeakMobile::view)
+        .title(PeakMobile::title)
         .window(iced::window::Settings {
             size: Size::new(390.0, 844.0), // iPhone 12/13/14 aspect ratio
             resizable: true,
@@ -69,6 +70,10 @@ impl ShellContext for MobileShellContext {
 }
 
 impl PeakMobile {
+    fn new() -> (Self, iced::Task<Message>) {
+        (Self::default(), iced::Task::none())
+    }
+
     fn update(&mut self, message: Message) -> iced::Task<Message> {
         match message {
             Message::OpenApp(id) => self.current_app = Some(id),
@@ -97,6 +102,10 @@ impl PeakMobile {
             iced::time::every(std::time::Duration::from_secs(1)).map(|_| Message::Tick),
             self.terminal.subscription().map(Message::Terminal),
         ])
+    }
+
+    fn title(&self) -> String {
+        "Peak Mobile".to_string()
     }
 
     fn view(&self) -> Element<'_, Message> {

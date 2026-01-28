@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 use crate::app::Message;
 use crate::pages::Page;
-use peak_core::theme::Theme;
-use iced::widget::{button, column, container, text, vertical_space};
+use iced::widget::{button, column, container, text};
 use iced::{Alignment, Element, Length, Theme as IcedTheme};
+use peak_core::theme::Theme;
 
 pub fn view<'a>(current_page: &Page, theme: &Theme) -> Element<'a, Message, IcedTheme> {
     let palette = theme.palette();
@@ -16,7 +16,7 @@ pub fn view<'a>(current_page: &Page, theme: &Theme) -> Element<'a, Message, Iced
             .style(move |_| text::Style {
                 color: Some(palette.primary)
             }),
-        vertical_space().height(40),
+        iced::widget::Space::new().height(40),
         nav_button(
             "Library",
             Page::Library,
@@ -38,7 +38,7 @@ pub fn view<'a>(current_page: &Page, theme: &Theme) -> Element<'a, Message, Iced
             palette,
             theme_clone
         ),
-        vertical_space().height(Length::Fill), // Push bottom items down
+        iced::widget::Space::new().height(Length::Fill), // Push bottom items down
         button(text("Theme Toggle"))
             .on_press(Message::ToggleTheme)
             .style(move |_, status| secondary_button_style(status, palette)),
@@ -94,6 +94,7 @@ fn nav_button<'a>(
                 radius: 8.0.into(),
                 ..Default::default()
             },
+            snap: false,
             ..Default::default()
         };
 
@@ -118,7 +119,10 @@ fn nav_button<'a>(
     .into()
 }
 
-fn secondary_button_style(status: button::Status, palette: peak_core::theme::Palette) -> button::Style {
+fn secondary_button_style(
+    status: button::Status,
+    palette: peak_core::theme::Palette,
+) -> button::Style {
     button::Style {
         background: match status {
             button::Status::Hovered => Some(
@@ -145,7 +149,10 @@ fn secondary_button_style(status: button::Status, palette: peak_core::theme::Pal
     }
 }
 
-fn danger_button_style(status: button::Status, _palette: peak_core::theme::Palette) -> button::Style {
+fn danger_button_style(
+    status: button::Status,
+    _palette: peak_core::theme::Palette,
+) -> button::Style {
     button::Style {
         background: match status {
             button::Status::Hovered => Some(iced::Color::from_rgb8(255, 50, 50).into()),

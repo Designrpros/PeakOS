@@ -87,6 +87,7 @@ where
             Length::Fixed(400.0),
             Length::Shrink,
             Alignment::Center,
+            Alignment::Center,
             1.0,
         );
 
@@ -167,6 +168,7 @@ where
             Length::Fill,
             Length::Shrink,
             Alignment::Start,
+            Alignment::Start,
             1.0,
         );
 
@@ -177,6 +179,7 @@ where
             iced::Padding::new(0.0),
             Length::Fill,
             Length::Fill,
+            Alignment::Start,
             Alignment::Start,
             1.0,
         );
@@ -192,6 +195,7 @@ where
             iced::Padding::new(0.0),
             Length::Fill,
             Length::Fill,
+            Alignment::Center,
             Alignment::Center,
             1.0,
         );

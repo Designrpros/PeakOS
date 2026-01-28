@@ -2,7 +2,7 @@
 // Left-aligned: Start button, search, pinned apps
 // Right-aligned: System tray (clock, wifi, battery)
 
-use iced::widget::{button, container, horizontal_space, row, svg, text};
+use iced::widget::{button, container, row, svg, text, Space};
 use iced::{Alignment, Element, Length};
 use peak_core::registry::AppId;
 use peak_theme::ThemeTokens;
@@ -126,7 +126,7 @@ pub fn view<'a>(
             start_btn,
             search_btn,
             app_row,
-            horizontal_space().width(Length::Fill),
+            Space::new().width(Length::Fill), // Push apart
             system_tray,
         ]
         .spacing(8)
@@ -176,21 +176,25 @@ fn render_taskbar_icon<'a>(
                     let mut hover_bg = hover_bg;
                     hover_bg.a = 0.15;
 
-                    iced::widget::button::Style {
+                    button::Style {
                         background: if status == iced::widget::button::Status::Hovered {
                             Some(hover_bg.into())
                         } else {
                             None
                         },
+                        snap: false,
                         ..Default::default()
                     }
                 }),
-            container(iced::widget::Space::with_width(Length::Fixed(20.0)))
-                .height(Length::Fixed(3.0))
-                .style(move |_| container::Style {
-                    background: Some(indicator_color.into()),
-                    ..Default::default()
-                }),
+            container(
+                iced::widget::Space::new()
+                    .width(Length::Fixed(20.0))
+                    .height(Length::Fixed(3.0))
+            )
+            .style(move |_| container::Style {
+                background: Some(indicator_color.into()),
+                ..Default::default()
+            }),
         ]
         .align_x(Alignment::Center),
     )

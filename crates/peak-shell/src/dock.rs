@@ -81,12 +81,16 @@ pub fn view<'a>(
     if !running.is_empty() {
         // Vertical Divider
         dock_row = dock_row.push(
-            container(iced::widget::Space::with_width(Length::Fixed(1.0)))
-                .height(Length::Fixed(24.0))
-                .style(move |_| container::Style {
-                    background: Some(tokens.colors.divider.into()),
-                    ..Default::default()
-                }),
+            container(
+                iced::widget::Space::new()
+                    .width(Length::Fixed(1.0))
+                    .height(Length::Fill),
+            )
+            .height(Length::Fixed(24.0))
+            .style(move |_| container::Style {
+                background: Some(tokens.colors.divider.into()),
+                ..Default::default()
+            }),
         );
 
         for icon in running_elements {
@@ -97,12 +101,16 @@ pub fn view<'a>(
     if !repos.is_empty() {
         // Another Vertical Divider for Repos
         dock_row = dock_row.push(
-            container(iced::widget::Space::with_width(Length::Fixed(1.0)))
-                .height(Length::Fixed(24.0))
-                .style(move |_| container::Style {
-                    background: Some(tokens.colors.divider.into()),
-                    ..Default::default()
-                }),
+            container(
+                iced::widget::Space::new()
+                    .width(Length::Fixed(1.0))
+                    .height(Length::Fill),
+            )
+            .height(Length::Fixed(24.0))
+            .style(move |_| container::Style {
+                background: Some(tokens.colors.divider.into()),
+                ..Default::default()
+            }),
         );
 
         for icon in repo_elements {
@@ -156,18 +164,25 @@ pub fn render_dock_icon<'a>(
         };
 
     let indicator = if is_running {
-        container(iced::widget::Space::with_width(Length::Fixed(3.0)))
-            .height(Length::Fixed(3.0))
-            .style(move |_| container::Style {
-                background: Some(tokens.colors.text_primary.into()),
-                border: Border {
-                    radius: 1.5.into(),
-                    ..Default::default()
-                },
+        container(
+            iced::widget::Space::new()
+                .width(Length::Fixed(3.0))
+                .height(Length::Fixed(3.0)),
+        )
+        .style(move |_| container::Style {
+            background: Some(tokens.colors.text_primary.into()),
+            border: Border {
+                radius: 1.5.into(),
                 ..Default::default()
-            })
+            },
+            ..Default::default()
+        })
     } else {
-        container(iced::widget::Space::with_height(Length::Fixed(3.0)))
+        container(
+            iced::widget::Space::new()
+                .width(Length::Fill)
+                .height(Length::Fixed(3.0)),
+        )
     };
 
     let content = Column::new()

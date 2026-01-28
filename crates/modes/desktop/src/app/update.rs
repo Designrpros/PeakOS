@@ -1432,9 +1432,9 @@ impl PeakNative {
                 }
 
                 // Auto-scroll to bottom
-                iced::widget::scrollable::snap_to(
-                    iced::widget::scrollable::Id::new("chat_scroll"),
-                    iced::widget::scrollable::RelativeOffset::END,
+                iced::widget::operation::scroll_to(
+                    iced::widget::Id::new("chat_scroll"),
+                    iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: 10000.0 },
                 )
             }
             Message::AssistantFinished => {

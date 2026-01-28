@@ -1,6 +1,5 @@
 use iced::widget::{
-    button, column, container, horizontal_space, image, row, scrollable, stack, svg, text,
-    text_input, vertical_space,
+    button, column, container, image, row, scrollable, stack, svg, text, text_input,
 };
 use iced::{Alignment, Background, Color, Element, Length, Shadow, Vector};
 use peak_core::registry::{AppId, AppInfo};
@@ -34,7 +33,7 @@ pub fn view<'a, Message: 'a + Clone>(
                 weight: iced::font::Weight::Bold,
                 ..Default::default()
             }),
-            iced::widget::horizontal_space(),
+            iced::widget::Space::new(),
             row![
                 svg(peak_core::icons::get_status_icon(
                     "wifi",
@@ -42,7 +41,7 @@ pub fn view<'a, Message: 'a + Clone>(
                 ))
                 .width(Length::Fixed(16.0))
                 .height(Length::Fixed(16.0)),
-                iced::widget::Space::with_width(5.0),
+                iced::widget::Space::new().width(5.0),
                 svg(peak_core::icons::get_status_icon(
                     "battery",
                     if is_light { "#000000" } else { "#FFFFFF" }
@@ -59,21 +58,19 @@ pub fn view<'a, Message: 'a + Clone>(
     .height(Length::Fixed(44.0));
 
     let home_indicator = container(
-        container(iced::widget::Space::new(
-            Length::Fixed(140.0),
-            Length::Fixed(5.0),
-        ))
-        .style(move |_| container::Style {
-            background: Some(Background::Color(if is_light {
-                Color::from_rgba(0.0, 0.0, 0.0, 0.5)
-            } else {
-                Color::from_rgba(1.0, 1.0, 1.0, 0.5)
-            })),
-            border: iced::Border {
-                radius: 2.5.into(),
+        container(iced::widget::Space::new().width(140.0).height(5.0)).style(move |_| {
+            container::Style {
+                background: Some(Background::Color(if is_light {
+                    Color::from_rgba(0.0, 0.0, 0.0, 0.5)
+                } else {
+                    Color::from_rgba(1.0, 1.0, 1.0, 0.5)
+                })),
+                border: iced::Border {
+                    radius: 2.5.into(),
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
+            }
         }),
     )
     .width(Length::Fill)
@@ -165,7 +162,7 @@ pub fn view<'a, Message: 'a + Clone>(
                     ],
                     is_light
                 ),
-                iced::widget::vertical_space().height(20),
+                iced::widget::Space::new().height(20),
                 mobile_section(
                     "Appearance",
                     column![mobile_row(
@@ -178,7 +175,7 @@ pub fn view<'a, Message: 'a + Clone>(
                     ),],
                     is_light
                 ),
-                iced::widget::vertical_space().height(20),
+                iced::widget::Space::new().height(20),
                 mobile_section(
                     "About",
                     column![
@@ -331,9 +328,9 @@ pub fn view<'a, Message: 'a + Clone>(
             });
 
         column![
-            iced::widget::vertical_space(),
+            iced::widget::Space::new(),
             container(grid).width(Length::Fill).padding([0, 20]),
-            iced::widget::vertical_space(),
+            iced::widget::Space::new(),
             container(dock)
                 .width(Length::Fill)
                 .center_x(Length::Fill)
@@ -370,7 +367,7 @@ fn mobile_section<'a, Message: 'a>(
             } else {
                 Color::from_rgb(0.6, 0.6, 0.6)
             }),
-        vertical_space().height(8),
+        iced::widget::Space::new().height(8),
         container(content)
             .width(Length::Fill)
             .padding(15)
@@ -397,7 +394,7 @@ fn mobile_row<'a, Message: 'a>(
 ) -> Element<'a, Message> {
     row![
         text(label).size(16).color(text_color),
-        horizontal_space(),
+        iced::widget::Space::new(),
         text(value).size(16).color(Color::from_rgb(0.5, 0.5, 0.5)),
     ]
     .align_y(Alignment::Center)

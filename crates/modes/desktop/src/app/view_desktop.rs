@@ -189,6 +189,7 @@ impl PeakNative {
             peak_ui::core::ShellMode::Desktop,
             ui_tokens,
             self.window_manager.screen_size,
+            Default::default(),
         );
 
         let mut workspace_stack = Stack::new().push(
@@ -696,8 +697,8 @@ impl PeakNative {
                             Message::ToggleSettings,
                             false
                         ),
-                        iced::widget::Space::with_height(5.0),
-                        container(iced::widget::Space::with_height(0.5))
+                        iced::widget::Space::new().height(5.0),
+                        container(iced::widget::Space::new().height(0.5))
                             .width(Length::Fill)
                             .style(move |_| container::Style {
                                 background: Some(
@@ -706,7 +707,7 @@ impl PeakNative {
                                 ),
                                 ..Default::default()
                             }),
-                        iced::widget::Space::with_height(5.0),
+                        iced::widget::Space::new().height(5.0),
                         menu_button("Log Out...".into(), Message::LogOut, false),
                         menu_button("Factory Reset...".into(), Message::FactoryReset, false),
                         menu_button("Restart...".into(), Message::Restart, false),
@@ -842,8 +843,8 @@ impl PeakNative {
                                 0.6
                             ))
                         }),
-                    iced::widget::Space::with_height(5.0),
-                    container(iced::widget::Space::with_height(0.5))
+                    iced::widget::Space::new().height(5.0),
+                    container(iced::widget::Space::new().height(0.5))
                         .width(Length::Fill)
                         .style(move |_| container::Style {
                             background: Some(
@@ -852,7 +853,7 @@ impl PeakNative {
                             ),
                             ..Default::default()
                         }),
-                    iced::widget::Space::with_height(5.0),
+                    iced::widget::Space::new().height(5.0),
                 ];
 
                 for network in &self.networks {
@@ -993,7 +994,7 @@ impl PeakNative {
                 .push(final_view)
                 .push(
                     iced::widget::mouse_area(
-                        container(iced::widget::vertical_space())
+                        container(iced::widget::Space::new().height(Length::Fill))
                             .width(Length::Fill)
                             .height(Length::Fill),
                     )

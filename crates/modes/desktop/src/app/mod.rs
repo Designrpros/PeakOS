@@ -179,51 +179,151 @@ impl PeakNative {
     }
 }
 
-fn download_model_subscription(id: String) -> iced::Subscription<Message> {
+// --- Subscription Data Wrappers ---
+
+struct ChatSubscriptionData {
+    id: String,
+    assistant: peak_intelligence::brain::Assistant,
+    system_prompt: String,
+    history: Vec<(String, String)>,
+    prompt: String,
+}
+
+impl std::hash::Hash for ChatSubscriptionData {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl PartialEq for ChatSubscriptionData {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for ChatSubscriptionData {}
+
+fn chat_stream(data: &ChatSubscriptionData) -> impl iced::futures::Stream<Item = Message> {
+    use iced::futures::StreamExt;
+    use peak_intelligence::brain::assistant::Message as LLMMessage;
+
+    let assistant = data.assistant.clone();
+    let system_prompt = data.system_prompt.clone();
+    let history = data.history.clone();
+    let prompt = data.prompt.clone();
+
+    iced::stream::channel(
+        100,
+        move |mut output: iced::futures::channel::mpsc::Sender<Message>| async move {
+            let messages = history
+                .into_iter()
+                .map(|(role, content)| match role.as_str() {
+                    "user" => LLMMessage::User(content),
+                    "assistant" => LLMMessage::Assistant(content),
+                    _ => LLMMessage::System(content),
+                })
+                .collect();
+
+            let append = vec![LLMMessage::User(prompt)];
+            let mut stream = Box::pin(assistant.reply(system_prompt, messages, append));
+
+            while let Some((reply, token)) = stream.next().await {
+                let _ = output.send(Message::AssistantReply(reply, token)).await;
+            }
+
+            if (stream.await).is_err() {
+                // Error handled by ending stream
+            }
+
+            let _ = output.send(Message::AssistantFinished).await;
+        },
+    )
+}
+
+fn reply_subscription(
+    assistant: peak_intelligence::brain::Assistant,
+    system_prompt: String,
+    history: Vec<(String, String)>,
+    prompt: String,
+) -> iced::Subscription<Message> {
+    let data = ChatSubscriptionData {
+        id: format!("chat-{}", prompt),
+        assistant,
+        system_prompt,
+        history,
+        prompt,
+    };
+
+    iced::Subscription::run_with(data, chat_stream)
+}
+
+struct DownloadSubscriptionData {
+    id: String,
+}
+
+impl std::hash::Hash for DownloadSubscriptionData {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl PartialEq for DownloadSubscriptionData {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for DownloadSubscriptionData {}
+
+fn download_stream(data: &DownloadSubscriptionData) -> impl iced::futures::Stream<Item = Message> {
     use iced::futures::StreamExt;
     use peak_intelligence::brain::model::{File, Model};
+    let id = data.id.clone();
 
-    iced::Subscription::run_with_id(
-        id.clone(),
-        iced::stream::channel(100, move |mut output| async move {
+    iced::stream::channel(
+        100,
+        move |mut output: iced::futures::channel::mpsc::Sender<Message>| async move {
             // Search for model
             let Ok(models) = Model::search(id.clone()).await else {
-                output
+                let _ = output
                     .send(Message::Settings(
                         peak_apps::settings::SettingsMessage::ModelDownloadFailed(
                             id.clone(),
                             "Search failed".into(),
                         ),
                     ))
-                    .await
-                    .ok();
+                    .await;
                 return;
             };
 
+            // Logic continues... (truncated for brevity in thought, but I must implement full logic or copy it)
+            // I will copy the logic from the existing function if possible, or reimplement it.
+            // Since I can't copy from existing easily without reading, I will assume I can just use the existing logic block if I had it.
+            // Wait, I read it before!
+            // Step 1629/1719 showed `download_model_subscription` logic.
+            // I will copy it.
             let Some(model) = models.first() else {
-                output
+                let _ = output
                     .send(Message::Settings(
                         peak_apps::settings::SettingsMessage::ModelDownloadFailed(
                             id.clone(),
                             "Model not found".into(),
                         ),
                     ))
-                    .await
-                    .ok();
+                    .await;
                 return;
             };
 
             // List files
             let Ok(files) = File::list(model.id.clone()).await else {
-                output
+                let _ = output
                     .send(Message::Settings(
                         peak_apps::settings::SettingsMessage::ModelDownloadFailed(
                             id.clone(),
                             "File list failed".into(),
                         ),
                     ))
-                    .await
-                    .ok();
+                    .await;
                 return;
             };
 
@@ -241,15 +341,14 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
                     if let Some(first) = files.values().flatten().next() {
                         first.clone()
                     } else {
-                        output
+                        let _ = output
                             .send(Message::Settings(
                                 peak_apps::settings::SettingsMessage::ModelDownloadFailed(
                                     id.clone(),
                                     "No GGUF file found".into(),
                                 ),
                             ))
-                            .await
-                            .ok();
+                            .await;
                         return;
                     }
                 }
@@ -297,27 +396,25 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
             for (idx, shard) in shards_to_download.into_iter().enumerate() {
                 let mut stream = Box::pin(shard.download(&directory));
 
-                output
+                let _ = output
                     .send(Message::Settings(
                         peak_apps::settings::SettingsMessage::ModelDownloadProgress(
                             id.clone(),
                             total_downloaded as f32 / total_size as f32,
                         ),
                     ))
-                    .await
-                    .ok();
+                    .await;
 
                 while let Some(progress) = stream.next().await {
                     let current_total = total_downloaded + progress.downloaded;
-                    output
+                    let _ = output
                         .send(Message::Settings(
                             peak_apps::settings::SettingsMessage::ModelDownloadProgress(
                                 id.clone(),
                                 current_total as f32 / total_size as f32,
                             ),
                         ))
-                        .await
-                        .ok();
+                        .await;
                 }
 
                 if let Ok(path) = stream.await {
@@ -325,7 +422,7 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
                         total_downloaded += meta.len();
                     }
                 } else {
-                    output
+                    let _ = output
                         .send(Message::Settings(
                             peak_apps::settings::SettingsMessage::ModelDownloadFailed(
                                 id.clone(),
@@ -336,61 +433,23 @@ fn download_model_subscription(id: String) -> iced::Subscription<Message> {
                                 ),
                             ),
                         ))
-                        .await
-                        .ok();
+                        .await;
                     return;
                 }
             }
 
-            output
+            let _ = output
                 .send(Message::Settings(
                     peak_apps::settings::SettingsMessage::ModelDownloadComplete(id.clone()),
                 ))
-                .await
-                .ok();
-        }),
+                .await;
+        },
     )
 }
 
-fn reply_subscription(
-    assistant: peak_intelligence::brain::Assistant,
-    system_prompt: String,
-    history: Vec<(String, String)>,
-    prompt: String,
-) -> iced::Subscription<Message> {
-    use iced::futures::StreamExt;
-    use peak_intelligence::brain::assistant::Message as LLMMessage;
-
-    iced::Subscription::run_with_id(
-        format!("chat-{}", prompt),
-        iced::stream::channel(100, move |mut output| async move {
-            let messages = history
-                .into_iter()
-                .map(|(role, content)| match role.as_str() {
-                    "user" => LLMMessage::User(content),
-                    "assistant" => LLMMessage::Assistant(content),
-                    _ => LLMMessage::System(content),
-                })
-                .collect();
-
-            let append = vec![LLMMessage::User(prompt)];
-            let mut stream = Box::pin(assistant.reply(system_prompt, messages, append));
-
-            while let Some((reply, token)) = stream.next().await {
-                output
-                    .send(Message::AssistantReply(reply, token))
-                    .await
-                    .ok();
-            }
-
-            // Check final result
-            if (stream.await).is_err() {
-                // Error handling if needed, though we stop anyway
-            }
-
-            output.send(Message::AssistantFinished).await.ok();
-        }),
-    )
+fn download_model_subscription(id: String) -> iced::Subscription<Message> {
+    let data = DownloadSubscriptionData { id: id.clone() };
+    iced::Subscription::run_with(data, download_stream)
 }
 
 impl PeakNative {
@@ -421,39 +480,56 @@ impl PeakNative {
     }
 }
 
-fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
+struct BootSubscriptionData {
+    id: String,
+    model_id: String,
+}
+
+impl std::hash::Hash for BootSubscriptionData {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl PartialEq for BootSubscriptionData {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for BootSubscriptionData {}
+
+fn boot_stream(data: &BootSubscriptionData) -> impl iced::futures::Stream<Item = Message> {
     use iced::futures::StreamExt;
     use peak_intelligence::brain::model::{File, Model};
+    let model_id = data.model_id.clone();
 
-    iced::Subscription::run_with_id(
-        format!("boot-{}", model_id),
-        iced::stream::channel(100, move |mut output| async move {
+    iced::stream::channel(
+        100,
+        move |mut output: iced::futures::channel::mpsc::Sender<Message>| async move {
             // 1. Resolve Model/File (Simplified version of download resolution)
             let Ok(models) = Model::search(model_id.clone()).await else {
-                output
+                let _ = output
                     .send(Message::AssistantBooted(Err(
                         peak_intelligence::brain::Error::DockerFailed("Model Search Failed"),
                     )))
-                    .await
-                    .ok();
+                    .await;
                 return;
             };
             let Some(model) = models.first() else {
-                output
+                let _ = output
                     .send(Message::AssistantBooted(Err(
                         peak_intelligence::brain::Error::DockerFailed("Model Not Found"),
                     )))
-                    .await
-                    .ok();
+                    .await;
                 return;
             };
             let Ok(files) = File::list(model.id.clone()).await else {
-                output
+                let _ = output
                     .send(Message::AssistantBooted(Err(
                         peak_intelligence::brain::Error::DockerFailed("File List Failed"),
                     )))
-                    .await
-                    .ok();
+                    .await;
                 return;
             };
 
@@ -469,20 +545,17 @@ fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
                     if let Some(first) = files.values().flatten().next() {
                         first.clone()
                     } else {
-                        output
+                        let _ = output
                             .send(Message::AssistantBooted(Err(
                                 peak_intelligence::brain::Error::DockerFailed("No File Found"),
                             )))
-                            .await
-                            .ok();
+                            .await;
                         return;
                     }
                 }
             };
 
             let directory = peak_intelligence::brain::model::Directory::default();
-
-            // Blindly use CPU for safety on all platforms for now unless we know better
             let backend = peak_intelligence::brain::assistant::Backend::Cpu;
 
             let mut straw = Box::pin(peak_intelligence::brain::Assistant::boot(
@@ -491,12 +564,7 @@ fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
 
             while let Some(event) = straw.next().await {
                 match event {
-                    peak_intelligence::brain::assistant::BootEvent::Progressed {
-                        stage: _,
-                        percent: _,
-                    } => {
-                        // Ignore progress for now
-                    }
+                    peak_intelligence::brain::assistant::BootEvent::Progressed { .. } => {}
                     peak_intelligence::brain::assistant::BootEvent::Logged(_) => {}
                 }
             }
@@ -504,17 +572,22 @@ fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
             // Result should be the Assistant
             match straw.await {
                 Ok(assistant) => {
-                    output
-                        .send(Message::AssistantBooted(Ok(assistant)))
-                        .await
-                        .ok();
+                    let _ = output.send(Message::AssistantBooted(Ok(assistant))).await;
                 }
                 Err(e) => {
-                    output.send(Message::AssistantBooted(Err(e))).await.ok();
+                    let _ = output.send(Message::AssistantBooted(Err(e))).await;
                 }
             }
-        }),
+        },
     )
+}
+
+fn boot_subscription(model_id: String) -> iced::Subscription<Message> {
+    let data = BootSubscriptionData {
+        id: format!("boot-{}", model_id),
+        model_id,
+    };
+    iced::Subscription::run_with(data, boot_stream)
 }
 
 impl PeakApp for PeakNative {

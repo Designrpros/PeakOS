@@ -79,9 +79,9 @@ impl Inspector {
                         .push(("user".to_string(), self.input_content.clone()));
                     self.input_content.clear();
                     // Auto-scroll to bottom
-                    return iced::widget::scrollable::snap_to(
-                        iced::widget::scrollable::Id::new("chat_scroll"),
-                        iced::widget::scrollable::RelativeOffset::END,
+                    return iced::widget::operation::scroll_to(
+                        iced::widget::Id::new("chat_scroll"),
+                        iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: 10000.0 },
                     );
                 }
             }
@@ -117,14 +117,15 @@ impl Inspector {
                             },
                             text_color: None,
                             shadow: iced::Shadow::default(),
+                            ..Default::default()
                         })
                         .width(Length::Shrink);
 
                         // Align user messages to the right, assistant to the left
                         if is_user {
-                            row![iced::widget::horizontal_space(), bubble].into()
+                            row![iced::widget::Space::new().width(Length::Fill), bubble].into()
                         } else {
-                            row![bubble, iced::widget::horizontal_space()].into()
+                            row![bubble, iced::widget::Space::new().width(Length::Fill)].into()
                         }
                     })
                     .collect::<Vec<_>>(),
@@ -138,7 +139,7 @@ impl Inspector {
                 .width(0)
                 .scroller_width(0),
         ))
-        .id(iced::widget::scrollable::Id::new("chat_scroll"))
+        .id(iced::widget::Id::new("chat_scroll"))
         .into();
 
         // Input area with border encompassing everything
@@ -202,7 +203,7 @@ impl Inspector {
                     }),
                 row![
                     model_selector,
-                    iced::widget::horizontal_space(),
+                    iced::widget::Space::new().width(Length::Fill),
                     button(
                         iced::widget::svg(peak_core::icons::get_ui_icon(
                             "arrow_up",
@@ -227,6 +228,7 @@ impl Inspector {
                             },
                             text_color: iced::Color::WHITE,
                             shadow: iced::Shadow::default(),
+                            snap: false,
                         }
                     })
                 ]

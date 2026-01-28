@@ -34,13 +34,17 @@ where
                 .height(Length::Fill)
                 .content_fit(iced::ContentFit::Cover),
             // 2. Opacity Layer
-            iced::widget::container(iced::widget::Space::new(Length::Fill, Length::Fill))
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .style(move |_| iced::widget::container::Style {
-                    background: Some(overlay_color.into()),
-                    ..Default::default()
-                }),
+            iced::widget::container(
+                iced::widget::Space::new()
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(move |_| iced::widget::container::Style {
+                background: Some(overlay_color.into()),
+                ..Default::default()
+            }),
             // 3. Content Layer (Centered)
             iced::widget::container(content)
                 .width(Length::Fill)
@@ -54,7 +58,7 @@ where
                     iced::widget::image("assets/Peak.png")
                         .width(Length::Fixed(32.0))
                         .height(Length::Fixed(32.0)),
-                    iced::widget::horizontal_space(),
+                    iced::widget::Space::new().width(Length::Fill),
                     // Right: Theme Switcher
                     iced::widget::button(
                         iced::widget::text(
@@ -163,6 +167,7 @@ impl WizardView {
             Length::Fill,
             Length::Shrink,
             Alignment::Center,
+            Alignment::Center,
             1.0,
         )
     }
@@ -226,6 +231,7 @@ impl WizardView {
             iced::Padding::default(),
             Length::Fill,
             Length::Shrink,
+            Alignment::Center,
             Alignment::Center,
             1.0,
         );
@@ -303,6 +309,7 @@ impl WizardView {
             Length::Fill,
             Length::Shrink,
             Alignment::Center,
+            Alignment::Center,
             1.0,
         );
 
@@ -367,6 +374,7 @@ impl WizardView {
             iced::Padding::default(),
             Length::Fill,
             Length::Shrink,
+            Alignment::Center,
             Alignment::Center,
             1.0,
         );
@@ -471,6 +479,7 @@ impl WizardView {
                     Length::Fill,
                     Length::Shrink,
                     Alignment::Center,
+                    Alignment::Center,
                     1.0,
                 ),
                 B::space(Length::Fill, Length::Fixed(20.0)),
@@ -540,6 +549,7 @@ impl WizardView {
                     Length::Fill,
                     Length::Shrink,
                     Alignment::Center,
+                    Alignment::Center,
                     1.0,
                 ),
             ],
@@ -547,6 +557,7 @@ impl WizardView {
             iced::Padding::default(),
             Length::Fill,
             Length::Shrink,
+            Alignment::Center,
             Alignment::Center,
             1.0,
         );
@@ -624,6 +635,7 @@ impl WizardView {
             Length::Fill,
             Length::Shrink,
             Alignment::Center,
+            Alignment::Center,
             1.0,
         );
 
@@ -639,6 +651,7 @@ impl WizardView {
             iced::Padding::new(40.0),
             Length::Fixed(500.0), // Fixed width card
             Length::Shrink,
+            Alignment::Center,
             Alignment::Center,
             1.0,
         )
@@ -698,6 +711,7 @@ impl WizardView {
             iced::Padding::default(),
             Length::Fill,
             Length::Shrink,
+            Alignment::Center,
             Alignment::Center,
             1.0,
         );

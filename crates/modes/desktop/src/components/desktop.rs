@@ -235,10 +235,11 @@ impl peak_ui::core::View<DesktopMessage, peak_ui::core::IcedBackend> for Desktop
         // Marquee Selection
         if let Some(rect) = self.selection_rect {
             let marquee = container(
-                container(iced::widget::Space::new(
-                    Length::Fixed(rect.width),
-                    Length::Fixed(rect.height),
-                ))
+                container(
+                    iced::widget::Space::new()
+                        .width(Length::Fixed(rect.width))
+                        .height(Length::Fixed(rect.height)),
+                )
                 .style(|_| container::Style {
                     background: Some(iced::Color::from_rgba(0.0, 0.5, 1.0, 0.1).into()),
                     border: iced::Border {

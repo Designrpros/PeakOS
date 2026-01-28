@@ -1,5 +1,5 @@
 use chrono::Local;
-use iced::widget::{button, container, horizontal_space, row, svg, text};
+use iced::widget::{button, container, row, svg, text, Space};
 use iced::{Alignment, Element, Length};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -33,15 +33,23 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
         (tokens.colors.text_primary.g * 255.0) as u8,
         (tokens.colors.text_primary.b * 255.0) as u8
     );
+    let hover_bg = {
+        let mut c = tokens.colors.surface;
+        c.a = 0.1;
+        c
+    };
 
     let switcher = button(text("Peak").size(13)) // Placeholder for mode string, can be passed if needed
         .on_press(MenubarMessage::ToggleRealityMenu)
         .padding([5, 0])
-        .style(move |_, _| button::Style {
-            background: None,
-            border: iced::Border::default(),
-            shadow: iced::Shadow::default(),
-            text_color,
+        .style(move |_, status| button::Style {
+            background: if status == iced::widget::button::Status::Hovered {
+                Some(hover_bg.into())
+            } else {
+                None
+            },
+            snap: false,
+            ..Default::default()
         });
 
     let logo_file = if tokens.colors.background.r < 0.2 {
@@ -115,7 +123,21 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
         )
         .on_press(MenubarMessage::ToggleSpaces)
         .padding(0)
-        .style(button::text),
+        .style(move |_, status| {
+            // Assuming 'active' would be passed in if this button had an active state
+            // For now, it's just hover.
+            let active = false; // Placeholder, replace with actual active state if available
+            button::Style {
+                background: if active || status == iced::widget::button::Status::Hovered {
+                    Some(hover_bg.into())
+                } else {
+                    None
+                },
+                text_color: tokens.colors.text_primary,
+                snap: false,
+                ..Default::default()
+            }
+        }),
         // Battery (Text Only)
         text("100%").size(13).style(move |_| text::Style {
             color: Some(text_color),
@@ -134,7 +156,7 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
     container(
         row![
             left_menu,
-            horizontal_space().width(Length::Fill), // Push apart
+            Space::new().width(Length::Fill), // Push apart
             right_menu
         ]
         .padding([0, 15])
@@ -148,6 +170,7 @@ pub fn view<'a>(tokens: ThemeTokens) -> Element<'a, MenubarMessage> {
         border: iced::Border::default(),
         shadow: iced::Shadow::default(),
         text_color: Some(iced::Color::TRANSPARENT),
+        ..Default::default()
     })
     .into()
 }

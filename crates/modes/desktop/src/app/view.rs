@@ -60,8 +60,13 @@ impl PeakNative {
         };
         let ui_tokens = ThemeTokens::get(ui_mode, tone);
 
-        let context = Context::new(ui_mode, ui_tokens, self.window_manager.screen_size)
-            .with_safe_area(iced::Padding::default());
+        let context = Context::new(
+            ui_mode,
+            ui_tokens,
+            self.window_manager.screen_size,
+            peak_ui::localization::Localization::default(),
+        )
+        .with_safe_area(iced::Padding::default());
 
         let user_name = self
             .user
@@ -90,8 +95,13 @@ impl PeakNative {
         };
         let ui_tokens = ThemeTokens::get(ui_mode, tone);
 
-        let context = Context::new(ui_mode, ui_tokens, self.window_manager.screen_size)
-            .with_safe_area(iced::Padding::default());
+        let context = Context::new(
+            ui_mode,
+            ui_tokens,
+            self.window_manager.screen_size,
+            peak_ui::localization::Localization::default(),
+        )
+        .with_safe_area(iced::Padding::default());
 
         use peak_ui::core::IcedBackend;
         peak_ui::core::View::<Message, IcedBackend>::view(&WizardView::new(state.clone()), &context)

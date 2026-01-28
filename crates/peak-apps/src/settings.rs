@@ -1,5 +1,6 @@
 pub use peak_core::apps::settings::{SettingsApp, SettingsMessage, SettingsTab, ThemeMode};
 pub use peak_ui::core::Backend;
+use peak_ui::localization::Localization;
 
 // --- Pure PeakUI View Implementation ---
 
@@ -145,6 +146,7 @@ where
                 iced::Padding::from(0.0),
                 iced::Length::Fill,
                 iced::Length::Shrink,
+                iced::Alignment::Start,
                 iced::Alignment::Start,
                 1.0,
             );
@@ -315,6 +317,7 @@ impl SettingsHelpers for SettingsApp {
             iced::Length::Fill,
             iced::Length::Shrink,
             iced::Alignment::Center,
+            iced::Alignment::Center,
             1.0,
         )
     }
@@ -365,6 +368,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Length::Fill,
                 iced::Length::Shrink,
                 iced::Alignment::Start,
+                iced::Alignment::Start,
                 1.0,
             ),
         );
@@ -389,6 +393,7 @@ impl SettingsHelpers for SettingsApp {
             iced::Padding::default(),
             iced::Length::Fill,
             iced::Length::Shrink,
+            iced::Alignment::Start,
             iced::Alignment::Start,
             1.0,
         )
@@ -437,6 +442,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Length::Fill,
                 iced::Length::Shrink,
                 iced::Alignment::Start,
+                iced::Alignment::Start,
                 1.0,
             ),
         );
@@ -461,6 +467,7 @@ impl SettingsHelpers for SettingsApp {
             iced::Padding::default(),
             iced::Length::Fill,
             iced::Length::Shrink,
+            iced::Alignment::Start,
             iced::Alignment::Start,
             1.0,
         )
@@ -526,6 +533,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Length::Fill,
                 iced::Length::Shrink,
                 iced::Alignment::Start,
+                iced::Alignment::Start,
                 1.0,
             ),
         );
@@ -550,6 +558,7 @@ impl SettingsHelpers for SettingsApp {
             iced::Padding::default(),
             iced::Length::Fill,
             iced::Length::Shrink,
+            iced::Alignment::Start,
             iced::Alignment::Start,
             1.0,
         )
@@ -597,6 +606,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Length::Fill,
                 iced::Length::Shrink,
                 iced::Alignment::Start,
+                iced::Alignment::Start,
                 1.0,
             ),
         );
@@ -621,6 +631,7 @@ impl SettingsHelpers for SettingsApp {
             iced::Padding::default(),
             iced::Length::Fill,
             iced::Length::Shrink,
+            iced::Alignment::Start,
             iced::Alignment::Start,
             1.0,
         )
@@ -667,6 +678,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Length::Fill,
                 iced::Length::Shrink,
                 iced::Alignment::Start,
+                iced::Alignment::Start,
                 1.0,
             ),
         );
@@ -691,6 +703,7 @@ impl SettingsHelpers for SettingsApp {
             iced::Padding::default(),
             iced::Length::Fill,
             iced::Length::Shrink,
+            iced::Alignment::Start,
             iced::Alignment::Start,
             1.0,
         )
@@ -752,7 +765,8 @@ impl SettingsHelpers for SettingsApp {
                                     iced::Padding::default(),
                                     iced::Length::Shrink,
                                     iced::Length::Shrink,
-                                    iced::Alignment::Start,
+                                    iced::Alignment::Center,
+                                    iced::Alignment::Center,
                                     1.0,
                                 ),
                                 B::space(iced::Length::Fill, iced::Length::Shrink),
@@ -794,6 +808,7 @@ impl SettingsHelpers for SettingsApp {
                             iced::Length::Fill,
                             iced::Length::Shrink,
                             iced::Alignment::Center,
+                            iced::Alignment::Center,
                             1.0,
                         )
                     })
@@ -802,6 +817,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Padding::default(),
                 iced::Length::Fill,
                 iced::Length::Shrink,
+                iced::Alignment::Start,
                 iced::Alignment::Start,
                 1.0,
             ),
@@ -832,6 +848,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Padding::default(),
                 iced::Length::Fill,
                 iced::Length::Shrink,
+                iced::Alignment::Start,
                 iced::Alignment::Start,
                 1.0,
             ),
@@ -868,6 +885,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Padding::default(),
                 iced::Length::Fill,
                 iced::Length::Shrink,
+                iced::Alignment::Start,
                 iced::Alignment::Start,
                 1.0,
             ),
@@ -921,6 +939,7 @@ impl SettingsHelpers for SettingsApp {
             iced::Padding::default(),
             iced::Length::Fill,
             iced::Length::Shrink,
+            iced::Alignment::Start,
             iced::Alignment::Start,
             1.0,
         )
@@ -989,6 +1008,7 @@ impl SettingsHelpers for SettingsApp {
                                 iced::Length::Fill,
                                 iced::Length::Shrink,
                                 iced::Alignment::Center,
+                                iced::Alignment::Center,
                                 1.0,
                             ),
                             Some(SettingsMessage::ModeChanged(m)),
@@ -1006,6 +1026,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Padding::default(),
                 iced::Length::Fill,
                 iced::Length::Shrink,
+                iced::Alignment::Start,
                 iced::Alignment::Start,
                 1.0,
             ),
@@ -1055,6 +1076,7 @@ impl SettingsHelpers for SettingsApp {
                                 iced::Length::Fill,
                                 iced::Length::Shrink,
                                 iced::Alignment::Center,
+                                iced::Alignment::Center,
                                 1.0,
                             ),
                             Some(SettingsMessage::ShellStyleChanged(s)),
@@ -1072,6 +1094,7 @@ impl SettingsHelpers for SettingsApp {
                 iced::Padding::default(),
                 iced::Length::Fill,
                 iced::Length::Shrink,
+                iced::Alignment::Start,
                 iced::Alignment::Start,
                 1.0,
             ),
@@ -1111,6 +1134,7 @@ impl SettingsHelpers for SettingsApp {
             iced::Padding::default(),
             iced::Length::Fill,
             iced::Length::Shrink,
+            iced::Alignment::Start,
             iced::Alignment::Start,
             1.0,
         )
@@ -1160,7 +1184,12 @@ impl PeakApp for DesktopSettingsApp {
             peak_ui_theme::ThemeTone::Dark
         };
         let tokens = peak_ui::core::ThemeTokens::get(mode, tone);
-        let context = peak_ui::core::Context::new(mode, tokens, iced::Size::new(1920.0, 1080.0));
+        let context = peak_ui::core::Context::new(
+            mode,
+            tokens,
+            iced::Size::new(1920.0, 1080.0),
+            Localization::default(),
+        );
 
         peak_ui::core::View::<SettingsMessage, peak_ui::core::IcedBackend>::view(self, &context)
             .into()

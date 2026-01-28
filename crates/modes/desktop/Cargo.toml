@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-iced = { version = "0.13", default-features = false, features = ["canvas", "advanced", "image", "svg"] }
+iced = { version = "0.14", default-features = false, features = ["canvas", "advanced", "image", "svg", "lazy", "debug", "fira-sans"] }
 rodio = { version = "0.17", optional = true }
 rand = "0.8"
 cpal = { version = "0.15", optional = true }
@@ -51,7 +51,7 @@ getrandom_03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] 
 instant = { version = "0.1", features = ["wasm-bindgen"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-iced_layershell = "0.13"
+iced_layershell = "0.14"
 wayland-client = "0.31"
 
 [features]

@@ -1,6 +1,4 @@
-use iced::widget::{
-    button, column, container, horizontal_space, row, scrollable, text, text_input, vertical_space,
-};
+use iced::widget::{button, column, container, row, scrollable, text, text_input, Space};
 use iced::{Alignment, Color, Element, Length, Task};
 use peak_core::models::{MediaItem, MediaKind};
 use peak_core::styles::WAVEFORM_PINK;
@@ -141,33 +139,47 @@ impl JukeboxApp {
         // Waveform visualization
         let waveform = container(
             row![
-                container(iced::widget::Space::new(3, 30)).style(|_| container::Style {
-                    background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.3).into()),
-                    ..Default::default()
+                container(iced::widget::Space::new().width(3).height(30)).style(|_| {
+                    container::Style {
+                        background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.3).into()),
+                        ..Default::default()
+                    }
                 }),
-                container(iced::widget::Space::new(3, 45)).style(|_| container::Style {
-                    background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.5).into()),
-                    ..Default::default()
+                container(iced::widget::Space::new().width(3).height(45)).style(|_| {
+                    container::Style {
+                        background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.5).into()),
+                        ..Default::default()
+                    }
                 }),
-                container(iced::widget::Space::new(3, 25)).style(|_| container::Style {
-                    background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.3).into()),
-                    ..Default::default()
+                container(iced::widget::Space::new().width(3).height(25)).style(|_| {
+                    container::Style {
+                        background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.3).into()),
+                        ..Default::default()
+                    }
                 }),
-                container(iced::widget::Space::new(3, 50)).style(|_| container::Style {
-                    background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.6).into()),
-                    ..Default::default()
+                container(iced::widget::Space::new().width(3).height(50)).style(|_| {
+                    container::Style {
+                        background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.6).into()),
+                        ..Default::default()
+                    }
                 }),
-                container(iced::widget::Space::new(3, 35)).style(|_| container::Style {
-                    background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.4).into()),
-                    ..Default::default()
+                container(iced::widget::Space::new().width(3).height(35)).style(|_| {
+                    container::Style {
+                        background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.4).into()),
+                        ..Default::default()
+                    }
                 }),
-                container(iced::widget::Space::new(3, 42)).style(|_| container::Style {
-                    background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.5).into()),
-                    ..Default::default()
+                container(iced::widget::Space::new().width(3).height(42)).style(|_| {
+                    container::Style {
+                        background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.5).into()),
+                        ..Default::default()
+                    }
                 }),
-                container(iced::widget::Space::new(3, 28)).style(|_| container::Style {
-                    background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.3).into()),
-                    ..Default::default()
+                container(iced::widget::Space::new().width(3).height(28)).style(|_| {
+                    container::Style {
+                        background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.3).into()),
+                        ..Default::default()
+                    }
                 }),
             ]
             .spacing(4)
@@ -204,13 +216,13 @@ impl JukeboxApp {
 
         let player_section = container(
             column![
-                vertical_space().height(20),
+                Space::new().height(20),
                 album_art,
-                vertical_space().height(20),
+                Space::new().height(20),
                 track_info,
-                vertical_space().height(15),
+                Space::new().height(15),
                 waveform,
-                vertical_space().height(15),
+                Space::new().height(15),
                 controls,
             ]
             .align_x(Alignment::Center),
@@ -228,7 +240,7 @@ impl JukeboxApp {
         let music_list = if music_items.is_empty() {
             container(
                 column![
-                    vertical_space().height(40),
+                    Space::new().height(40),
                     text("No Music Found")
                         .size(16)
                         .color(Color::from_rgb(0.5, 0.5, 0.5)),
@@ -249,6 +261,7 @@ impl JukeboxApp {
                 column(music_items.iter().map(|item| {
                     button(
                         row![
+                            Space::new().width(Length::Fill),
                             container(text("♪").size(16))
                                 .width(35)
                                 .height(35)
@@ -270,7 +283,7 @@ impl JukeboxApp {
                                     .color(Color::from_rgb(0.6, 0.6, 0.6)),
                             ]
                             .spacing(2),
-                            horizontal_space(),
+                            Space::new().width(Length::Fill),
                             text(">").size(14).color(Color::from_rgb(0.6, 0.6, 0.6)),
                         ]
                         .spacing(12)
@@ -287,15 +300,14 @@ impl JukeboxApp {
             ))
         };
 
-        let library_section =
-            container(column![search_bar, vertical_space().height(10), music_list,])
-                .width(Length::FillPortion(1))
-                .height(Length::Fill)
-                .padding(20);
+        let library_section = container(column![search_bar, Space::new().height(10), music_list,])
+            .width(Length::FillPortion(1))
+            .height(Length::Fill)
+            .padding(20);
 
         // BOTTOM: CENTERED NAVIGATION DOTS
         let nav_dots = row![
-            horizontal_space(),
+            Space::new().width(Length::Fill),
             button(
                 text("•")
                     .size(14)
@@ -318,7 +330,7 @@ impl JukeboxApp {
             )
             .style(button::text)
             .on_press(JukeboxMessage::SwitchView(ViewMode::Discovery)),
-            horizontal_space(),
+            Space::new().width(Length::Fill),
         ]
         .spacing(10)
         .align_y(Alignment::Center);

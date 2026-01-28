@@ -85,6 +85,7 @@ impl ExplorerApp {
                             None
                         },
                         text_color,
+                        snap: false,
                         ..Default::default()
                     })
                     .padding(4)
@@ -126,6 +127,7 @@ impl ExplorerApp {
                                     None
                                 },
                                 text_color,
+                                snap: false,
                                 ..Default::default()
                             })
                             .padding(4)
@@ -141,7 +143,7 @@ impl ExplorerApp {
 
         let sidebar_elem: Element<ExplorerMessage> = sidebar.into();
         let divider: Element<ExplorerMessage> =
-            container(iced::widget::Space::new(Length::Fixed(1.0), Length::Fill))
+            container(iced::widget::Space::new().width(1.0).height(Length::Fill))
                 .style(move |_| container::Style {
                     background: Some(icon_color.scale_alpha(0.1).into()),
                     ..Default::default()

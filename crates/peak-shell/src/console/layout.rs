@@ -53,12 +53,16 @@ where
     // Separator
     if !running_apps.is_empty() {
         dock_row = dock_row.push(
-            container(iced::widget::Space::with_width(Length::Fixed(1.0)))
-                .height(Length::Fixed(24.0))
-                .style(move |_| container::Style {
-                    background: Some(tokens.colors.divider.into()),
-                    ..Default::default()
-                }),
+            container(
+                iced::widget::Space::new()
+                    .width(Length::Fixed(1.0))
+                    .height(Length::Fixed(24.0)),
+            )
+            .height(Length::Fixed(24.0))
+            .style(move |_| container::Style {
+                background: Some(tokens.colors.divider.into()),
+                ..Default::default()
+            }),
         );
     }
 
