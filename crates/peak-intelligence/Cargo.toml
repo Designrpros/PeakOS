@@ -31,6 +31,8 @@ tokio-stream = { version = "0.1", features = ["io-util"], optional = true }
 url = { version = "2.5", features = ["serde"] }
 urlencoding = "2.1"
 uuid = { version = "1.10", features = ["v4", "serde", "js"] }
+bytes = "1.6"
+async-stream = "0.3"
 
 # Git Dependency (Optional - causes issues on Alpine/musl)
 llama-server = { git = "https://github.com/hecrj/llama-server.git", rev = "e7e016577ce11ff419628f5eca23732949990894", optional = true }

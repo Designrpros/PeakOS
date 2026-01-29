@@ -3,10 +3,10 @@ use crate::brain::Error;
 
 use sipper::{sipper, Sipper, Straw};
 
-#[cfg(feature = "llm")]
+#[cfg(all(feature = "llm", feature = "native"))]
 use sipper::{FutureExt, StreamExt};
 
-#[cfg(feature = "llm")]
+#[cfg(all(feature = "llm", feature = "native"))]
 use std::process::Stdio;
 #[cfg(feature = "llm")]
 use std::sync::Arc;
@@ -25,7 +25,7 @@ pub struct Assistant {
 impl Assistant {
     const HOST_PORT: u32 = 8080;
 
-    #[cfg(feature = "llm")]
+    #[cfg(all(feature = "llm", feature = "native"))]
     pub fn boot(
         directory: model::Directory,
         file: model::File,

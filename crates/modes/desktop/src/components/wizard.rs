@@ -159,6 +159,7 @@ impl WizardView {
                     Some(WizardMessage::NextStep.into()),
                     Variant::Solid,
                     Intent::Primary,
+                    false,
                     context,
                 ),
             ],
@@ -449,6 +450,7 @@ impl WizardView {
                                 Variant::Soft
                             },
                             Intent::Primary,
+                            false,
                             context,
                         ),
                         B::button(
@@ -471,6 +473,7 @@ impl WizardView {
                                 Variant::Soft
                             },
                             Intent::Primary,
+                            false,
                             context,
                         ),
                     ],
@@ -519,6 +522,7 @@ impl WizardView {
                                 Variant::Soft
                             },
                             Intent::Primary,
+                            false,
                             context,
                         ),
                         B::button(
@@ -541,6 +545,7 @@ impl WizardView {
                                 Variant::Soft
                             },
                             Intent::Primary,
+                            false,
                             context,
                         ),
                     ],
@@ -608,6 +613,7 @@ impl WizardView {
                     Some(WizardMessage::PrevStep.into()),
                     Variant::Ghost,
                     Intent::Neutral,
+                    false,
                     context,
                 ),
                 B::space(Length::Fill, Length::Shrink),
@@ -627,6 +633,7 @@ impl WizardView {
                     Some(WizardMessage::NextStep.into()),
                     Variant::Solid,
                     Intent::Primary,
+                    false,
                     context,
                 ),
             ],
@@ -704,6 +711,7 @@ impl WizardView {
                     Some(WizardMessage::CompleteSetup.into()),
                     Variant::Solid,
                     Intent::Primary,
+                    false,
                     context,
                 ),
             ],

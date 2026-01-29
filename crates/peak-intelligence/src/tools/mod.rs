@@ -215,7 +215,7 @@ pub fn search_files(query: &str, base_path: &str) -> Result<Value> {
     }
 }
 
-pub fn connect_wifi(ssid: &str, password: &str) -> Result<Value> {
+pub fn connect_wifi(ssid: &str, _password: &str) -> Result<Value> {
     #[cfg(all(feature = "native", target_os = "linux"))]
     {
         let output = Command::new("nmcli")

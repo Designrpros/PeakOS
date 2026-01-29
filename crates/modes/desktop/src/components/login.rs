@@ -79,6 +79,7 @@ where
                     Some(Message::SubmitLogin),
                     Variant::Solid,
                     Intent::Primary,
+                    false, // is_compact
                     context,
                 ),
             ],
@@ -151,6 +152,7 @@ where
             Some(Message::ToggleTheme),
             Variant::Ghost,
             Intent::Neutral,
+            false, // is_compact
             context,
         );
         let top_right = B::container(

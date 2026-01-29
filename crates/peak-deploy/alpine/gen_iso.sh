@@ -39,7 +39,7 @@ mkdir -p /build/out
 
 # 1. Compile Peak Desktop
 echo "--- Compiling Peak Desktop ---"
-cd /project/crates/modes/desktop
+cd /project/PeakOS/crates/modes/desktop
 # Generate a lockfile if missing so we can pin dependencies
 if [ ! -f Cargo.lock ]; then
     cargo generate-lockfile
@@ -69,7 +69,7 @@ export CARGO_TARGET_DIR=/build/target/$ARCH
 
 # NOTE: GTK linker workarounds removed - no longer needed since wry/webkit2gtk were removed
 
-cargo build --release --manifest-path /project/crates/modes/desktop/Cargo.toml
+cargo build --release --manifest-path /project/PeakOS/crates/modes/desktop/Cargo.toml
 
 # Copy binary
 echo "Searching for binary..."
@@ -85,7 +85,7 @@ chmod +x /build/rootfs/usr/bin/peak-desktop
 # Copy assets directory for icons, fonts, etc.
 echo "Copying assets..."
 mkdir -p /build/rootfs/usr/share/peakos/assets
-cp -r /project/assets/* /build/rootfs/usr/share/peakos/assets/
+cp -r /project/PeakOS/assets/* /build/rootfs/usr/share/peakos/assets/
 # Exclude legacy binaries
 rm -rf /build/rootfs/usr/share/peakos/assets/bin
 
@@ -115,11 +115,12 @@ echo "   Updating crates.io index"
 # Install Base System + Kernel + Input Devices
 # include radeon, intel, amdgpu, and nvidia firmware for hardware support
 apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untrusted \
-    alpine-base linux-lts \
+    alpine-base linux-lts intel-ucode \
     linux-firmware-radeon linux-firmware-intel \
     linux-firmware-amdgpu linux-firmware-nvidia \
+    linux-firmware-brcm linux-firmware-ath10k \
     udev eudev libinput libinput-dev \
-    alsa-lib wayland mesa-dri-gallium \
+    alsa-lib wayland mesa-dri-gallium mesa-dri-swrast \
     labwc seatd \
     adwaita-icon-theme \
     ttf-dejavu font-noto font-noto-cjk \
@@ -130,7 +131,7 @@ apk --root /build/rootfs --initdb add --arch "$APK_ARCH" --no-cache --allow-untr
     flatpak \
     glib openssl fontconfig libxcb vulkan-loader \
     libxml2 libxslt shared-mime-info gsettings-desktop-schemas \
-    mesa-gl \
+    mesa-gl mesa-vulkan-layers \
     tzdata libxkbcommon
 
 # Configure doas and sudo compatibility
