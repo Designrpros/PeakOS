@@ -79,7 +79,8 @@ where
                     Some(Message::SubmitLogin),
                     Variant::Solid,
                     Intent::Primary,
-                    false, // is_compact
+                    Length::Shrink,
+                    false,
                     context,
                 ),
             ],
@@ -110,6 +111,13 @@ where
             iced::Padding::default(),
             Length::Fill,
             Length::Fill,
+            None,
+            0.0,
+            0.0,
+            None,
+            None,
+            Alignment::Start,
+            Alignment::Start,
             context,
         );
 
@@ -132,6 +140,13 @@ where
             iced::Padding::new(20.0),
             Length::Shrink,
             Length::Shrink,
+            None,
+            0.0,
+            0.0,
+            None,
+            None,
+            Alignment::Start,
+            Alignment::Start,
             context,
         );
 
@@ -152,6 +167,7 @@ where
             Some(Message::ToggleTheme),
             Variant::Ghost,
             Intent::Neutral,
+            Length::Shrink,
             false, // is_compact
             context,
         );
@@ -160,6 +176,13 @@ where
             iced::Padding::new(20.0),
             Length::Shrink,
             Length::Shrink,
+            None,
+            0.0,
+            0.0,
+            None,
+            None,
+            Alignment::Start,
+            Alignment::Start,
             context,
         );
 

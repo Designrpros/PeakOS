@@ -4,8 +4,13 @@
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod native;
+#[cfg(not(target_arch = "wasm32"))]
+pub use native as client;
+
 #[cfg(target_arch = "wasm32")]
-mod wasm;
+pub mod web;
+#[cfg(target_arch = "wasm32")]
+pub use web as client;
 
 use serde::{Deserialize, Serialize};
 
@@ -49,20 +54,11 @@ impl HttpClient {
     }
 
     /// Perform a GET request with custom headers
-    #[cfg(not(target_arch = "wasm32"))]
     pub async fn get_with_headers(
         url: &str,
         headers: std::collections::HashMap<String, String>,
     ) -> Result<HttpResponse, HttpError> {
-        native::get_with_headers(url, headers).await
-    }
-
-    #[cfg(target_arch = "wasm32")]
-    pub async fn get_with_headers(
-        url: &str,
-        headers: std::collections::HashMap<String, String>,
-    ) -> Result<HttpResponse, HttpError> {
-        wasm::get_with_headers(url, headers).await
+        client::get_with_headers(url, headers).await
     }
 
     /// Perform a POST request with JSON body
@@ -71,22 +67,31 @@ impl HttpClient {
     }
 
     /// Perform a POST request with JSON body and custom headers
-    #[cfg(not(target_arch = "wasm32"))]
     pub async fn post_json_with_headers<T: Serialize>(
         url: &str,
         body: &T,
         headers: std::collections::HashMap<String, String>,
     ) -> Result<HttpResponse, HttpError> {
-        native::post_json_with_headers(url, body, headers).await
+        client::post_json_with_headers(url, body, headers).await
+    }
+
+    /// Perform a POST request with JSON body and custom headers, returning a stream
+    #[cfg(not(target_arch = "wasm32"))]
+    pub async fn post_json_stream<T: Serialize>(
+        url: &str,
+        body: &T,
+        headers: std::collections::HashMap<String, String>,
+    ) -> Result<impl futures::Stream<Item = Result<bytes::Bytes, reqwest::Error>>, HttpError> {
+        native::post_json_stream(url, body, headers).await
     }
 
     #[cfg(target_arch = "wasm32")]
-    pub async fn post_json_with_headers<T: Serialize>(
+    pub async fn post_json_stream<T: Serialize>(
         url: &str,
         body: &T,
         headers: std::collections::HashMap<String, String>,
-    ) -> Result<HttpResponse, HttpError> {
-        wasm::post_json_with_headers(url, body, headers).await
+    ) -> Result<impl futures::Stream<Item = Result<bytes::Bytes, String>>, HttpError> {
+        web::post_json_stream(url, body, headers).await
     }
 }
 

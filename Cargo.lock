@@ -6176,6 +6176,7 @@ dependencies = [
  "walkdir",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "wasm-streams",
  "web-sys",
  "whisper-rs",
 ]
@@ -6265,6 +6266,7 @@ dependencies = [
  "async-stream",
  "console_error_panic_hook",
  "console_log",
+ "dotenvy",
  "fluent",
  "fluent-bundle",
  "fluent-langneg 0.14.2",

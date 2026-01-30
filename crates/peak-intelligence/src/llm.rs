@@ -34,6 +34,10 @@ impl LlmClient {
         &self.model
     }
 
+    pub fn provider(&self) -> ModelProvider {
+        self.provider
+    }
+
     pub async fn chat(&self, messages: Vec<Message>) -> Result<String, String> {
         match self.provider {
             ModelProvider::Ollama => self.chat_ollama(messages).await,
@@ -42,6 +46,7 @@ impl LlmClient {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn chat_stream(
         &self,
         messages: Vec<Message>,
@@ -52,8 +57,9 @@ impl LlmClient {
                 ModelProvider::Ollama => {
                     let stream = client.chat_ollama_stream(messages).await;
                     match stream {
-                        Ok(mut s) => {
+                        Ok(s) => {
                             use futures::StreamExt;
+                            let mut s = Box::pin(s);
                             while let Some(chunk) = s.next().await {
                                 match chunk {
                                     Ok(text) => yield Ok(text),
@@ -67,8 +73,9 @@ impl LlmClient {
                 ModelProvider::LlamaCpp => {
                     let stream = client.chat_llamacpp_stream(messages).await;
                     match stream {
-                        Ok(mut s) => {
+                        Ok(s) => {
                             use futures::StreamExt;
+                            let mut s = Box::pin(s);
                             while let Some(chunk) = s.next().await {
                                 match chunk {
                                     Ok(text) => yield Ok(text),
@@ -82,8 +89,69 @@ impl LlmClient {
                 ModelProvider::OpenRouter => {
                     let stream = client.chat_openrouter_stream(messages).await;
                     match stream {
-                        Ok(mut s) => {
+                        Ok(s) => {
                             use futures::StreamExt;
+                            let mut s = Box::pin(s);
+                            while let Some(chunk) = s.next().await {
+                                match chunk {
+                                    Ok(text) => yield Ok(text),
+                                    Err(e) => yield Err(e),
+                                }
+                            }
+                        }
+                        Err(e) => yield Err(e),
+                    }
+                }
+            }
+        }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn chat_stream(
+        &self,
+        messages: Vec<Message>,
+    ) -> impl futures::Stream<Item = Result<String, String>> {
+        let client = self.clone();
+        async_stream::stream! {
+            match client.provider {
+                ModelProvider::Ollama => {
+                    let stream = client.chat_ollama_stream(messages).await;
+                    match stream {
+                        Ok(s) => {
+                            use futures::StreamExt;
+                            let mut s = Box::pin(s);
+                            while let Some(chunk) = s.next().await {
+                                match chunk {
+                                    Ok(text) => yield Ok(text),
+                                    Err(e) => yield Err(e),
+                                }
+                            }
+                        }
+                        Err(e) => yield Err(e),
+                    }
+                }
+                ModelProvider::LlamaCpp => {
+                    let stream = client.chat_llamacpp_stream(messages).await;
+                    match stream {
+                        Ok(s) => {
+                            use futures::StreamExt;
+                            let mut s = Box::pin(s);
+                            while let Some(chunk) = s.next().await {
+                                match chunk {
+                                    Ok(text) => yield Ok(text),
+                                    Err(e) => yield Err(e),
+                                }
+                            }
+                        }
+                        Err(e) => yield Err(e),
+                    }
+                }
+                ModelProvider::OpenRouter => {
+                    let stream = client.chat_openrouter_stream(messages).await;
+                    match stream {
+                        Ok(s) => {
+                            use futures::StreamExt;
+                            let mut s = Box::pin(s);
                             while let Some(chunk) = s.next().await {
                                 match chunk {
                                     Ok(text) => yield Ok(text),
@@ -110,7 +178,7 @@ impl LlmClient {
         });
 
         let stream =
-            crate::http::native::post_json_stream(url, &body, std::collections::HashMap::new())
+            crate::http::HttpClient::post_json_stream(url, &body, std::collections::HashMap::new())
                 .await
                 .map_err(|e| e.to_string())?;
 
@@ -152,7 +220,7 @@ impl LlmClient {
         });
 
         let stream =
-            crate::http::native::post_json_stream(url, &body, std::collections::HashMap::new())
+            crate::http::HttpClient::post_json_stream(url, &body, std::collections::HashMap::new())
                 .await
                 .map_err(|e| e.to_string())?;
 
@@ -195,6 +263,16 @@ impl LlmClient {
         let url = "https://openrouter.ai/api/v1/chat/completions";
         let api_key = self.api_key.as_ref().ok_or("OpenRouter API key required")?;
 
+        log::info!(
+            "OpenRouter Request: model={}, messages={}, key_len={}",
+            self.model,
+            messages.len(),
+            api_key.len()
+        );
+        if api_key.len() > 5 {
+            log::info!("Key fragment: {}...", &api_key[0..5]);
+        }
+
         let body = serde_json::json!({
             "model": self.model,
             "messages": messages,
@@ -205,7 +283,13 @@ impl LlmClient {
         headers.insert("Authorization".to_string(), format!("Bearer {}", api_key));
         headers.insert("Content-Type".to_string(), "application/json".to_string());
 
-        let stream = crate::http::native::post_json_stream(url, &body, headers)
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            headers.insert("HTTP-Referer".to_string(), "https://peakos.dev".to_string());
+            headers.insert("X-Title".to_string(), "PeakOS Intelligence".to_string());
+        }
+
+        let stream = crate::http::HttpClient::post_json_stream(url, &body, headers)
             .await
             .map_err(|e| e.to_string())?;
 
@@ -301,6 +385,12 @@ impl LlmClient {
         let mut headers = std::collections::HashMap::new();
         headers.insert("Authorization".to_string(), format!("Bearer {}", api_key));
         headers.insert("Content-Type".to_string(), "application/json".to_string());
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            headers.insert("HTTP-Referer".to_string(), "https://peakos.dev".to_string());
+            headers.insert("X-Title".to_string(), "PeakOS Intelligence".to_string());
+        }
 
         let res = crate::http::HttpClient::post_json_with_headers(url, &body, headers)
             .await

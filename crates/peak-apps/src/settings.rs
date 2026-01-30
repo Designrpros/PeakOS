@@ -156,6 +156,13 @@ where
                 iced::Padding::from([24, 32]), // Standard premium padding
                 Length::Fill,
                 Length::Fill,
+                None, // background
+                0.0,  // radius
+                0.0,  // border_width
+                None, // border_color
+                None, // shadow
+                Alignment::Start,
+                Alignment::Start,
                 ctx,
             )
         });
@@ -281,6 +288,13 @@ impl SettingsHelpers for SettingsApp {
             iced::Padding::from(16.0),
             Length::Fill,
             Length::Shrink,
+            Some(context.theme.colors.surface), // background
+            12.0,                               // radius
+            1.0,                                // border_width
+            Some(context.theme.colors.divider), // border_color
+            None,                               // shadow
+            Alignment::Start,
+            Alignment::Start,
             context,
         )
         // Note: Generic Backend might not support complex borders yet,
@@ -799,7 +813,8 @@ impl SettingsHelpers for SettingsApp {
                                     } else {
                                         peak_ui::modifiers::Intent::Neutral
                                     },
-                                    false, // is_compact
+                                    iced::Length::Shrink, // Add missing width
+                                    false,                // is_compact
                                     context,
                                 ),
                             ],
@@ -1018,6 +1033,7 @@ impl SettingsHelpers for SettingsApp {
                                 Variant::Ghost
                             },
                             Intent::Neutral,
+                            Length::Fill,
                             false, // is_compact
                             context,
                         )
@@ -1087,6 +1103,7 @@ impl SettingsHelpers for SettingsApp {
                                 Variant::Ghost
                             },
                             Intent::Neutral,
+                            Length::Fill,
                             false, // is_compact
                             context,
                         )

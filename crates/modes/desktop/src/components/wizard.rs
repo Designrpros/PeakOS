@@ -159,6 +159,7 @@ impl WizardView {
                     Some(WizardMessage::NextStep.into()),
                     Variant::Solid,
                     Intent::Primary,
+                    Length::Shrink,
                     false,
                     context,
                 ),
@@ -450,6 +451,7 @@ impl WizardView {
                                 Variant::Soft
                             },
                             Intent::Primary,
+                            Length::Fill,
                             false,
                             context,
                         ),
@@ -473,6 +475,7 @@ impl WizardView {
                                 Variant::Soft
                             },
                             Intent::Primary,
+                            Length::Fill,
                             false,
                             context,
                         ),
@@ -522,6 +525,7 @@ impl WizardView {
                                 Variant::Soft
                             },
                             Intent::Primary,
+                            Length::Fill,
                             false,
                             context,
                         ),
@@ -545,6 +549,7 @@ impl WizardView {
                                 Variant::Soft
                             },
                             Intent::Primary,
+                            Length::Fill,
                             false,
                             context,
                         ),
@@ -613,6 +618,7 @@ impl WizardView {
                     Some(WizardMessage::PrevStep.into()),
                     Variant::Ghost,
                     Intent::Neutral,
+                    Length::Shrink,
                     false,
                     context,
                 ),
@@ -633,6 +639,7 @@ impl WizardView {
                     Some(WizardMessage::NextStep.into()),
                     Variant::Solid,
                     Intent::Primary,
+                    Length::Shrink,
                     false,
                     context,
                 ),
@@ -711,6 +718,7 @@ impl WizardView {
                     Some(WizardMessage::CompleteSetup.into()),
                     Variant::Solid,
                     Intent::Primary,
+                    Length::Shrink,
                     false,
                     context,
                 ),
