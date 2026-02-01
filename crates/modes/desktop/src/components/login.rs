@@ -36,90 +36,45 @@ where
             String::new()
         };
 
-        // Reimplementing logic from view.rs
-        let content = B::vstack(
-            vec![
-                B::text(
-                    self.user_name.clone(),
-                    32.0,
-                    Some(text_color),
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(30.0)),
-                B::text_input(
-                    password_value,
-                    "Enter Password".to_string(),
-                    Message::UpdateLoginPassword,
-                    Some(Message::SubmitLogin),
-                    None,
-                    true,
-                    Variant::Soft,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(30.0)),
-                B::button(
-                    B::text(
-                        "Login".into(),
-                        16.0,
-                        None,
-                        false,
-                        false,
-                        None,
-                        None,
-                        Length::Shrink,
-                        Alignment::Center,
-                        context,
-                    ),
-                    Some(Message::SubmitLogin),
-                    Variant::Solid,
-                    Intent::Primary,
-                    Length::Shrink,
-                    false,
-                    context,
-                ),
-            ],
-            20.0,
-            iced::Padding::new(40.0),
-            Length::Fixed(400.0),
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
-        );
+        // UI Definition
+        let content = vstack![
+            Text::<B>::new(self.user_name.clone())
+                .size(32.0)
+                .color(text_color)
+                .bold(),
+            Space::new(Length::Fill, Length::Fixed(30.0)),
+            TextInput::new(
+                password_value,
+                "Enter Password",
+                Message::UpdateLoginPassword,
+            )
+            .on_submit(Message::SubmitLogin)
+            .password()
+            .variant(Variant::Soft),
+            Space::new(Length::Fill, Length::Fixed(30.0)),
+            Button::new(Text::<B>::new("Login").size(16.0).align(Alignment::Center))
+                .on_press(Message::SubmitLogin)
+                .variant(Variant::Solid)
+                .intent(Intent::Primary)
+                .width(Length::Shrink)
+        ]
+        .spacing(20.0)
+        .padding(40.0)
+        .width(Length::Fixed(400.0))
+        .align_x(Alignment::Center)
+        .align_y(Alignment::Center);
 
         // Wallpaper
         let wallpaper_path =
             peak_core::utils::assets::get_asset_path("wallpapers/mountain_sunset_warm.jpg");
-        let wallpaper = B::image(
-            wallpaper_path.to_string_lossy().to_string(),
-            Length::Fill,
-            Length::Fill,
-            0.0,
-        );
+        let wallpaper = Image::new(wallpaper_path.to_string_lossy().to_string())
+            .width(Length::Fill)
+            .height(Length::Fill);
 
         // Overlay
-
-        let overlay: B::AnyView<Message> = B::container(
-            // Explicit Type
-            B::space(Length::Fill, Length::Fill),
-            iced::Padding::default(),
-            Length::Fill,
-            Length::Fill,
-            None,
-            0.0,
-            0.0,
-            None,
-            None,
-            Alignment::Start,
-            Alignment::Start,
-            context,
-        );
+        let overlay = Container::new(Space::new(Length::Fill, Length::Fill))
+            .width(Length::Fill)
+            .height(Length::Fill);
 
         // Logo (Top Left)
         let logo_path = peak_core::utils::assets::get_asset_path(&format!(
@@ -130,106 +85,49 @@ where
                 "peak_logo_dark.png"
             }
         ));
-        let logo = B::container(
-            B::image(
-                logo_path.to_string_lossy().to_string(),
-                Length::Fixed(100.0),
-                Length::Fixed(50.0),
-                0.0,
-            ),
-            iced::Padding::new(20.0),
-            Length::Shrink,
-            Length::Shrink,
-            None,
-            0.0,
-            0.0,
-            None,
-            None,
-            Alignment::Start,
-            Alignment::Start,
-            context,
-        );
+        let logo = Container::new(
+            Image::new(logo_path.to_string_lossy().to_string())
+                .width(Length::Fixed(100.0))
+                .height(Length::Fixed(50.0)),
+        )
+        .padding(20.0);
 
         // Toggle (Top Right)
-        let theme_btn = B::button(
-            B::text(
-                if self.is_light { "moon" } else { "sun" }.into(),
-                20.0,
-                None,
-                false,
-                false,
-                None,
-                None,
-                Length::Shrink,
-                Alignment::Center,
-                context,
-            ),
-            Some(Message::ToggleTheme),
-            Variant::Ghost,
-            Intent::Neutral,
-            Length::Shrink,
-            false, // is_compact
-            context,
-        );
-        let top_right = B::container(
-            theme_btn,
-            iced::Padding::new(20.0),
-            Length::Shrink,
-            Length::Shrink,
-            None,
-            0.0,
-            0.0,
-            None,
-            None,
-            Alignment::Start,
-            Alignment::Start,
-            context,
-        );
+        let theme_btn = Button::new(
+            Text::<B>::new(if self.is_light { "moon" } else { "sun" })
+                .size(20.0)
+                .align(Alignment::Center),
+        )
+        .on_press(Message::ToggleTheme)
+        .variant(Variant::Ghost)
+        .intent(Intent::Neutral)
+        .width(Length::Shrink);
 
-        let top_bar = B::hstack(
-            vec![logo, B::space(Length::Fill, Length::Shrink), top_right],
-            0.0,
-            iced::Padding::new(0.0),
-            Length::Fill,
-            Length::Shrink,
-            Alignment::Start,
-            Alignment::Start,
-            1.0,
-        );
+        let top_right = Container::new(theme_btn).padding(20.0);
 
-        // Ensure Top Bar is at the top using VStack with Spacer
-        let top_layer = B::vstack(
-            vec![top_bar, B::space(Length::Fill, Length::Fill)],
-            0.0,
-            iced::Padding::new(0.0),
-            Length::Fill,
-            Length::Fill,
-            Alignment::Start,
-            Alignment::Start,
-            1.0,
-        );
+        let top_bar = hstack![logo, Space::new(Length::Fill, Length::Shrink), top_right]
+            .width(Length::Fill)
+            .align_y(Alignment::Center);
+
+        // Ensure Top Bar is at the top
+        let top_layer = vstack![top_bar, Space::new(Length::Fill, Length::Fill)]
+            .width(Length::Fill)
+            .height(Length::Fill);
 
         // Centered Card
-        let centered_layer = B::vstack(
-            vec![
-                B::space(Length::Fill, Length::Fill),
-                content,
-                B::space(Length::Fill, Length::Fill),
-            ],
-            0.0,
-            iced::Padding::new(0.0),
-            Length::Fill,
-            Length::Fill,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
-        );
+        let centered_layer = vstack![
+            Space::new(Length::Fill, Length::Fill),
+            content,
+            Space::new(Length::Fill, Length::Fill),
+        ]
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .align_x(Alignment::Center)
+        .align_y(Alignment::Center);
 
-        B::zstack(
-            vec![wallpaper, overlay, centered_layer, top_layer],
-            Length::Fill,
-            Length::Fill,
-            Alignment::Center,
-        )
+        zstack![wallpaper, overlay, centered_layer, top_layer]
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .view(context)
     }
 }

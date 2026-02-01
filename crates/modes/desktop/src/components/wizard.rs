@@ -12,12 +12,13 @@ impl WizardView {
     }
 }
 
-impl<Message> View<Message, peak_ui::core::IcedBackend> for WizardView
+impl<Message, B> View<Message, B> for WizardView
 where
     Message: Clone + 'static + From<WizardMessage>,
+    B: peak_ui::core::Backend,
 {
-    fn view(&self, context: &Context) -> Element<'static, Message> {
-        let content = self.render_step::<Message>(context);
+    fn view(&self, context: &Context) -> B::AnyView<Message> {
+        let content = self.render_step::<Message, B>(context);
 
         // Determine opacity based on theme
         let overlay_color = if matches!(context.theme.tone, peak_ui_theme::ThemeTone::Dark) {
@@ -26,713 +27,396 @@ where
             iced::Color::from_rgba(1.0, 1.0, 1.0, 0.4) // Light overlay for light theme
         };
 
-        // Render Background Stack using native Iced widgets for precise control
-        iced::widget::stack![
-            // 1. Wallpaper Layer
-            iced::widget::image("assets/wallpapers/mountain_sunset_warm.jpg")
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .content_fit(iced::ContentFit::Cover),
-            // 2. Opacity Layer
-            iced::widget::container(
-                iced::widget::Space::new()
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-            )
+        let wallpaper = Image::new("assets/wallpapers/mountain_sunset_warm.jpg")
+            .width(Length::Fill)
+            .height(Length::Fill);
+
+        let overlay = Container::new(Space::new(Length::Fill, Length::Fill))
             .width(Length::Fill)
             .height(Length::Fill)
-            .style(move |_| iced::widget::container::Style {
-                background: Some(overlay_color.into()),
-                ..Default::default()
-            }),
-            // 3. Content Layer (Centered)
-            iced::widget::container(content)
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .align_x(iced::alignment::Horizontal::Center)
-                .align_y(iced::alignment::Vertical::Center),
-            // 4. Header Layer (Icon & Theme Switcher)
-            iced::widget::container(
-                iced::widget::row![
-                    // Left: Peak Icon
-                    iced::widget::image("assets/Peak.png")
-                        .width(Length::Fixed(32.0))
-                        .height(Length::Fixed(32.0)),
-                    iced::widget::Space::new().width(Length::Fill),
-                    // Right: Theme Switcher
-                    iced::widget::button(
-                        iced::widget::text(
-                            if matches!(context.theme.tone, peak_ui_theme::ThemeTone::Dark) {
-                                "☀️"
-                            } else {
-                                "🌙"
-                            }
-                        )
-                        .size(20.0)
-                    )
-                    .on_press(Message::from(WizardMessage::SelectTheme(
+            .background(overlay_color);
+
+        let header = Container::new(
+            hstack![
+                // Left: Peak Icon
+                Image::new("assets/Peak.png")
+                    .width(Length::Fixed(32.0))
+                    .height(Length::Fixed(32.0)),
+                Space::new(Length::Fill, Length::Shrink),
+                // Right: Theme Switcher
+                Button::new(
+                    Text::<B>::new(
                         if matches!(context.theme.tone, peak_ui_theme::ThemeTone::Dark) {
-                            "light".into()
+                            "☀️"
                         } else {
-                            "dark".into()
-                        }
-                    )))
-                    .padding(8.0)
-                ]
-                .width(Length::Fill)
-                .align_y(iced::Alignment::Center)
-            )
-            .padding(24.0)
+                            "🌙"
+                        },
+                    )
+                    .size(20.0),
+                )
+                .on_press(Message::from(WizardMessage::SelectTheme(
+                    if matches!(context.theme.tone, peak_ui_theme::ThemeTone::Dark) {
+                        "light".into()
+                    } else {
+                        "dark".into()
+                    },
+                )))
+                .padding(8.0)
+                .width(Length::Shrink)
+            ]
             .width(Length::Fill)
-            .height(Length::Shrink)
-            .align_y(iced::alignment::Vertical::Top)
-        ]
+            .align_y(Alignment::Center),
+        )
+        .padding(24.0)
         .width(Length::Fill)
-        .height(Length::Fill)
-        .into()
+        .height(Length::Shrink)
+        .align_y(Alignment::Start);
+
+        let centered_content = Container::new(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center);
+
+        zstack![wallpaper, overlay, centered_content, header]
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .view(context)
     }
 }
 
 impl WizardView {
-    fn render_step<Message>(&self, context: &Context) -> Element<'static, Message>
+    fn render_step<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
         Message: Clone + 'static + From<WizardMessage>,
+        B: peak_ui::core::Backend,
     {
-        use peak_ui::core::IcedBackend as B;
         match self.state.current_step {
-            WizardStep::Welcome => self.render_welcome::<Message, B>(context).into(),
-            WizardStep::Identity => self.render_identity::<Message, B>(context).into(),
-            WizardStep::Security => self.render_security::<Message, B>(context).into(),
-            WizardStep::WifiConnect => self.render_wifi::<Message, B>(context).into(),
-            WizardStep::ThemeSelection => self.render_theme_selection::<Message, B>(context).into(),
-            WizardStep::Complete => self.render_complete::<Message, B>(context).into(),
+            WizardStep::Welcome => self.render_welcome::<Message, B>(context),
+            WizardStep::Identity => self.render_identity::<Message, B>(context),
+            WizardStep::Security => self.render_security::<Message, B>(context),
+            WizardStep::WifiConnect => self.render_wifi::<Message, B>(context),
+            WizardStep::ThemeSelection => self.render_theme_selection::<Message, B>(context),
+            WizardStep::Complete => self.render_complete::<Message, B>(),
         }
     }
 
-    fn render_welcome<Message, B>(&self, context: &Context) -> B::AnyView<Message>
+    fn render_welcome<Message, B>(&self, _context: &Context) -> Box<dyn View<Message, B>>
     where
         Message: Clone + 'static + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
-        // ... Ported Welcome Step ...
-        // Placeholder for now
-        B::vstack(
-            vec![
-                B::text(
-                    "Welcome to Peak.".into(),
-                    36.0,
-                    None,
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::text(
-                    "Let's set up your new home.".into(),
-                    18.0,
-                    None,
-                    false,
-                    true,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(40.0)),
-                B::button(
-                    B::text(
-                        "Get Started".into(),
-                        16.0,
-                        None,
-                        false,
-                        false,
-                        None,
-                        None,
-                        Length::Shrink,
-                        Alignment::Center,
-                        context,
-                    ),
-                    Some(WizardMessage::NextStep.into()),
-                    Variant::Solid,
-                    Intent::Primary,
-                    Length::Shrink,
-                    false,
-                    context,
-                ),
-            ],
-            10.0,
-            iced::Padding::new(20.0),
-            Length::Fill,
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
+        Box::new(
+            vstack![
+                Text::<B>::new("Welcome to Peak.")
+                    .size(36.0)
+                    .bold()
+                    .align(Alignment::Center),
+                Text::<B>::new("Let's set up your new home.")
+                    .size(18.0)
+                    .secondary()
+                    .align(Alignment::Center),
+                Space::new(Length::Fill, Length::Fixed(40.0)),
+                Button::new(
+                    Text::<B>::new("Get Started")
+                        .size(16.0)
+                        .align(Alignment::Center)
+                )
+                .on_press(Message::from(WizardMessage::NextStep))
+                .variant(Variant::Solid)
+                .intent(Intent::Primary)
+                .width(Length::Shrink),
+            ]
+            .spacing(10.0)
+            .padding(20.0)
+            .width(Length::Fill)
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center),
         )
     }
 
-    // Stub other render functions
-    fn render_identity<Message, B>(&self, context: &Context) -> B::AnyView<Message>
+    fn render_identity<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
         Message: Clone + 'static + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
-        let content = B::vstack(
-            vec![
-                B::text::<Message>(
-                    "Who's using this computer?".into(),
-                    24.0,
-                    None,
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::text::<Message>(
-                    "This name will be visible to others on the network.".into(),
-                    14.0,
-                    Some(context.theme.colors.text_secondary),
-                    false,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(40.0)),
-                B::text_input(
-                    self.state.full_name_input.clone(),
-                    "Full Name".into(),
-                    |s| WizardMessage::UpdateFullName(s).into(),
-                    None::<Message>,
-                    None,
-                    false,
-                    Variant::Soft,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(10.0)),
-                B::text_input(
-                    self.state.username_input.clone(),
-                    "Account Name".into(),
-                    |s| WizardMessage::UpdateUsername(s).into(),
-                    Some(WizardMessage::NextStep.into()),
-                    None,
-                    false,
-                    Variant::Soft,
-                    context,
-                ),
-            ],
-            0.0,
-            iced::Padding::default(),
-            Length::Fill,
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
-        );
+        let content = vstack![
+            Text::<B>::new("Who's using this computer?")
+                .size(24.0)
+                .bold()
+                .align(Alignment::Center),
+            Text::<B>::new("This name will be visible to others on the network.")
+                .size(14.0)
+                .secondary()
+                .align(Alignment::Center),
+            Space::new(Length::Fill, Length::Fixed(40.0)),
+            TextInput::new(self.state.full_name_input.clone(), "Full Name", |s| {
+                WizardMessage::UpdateFullName(s).into()
+            },)
+            .variant(Variant::Soft),
+            Space::new(Length::Fill, Length::Fixed(10.0)),
+            TextInput::new(self.state.username_input.clone(), "Account Name", |s| {
+                WizardMessage::UpdateUsername(s).into()
+            },)
+            .on_submit(Message::from(WizardMessage::NextStep))
+            .variant(Variant::Soft),
+        ]
+        .width(Length::Fill)
+        .align_x(Alignment::Center)
+        .align_y(Alignment::Center);
 
         self.render_layout::<Message, B>(content, context)
     }
 
-    fn render_security<Message, B>(&self, context: &Context) -> B::AnyView<Message>
+    fn render_security<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
         Message: Clone + 'static + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
-        let content = B::vstack(
-            vec![
-                B::text::<Message>(
-                    "Create a password".into(),
-                    24.0,
-                    None,
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::text::<Message>(
-                    "Make it memorable, but secure.".into(),
-                    14.0,
-                    Some(context.theme.colors.text_secondary),
-                    false,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(40.0)),
-                B::text_input(
-                    self.state.password_input.clone(),
-                    "Password".into(),
-                    |s| WizardMessage::UpdatePassword(s).into(),
-                    None::<Message>,
-                    None,
-                    true,
-                    Variant::Soft,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(10.0)),
-                B::text_input(
-                    self.state.password_confirm_input.clone(),
-                    "Verify".into(),
-                    |s| WizardMessage::UpdatePasswordConfirm(s).into(),
-                    None::<Message>,
-                    None,
-                    true,
-                    Variant::Soft,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(10.0)),
-                B::text_input(
-                    self.state.password_hint_input.clone(),
-                    "Hint (Optional)".into(),
-                    |s| WizardMessage::UpdatePasswordHint(s).into(),
-                    Some(WizardMessage::NextStep.into()),
-                    None,
-                    false,
-                    Variant::Soft,
-                    context,
-                ),
-            ],
-            0.0,
-            iced::Padding::default(),
-            Length::Fill,
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
-        );
+        let content = vstack![
+            Text::<B>::new("Create a password")
+                .size(24.0)
+                .bold()
+                .align(Alignment::Center),
+            Text::<B>::new("Make it memorable, but secure.")
+                .size(14.0)
+                .secondary()
+                .align(Alignment::Center),
+            Space::new(Length::Fill, Length::Fixed(40.0)),
+            TextInput::new(self.state.password_input.clone(), "Password", |s| {
+                WizardMessage::UpdatePassword(s).into()
+            },)
+            .password()
+            .variant(Variant::Soft),
+            Space::new(Length::Fill, Length::Fixed(10.0)),
+            TextInput::new(self.state.password_confirm_input.clone(), "Verify", |s| {
+                WizardMessage::UpdatePasswordConfirm(s).into()
+            },)
+            .password()
+            .variant(Variant::Soft),
+            Space::new(Length::Fill, Length::Fixed(10.0)),
+            TextInput::new(
+                self.state.password_hint_input.clone(),
+                "Hint (Optional)",
+                |s| WizardMessage::UpdatePasswordHint(s).into(),
+            )
+            .on_submit(Message::from(WizardMessage::NextStep))
+            .variant(Variant::Soft),
+        ]
+        .width(Length::Fill)
+        .align_x(Alignment::Center)
+        .align_y(Alignment::Center);
 
         self.render_layout::<Message, B>(content, context)
     }
-    fn render_wifi<Message, B>(&self, context: &Context) -> B::AnyView<Message>
+
+    fn render_wifi<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
         Message: Clone + 'static + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
-        let content = B::vstack(
-            vec![
-                B::text::<Message>(
-                    "Connect to Network".into(),
-                    24.0,
-                    None,
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::text::<Message>(
-                    "Choose a network to get connected.".into(),
-                    14.0,
-                    Some(context.theme.colors.text_secondary),
-                    false,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(40.0)),
-                // Quick placeholder for network list - ideally this would be a scrollable list
-                B::text_input(
-                    self.state.selected_network.clone().unwrap_or_default(),
-                    "Network Name (SSID)".into(),
-                    |s| WizardMessage::SelectNetwork(s).into(),
-                    None::<Message>,
-                    None,
-                    false,
-                    Variant::Soft,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(10.0)),
-                B::text_input(
-                    self.state.wifi_password_input.clone(),
-                    "Network Password".into(),
-                    |s| WizardMessage::UpdateWifiPassword(s).into(),
-                    Some(WizardMessage::NextStep.into()),
-                    None,
-                    true,
-                    Variant::Soft,
-                    context,
-                ),
-            ],
-            0.0,
-            iced::Padding::default(),
-            Length::Fill,
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
-        );
+        let content = vstack![
+            Text::<B>::new("Connect to Network")
+                .size(24.0)
+                .bold()
+                .align(Alignment::Center),
+            Text::<B>::new("Choose a network to get connected.")
+                .size(14.0)
+                .secondary()
+                .align(Alignment::Center),
+            Space::new(Length::Fill, Length::Fixed(40.0)),
+            TextInput::new(
+                self.state.selected_network.clone().unwrap_or_default(),
+                "Network Name (SSID)",
+                |s| WizardMessage::SelectNetwork(s).into(),
+            )
+            .variant(Variant::Soft),
+            Space::new(Length::Fill, Length::Fixed(10.0)),
+            TextInput::new(
+                self.state.wifi_password_input.clone(),
+                "Network Password",
+                |s| WizardMessage::UpdateWifiPassword(s).into(),
+            )
+            .password()
+            .on_submit(Message::from(WizardMessage::NextStep))
+            .variant(Variant::Soft),
+        ]
+        .width(Length::Fill)
+        .align_x(Alignment::Center)
+        .align_y(Alignment::Center);
 
         self.render_layout::<Message, B>(content, context)
     }
 
-    fn render_theme_selection<Message, B>(&self, context: &Context) -> B::AnyView<Message>
+    fn render_theme_selection<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
         Message: Clone + 'static + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
-        let content = B::vstack(
-            vec![
-                B::text::<Message>(
-                    "Choose your Style".into(),
-                    24.0,
-                    None,
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::text::<Message>(
-                    "Select an experience that fits you.".into(),
-                    14.0,
-                    Some(context.theme.colors.text_secondary),
-                    false,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(40.0)),
-                // Mode Selection (Desktop vs Mobile vs TV)
-                B::text::<Message>(
-                    "Experience Mode".into(),
-                    12.0,
-                    Some(context.theme.colors.text_tertiary),
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Start,
-                    context,
-                ),
-                B::hstack(
-                    vec![
-                        B::button(
-                            B::text(
-                                "Desktop".into(),
-                                14.0,
-                                None,
-                                false,
-                                false,
-                                None,
-                                None,
-                                Length::Shrink,
-                                Alignment::Center,
-                                context,
-                            ),
-                            Some(WizardMessage::SelectMode("desktop".into()).into()),
-                            if self.state.selected_mode.as_deref() == Some("desktop") {
-                                Variant::Solid
-                            } else {
-                                Variant::Soft
-                            },
-                            Intent::Primary,
-                            Length::Fill,
-                            false,
-                            context,
-                        ),
-                        B::button(
-                            B::text(
-                                "Tablet".into(),
-                                14.0,
-                                None,
-                                false,
-                                false,
-                                None,
-                                None,
-                                Length::Shrink,
-                                Alignment::Center,
-                                context,
-                            ),
-                            Some(WizardMessage::SelectMode("tablet".into()).into()),
-                            if self.state.selected_mode.as_deref() == Some("tablet") {
-                                Variant::Solid
-                            } else {
-                                Variant::Soft
-                            },
-                            Intent::Primary,
-                            Length::Fill,
-                            false,
-                            context,
-                        ),
-                    ],
-                    10.0,
-                    iced::Padding::default(),
-                    Length::Fill,
-                    Length::Shrink,
-                    Alignment::Center,
-                    Alignment::Center,
-                    1.0,
-                ),
-                B::space(Length::Fill, Length::Fixed(20.0)),
-                // Theme Tone (Light vs Dark) - Actually handled by system but let's offer it?
-                // Wait, state has `selected_theme` (cupertino, redmond, ai).
-                B::text::<Message>(
-                    "Theme".into(),
-                    12.0,
-                    Some(context.theme.colors.text_tertiary),
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Start,
-                    context,
-                ),
-                B::hstack(
-                    vec![
-                        B::button(
-                            B::text(
-                                "Cupertino".into(),
-                                14.0,
-                                None,
-                                false,
-                                false,
-                                None,
-                                None,
-                                Length::Shrink,
-                                Alignment::Center,
-                                context,
-                            ),
-                            Some(WizardMessage::SelectTheme("cupertino".into()).into()),
-                            if self.state.selected_theme.as_deref() == Some("cupertino") {
-                                Variant::Solid
-                            } else {
-                                Variant::Soft
-                            },
-                            Intent::Primary,
-                            Length::Fill,
-                            false,
-                            context,
-                        ),
-                        B::button(
-                            B::text(
-                                "Peak".into(),
-                                14.0,
-                                None,
-                                false,
-                                false,
-                                None,
-                                None,
-                                Length::Shrink,
-                                Alignment::Center,
-                                context,
-                            ),
-                            Some(WizardMessage::SelectTheme("peak".into()).into()),
-                            if self.state.selected_theme.as_deref() == Some("peak") {
-                                Variant::Solid
-                            } else {
-                                Variant::Soft
-                            },
-                            Intent::Primary,
-                            Length::Fill,
-                            false,
-                            context,
-                        ),
-                    ],
-                    10.0,
-                    iced::Padding::default(),
-                    Length::Fill,
-                    Length::Shrink,
-                    Alignment::Center,
-                    Alignment::Center,
-                    1.0,
-                ),
-            ],
-            10.0,
-            iced::Padding::default(),
-            Length::Fill,
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
-        );
+        let content = vstack![
+            Text::<B>::new("Choose your Style")
+                .size(24.0)
+                .bold()
+                .align(Alignment::Center),
+            Text::<B>::new("Select an experience that fits you.")
+                .size(14.0)
+                .secondary()
+                .align(Alignment::Center),
+            Space::new(Length::Fill, Length::Fixed(40.0)),
+            Text::<B>::new("Experience Mode")
+                .size(12.0)
+                .secondary()
+                .bold(),
+            hstack![
+                Button::new(
+                    Text::<B>::new("Desktop")
+                        .size(14.0)
+                        .align(Alignment::Center)
+                )
+                .on_press(Message::from(WizardMessage::SelectMode("desktop".into())))
+                .variant(if self.state.selected_mode.as_deref() == Some("desktop") {
+                    Variant::Solid
+                } else {
+                    Variant::Soft
+                })
+                .intent(Intent::Primary)
+                .width(Length::Fill),
+                Button::new(Text::<B>::new("Tablet").size(14.0).align(Alignment::Center))
+                    .on_press(Message::from(WizardMessage::SelectMode("tablet".into())))
+                    .variant(if self.state.selected_mode.as_deref() == Some("tablet") {
+                        Variant::Solid
+                    } else {
+                        Variant::Soft
+                    })
+                    .intent(Intent::Primary)
+                    .width(Length::Fill),
+            ]
+            .spacing(10.0)
+            .width(Length::Fill),
+            Space::new(Length::Fill, Length::Fixed(20.0)),
+            Text::<B>::new("Theme").size(12.0).secondary().bold(),
+            hstack![
+                Button::new(
+                    Text::<B>::new("Cupertino")
+                        .size(14.0)
+                        .align(Alignment::Center)
+                )
+                .on_press(Message::from(WizardMessage::SelectTheme(
+                    "cupertino".into()
+                )))
+                .variant(
+                    if self.state.selected_theme.as_deref() == Some("cupertino") {
+                        Variant::Solid
+                    } else {
+                        Variant::Soft
+                    }
+                )
+                .intent(Intent::Primary)
+                .width(Length::Fill),
+                Button::new(Text::<B>::new("Peak").size(14.0).align(Alignment::Center))
+                    .on_press(Message::from(WizardMessage::SelectTheme("peak".into())))
+                    .variant(if self.state.selected_theme.as_deref() == Some("peak") {
+                        Variant::Solid
+                    } else {
+                        Variant::Soft
+                    })
+                    .intent(Intent::Primary)
+                    .width(Length::Fill),
+            ]
+            .spacing(10.0)
+            .width(Length::Fill),
+        ]
+        .spacing(10.0)
+        .width(Length::Fill)
+        .align_x(Alignment::Center)
+        .align_y(Alignment::Center);
 
         self.render_layout::<Message, B>(content, context)
     }
+
     fn render_layout<Message, B>(
         &self,
-        content: B::AnyView<Message>,
+        content: impl View<Message, B> + 'static,
         context: &Context,
-    ) -> B::AnyView<Message>
+    ) -> Box<dyn View<Message, B>>
     where
         Message: Clone + 'static + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         let error_view = if let Some(err) = &self.state.error_message {
-            B::text(
-                err.clone(),
-                14.0,
-                Some(context.theme.colors.danger),
-                false,
-                false,
-                None,
-                None,
-                Length::Shrink,
-                Alignment::Center,
-                context,
-            )
+            Text::<B>::new(err.clone())
+                .size(14.0)
+                .color(context.theme.colors.danger)
+                .align(Alignment::Center)
         } else {
-            B::space(Length::Fill, Length::Fixed(14.0)) // Placeholder for consistent height
+            Text::<B>::new(" ").size(14.0) // Placeholder
         };
 
-        let nav_row = B::hstack(
-            vec![
-                B::button(
-                    B::text(
-                        "Back".into(),
-                        16.0,
-                        None,
-                        false,
-                        false,
-                        None,
-                        None,
-                        Length::Shrink,
-                        Alignment::Center,
-                        context,
-                    ),
-                    Some(WizardMessage::PrevStep.into()),
-                    Variant::Ghost,
-                    Intent::Neutral,
-                    Length::Shrink,
-                    false,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Shrink),
-                B::button(
-                    B::text(
-                        "Continue".into(),
-                        16.0,
-                        None,
-                        false,
-                        false,
-                        None,
-                        None,
-                        Length::Shrink,
-                        Alignment::Center,
-                        context,
-                    ),
-                    Some(WizardMessage::NextStep.into()),
-                    Variant::Solid,
-                    Intent::Primary,
-                    Length::Shrink,
-                    false,
-                    context,
-                ),
-            ],
-            0.0,
-            iced::Padding::default(),
-            Length::Fill,
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
-        );
+        let nav_row = hstack![
+            Button::new(Text::<B>::new("Back").size(16.0).align(Alignment::Center))
+                .on_press(Message::from(WizardMessage::PrevStep))
+                .variant(Variant::Ghost)
+                .intent(Intent::Neutral)
+                .width(Length::Shrink),
+            Space::new(Length::Fill, Length::Shrink),
+            Button::new(
+                Text::<B>::new("Continue")
+                    .size(16.0)
+                    .align(Alignment::Center)
+            )
+            .on_press(Message::from(WizardMessage::NextStep))
+            .variant(Variant::Solid)
+            .intent(Intent::Primary)
+            .width(Length::Shrink),
+        ]
+        .width(Length::Fill)
+        .align_y(Alignment::Center);
 
-        B::vstack(
-            vec![
+        Box::new(
+            vstack![
                 content,
-                B::space(Length::Fill, Length::Fixed(20.0)),
+                Space::new(Length::Fill, Length::Fixed(20.0)),
                 error_view,
-                B::space(Length::Fill, Length::Fixed(20.0)),
+                Space::new(Length::Fill, Length::Fixed(20.0)),
                 nav_row,
-            ],
-            0.0,
-            iced::Padding::new(40.0),
-            Length::Fixed(500.0), // Fixed width card
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
+            ]
+            .padding(40.0)
+            .width(Length::Fixed(500.0)) // Fixed width card
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center),
         )
     }
-    fn render_complete<Message, B>(&self, context: &Context) -> B::AnyView<Message>
+
+    fn render_complete<Message, B>(&self) -> Box<dyn View<Message, B>>
     where
         Message: Clone + 'static + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
-        let content = B::vstack(
-            vec![
-                B::text::<Message>(
-                    "Welcome Home.".into(),
-                    32.0,
-                    None,
-                    true,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::text::<Message>(
-                    "Your PeakOS is ready.".into(),
-                    16.0,
-                    Some(context.theme.colors.text_secondary),
-                    false,
-                    false,
-                    None,
-                    None,
-                    Length::Shrink,
-                    Alignment::Center,
-                    context,
-                ),
-                B::space(Length::Fill, Length::Fixed(40.0)),
-                B::button(
-                    B::text(
-                        "Start using PeakOS".into(),
-                        16.0,
-                        None,
-                        false,
-                        false,
-                        None,
-                        None,
-                        Length::Shrink,
-                        Alignment::Center,
-                        context,
-                    ),
-                    Some(WizardMessage::CompleteSetup.into()),
-                    Variant::Solid,
-                    Intent::Primary,
-                    Length::Shrink,
-                    false,
-                    context,
-                ),
-            ],
-            24.0,
-            iced::Padding::default(),
-            Length::Fill,
-            Length::Shrink,
-            Alignment::Center,
-            Alignment::Center,
-            1.0,
-        );
-
-        // Custom layout for complete screen
-        content
+        Box::new(
+            vstack![
+                Text::<B>::new("Welcome Home.")
+                    .size(32.0)
+                    .bold()
+                    .align(Alignment::Center),
+                Text::<B>::new("Your PeakOS is ready.")
+                    .size(16.0)
+                    .secondary()
+                    .align(Alignment::Center),
+                Space::new(Length::Fill, Length::Fixed(40.0)),
+                Button::new(
+                    Text::<B>::new("Start using PeakOS")
+                        .size(16.0)
+                        .align(Alignment::Center),
+                )
+                .on_press(Message::from(WizardMessage::CompleteSetup))
+                .variant(Variant::Solid)
+                .intent(Intent::Primary)
+                .width(Length::Shrink),
+            ]
+            .spacing(24.0)
+            .width(Length::Fill)
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center),
+        )
     }
 }

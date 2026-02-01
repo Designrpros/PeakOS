@@ -147,12 +147,12 @@ where
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                ctx,
             );
 
             // Add generous padding to the scrollable content
             B::container(
-                B::scroll_view(vstack, Length::Fill, Length::Fill, None, ctx),
+                B::scroll_view(vstack, Length::Fill, Length::Fill, None, false, ctx),
                 iced::Padding::from([24, 32]), // Standard premium padding
                 Length::Fill,
                 Length::Fill,
@@ -331,7 +331,7 @@ impl SettingsHelpers for SettingsApp {
             Length::Shrink,
             Alignment::Center,
             Alignment::Center,
-            1.0,
+            context,
         )
     }
     fn view_general<B: Backend>(
@@ -382,7 +382,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -408,7 +408,7 @@ impl SettingsHelpers for SettingsApp {
             Length::Shrink,
             Alignment::Start,
             Alignment::Start,
-            1.0,
+            context,
         )
     }
 
@@ -456,7 +456,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -482,7 +482,7 @@ impl SettingsHelpers for SettingsApp {
             Length::Shrink,
             Alignment::Start,
             Alignment::Start,
-            1.0,
+            context,
         )
     }
 
@@ -547,7 +547,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -573,7 +573,7 @@ impl SettingsHelpers for SettingsApp {
             Length::Shrink,
             Alignment::Start,
             Alignment::Start,
-            1.0,
+            context,
         )
     }
 
@@ -620,7 +620,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -646,7 +646,7 @@ impl SettingsHelpers for SettingsApp {
             Length::Shrink,
             Alignment::Start,
             Alignment::Start,
-            1.0,
+            context,
         )
     }
 
@@ -692,7 +692,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -718,7 +718,7 @@ impl SettingsHelpers for SettingsApp {
             Length::Shrink,
             Alignment::Start,
             Alignment::Start,
-            1.0,
+            context,
         )
     }
 
@@ -780,7 +780,7 @@ impl SettingsHelpers for SettingsApp {
                                     Length::Shrink,
                                     Alignment::Center,
                                     Alignment::Center,
-                                    1.0,
+                                    context,
                                 ),
                                 B::space(Length::Fill, Length::Shrink),
                                 B::button(
@@ -824,7 +824,7 @@ impl SettingsHelpers for SettingsApp {
                             Length::Shrink,
                             Alignment::Center,
                             Alignment::Center,
-                            1.0,
+                            context,
                         )
                     })
                     .collect(),
@@ -834,7 +834,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -865,7 +865,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -902,7 +902,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -956,7 +956,7 @@ impl SettingsHelpers for SettingsApp {
             Length::Shrink,
             Alignment::Start,
             Alignment::Start,
-            1.0,
+            context,
         )
     }
 
@@ -1024,7 +1024,7 @@ impl SettingsHelpers for SettingsApp {
                                 Length::Shrink,
                                 Alignment::Center,
                                 Alignment::Center,
-                                1.0,
+                                context,
                             ),
                             Some(SettingsMessage::ModeChanged(m)),
                             if self.current_mode == m {
@@ -1045,7 +1045,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -1094,7 +1094,7 @@ impl SettingsHelpers for SettingsApp {
                                 Length::Shrink,
                                 Alignment::Center,
                                 Alignment::Center,
-                                1.0,
+                                context,
                             ),
                             Some(SettingsMessage::ShellStyleChanged(s)),
                             if self.current_shell_style == s {
@@ -1115,7 +1115,7 @@ impl SettingsHelpers for SettingsApp {
                 Length::Shrink,
                 Alignment::Start,
                 Alignment::Start,
-                1.0,
+                context,
             ),
         );
 
@@ -1155,7 +1155,7 @@ impl SettingsHelpers for SettingsApp {
             Length::Shrink,
             Alignment::Start,
             Alignment::Start,
-            1.0,
+            context,
         )
     }
 }
