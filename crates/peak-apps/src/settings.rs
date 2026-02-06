@@ -152,7 +152,15 @@ where
 
             // Add generous padding to the scrollable content
             B::container(
-                B::scroll_view(vstack, Length::Fill, Length::Fill, None, false, ctx),
+                B::scroll_view(
+                    vstack,
+                    Length::Fill,
+                    Length::Fill,
+                    None,
+                    false,
+                    peak_ui::core::ScrollDirection::Vertical,
+                    ctx,
+                ),
                 iced::Padding::from([24, 32]), // Standard premium padding
                 Length::Fill,
                 Length::Fill,
@@ -250,7 +258,7 @@ impl SettingsHelpers for SettingsApp {
         context: &peak_ui::core::Context,
     ) -> B::AnyView<SettingsMessage> {
         match self.current_tab {
-            SettingsTab::Sidebar => B::space(Length::Shrink, Length::Shrink),
+            SettingsTab::Sidebar => B::space(Length::Shrink, Length::Shrink, context),
             SettingsTab::General => self.view_general::<B>(context),
             SettingsTab::Appearance => self.view_appearance::<B>(context),
             SettingsTab::Display => self.view_display::<B>(context),
@@ -322,7 +330,7 @@ impl SettingsHelpers for SettingsApp {
                     Alignment::Center,
                     context,
                 ),
-                B::space(Length::Fill, Length::Shrink),
+                B::space(Length::Fill, Length::Shrink, context),
                 widget,
             ],
             0.0,
@@ -358,7 +366,7 @@ impl SettingsHelpers for SettingsApp {
                             context,
                         ),
                     ),
-                    B::space(Length::Shrink, Length::Fixed(8.0)),
+                    B::space(Length::Shrink, Length::Fixed(8.0), context),
                     self.labeled_row::<B>(
                         context,
                         "Kernel",
@@ -436,7 +444,7 @@ impl SettingsHelpers for SettingsApp {
                             context,
                         ),
                     ),
-                    B::space(Length::Shrink, Length::Fixed(8.0)),
+                    B::space(Length::Shrink, Length::Fixed(8.0), context),
                     B::text(
                         "Automatically switch between light and dark themes based on system settings or schedule.".into(),
                         12.0,
@@ -522,7 +530,7 @@ impl SettingsHelpers for SettingsApp {
                             context,
                         ),
                     ),
-                    B::space(Length::Shrink, Length::Fixed(8.0)),
+                    B::space(Length::Shrink, Length::Fixed(8.0), context),
                     B::text(
                         if self.wifi_enabled {
                             "Connected to 'Peak_5G'"
@@ -595,7 +603,7 @@ impl SettingsHelpers for SettingsApp {
                             context,
                         ),
                     ),
-                    B::space(Length::Shrink, Length::Fixed(8.0)),
+                    B::space(Length::Shrink, Length::Fixed(8.0), context),
                     B::text(
                         if self.bluetooth_enabled {
                             "Visible as 'Peak_Workstation'"
@@ -668,7 +676,7 @@ impl SettingsHelpers for SettingsApp {
                             context,
                         ),
                     ),
-                    B::space(Length::Shrink, Length::Fixed(8.0)),
+                    B::space(Length::Shrink, Length::Fixed(8.0), context),
                     self.labeled_row::<B>(
                         context,
                         "Mute",
@@ -782,7 +790,7 @@ impl SettingsHelpers for SettingsApp {
                                     Alignment::Center,
                                     context,
                                 ),
-                                B::space(Length::Fill, Length::Shrink),
+                                B::space(Length::Fill, Length::Shrink, context),
                                 B::button(
                                     B::text(
                                         status_text.into(),
@@ -813,7 +821,8 @@ impl SettingsHelpers for SettingsApp {
                                     } else {
                                         peak_ui::modifiers::Intent::Neutral
                                     },
-                                    iced::Length::Shrink, // Add missing width
+                                    iced::Length::Shrink, // width
+                                    iced::Length::Shrink, // height
                                     false,                // is_compact
                                     context,
                                 ),
@@ -853,7 +862,7 @@ impl SettingsHelpers for SettingsApp {
                             context,
                         ),
                     ),
-                    B::space(Length::Shrink, Length::Fixed(8.0)),
+                    B::space(Length::Shrink, Length::Fixed(8.0), context),
                     B::text("Connect to high-performance cloud models (Claude 3.5, GPT-4o) via OpenRouter.".into(), 12.0, None, false, false, None, None, Length::Fill, Alignment::Start, context),
                     // B::input_field placeholder if Backend supports it?
                     // For now let's assume B::text as a placeholder for the API key if no input tool exists
@@ -884,7 +893,7 @@ impl SettingsHelpers for SettingsApp {
                             context,
                         ),
                     ),
-                    B::space(Length::Shrink, Length::Fixed(4.0)),
+                    B::space(Length::Shrink, Length::Fixed(4.0), context),
                     self.labeled_row::<B>(
                         context,
                         "Voice Feedback",
@@ -921,7 +930,7 @@ impl SettingsHelpers for SettingsApp {
                     context,
                 ),
                 local_card,
-                B::space(Length::Shrink, Length::Fixed(16.0)),
+                B::space(Length::Shrink, Length::Fixed(16.0), context),
                 B::text(
                     "Cloud Intelligence".into(),
                     14.0,
@@ -935,7 +944,7 @@ impl SettingsHelpers for SettingsApp {
                     context,
                 ),
                 cloud_card,
-                B::space(Length::Shrink, Length::Fixed(16.0)),
+                B::space(Length::Shrink, Length::Fixed(16.0), context),
                 B::text(
                     "Preferences".into(),
                     14.0,
@@ -1000,7 +1009,7 @@ impl SettingsHelpers for SettingsApp {
                                         Alignment::Start,
                                         context,
                                     ),
-                                    B::space(Length::Fill, Length::Shrink),
+                                    B::space(Length::Fill, Length::Shrink, context),
                                     if self.current_mode == m {
                                         B::text(
                                             "Active".into(),
@@ -1015,7 +1024,7 @@ impl SettingsHelpers for SettingsApp {
                                             context,
                                         )
                                     } else {
-                                        B::space(Length::Shrink, Length::Shrink)
+                                        B::space(Length::Shrink, Length::Shrink, context)
                                     },
                                 ],
                                 0.0,
@@ -1034,7 +1043,8 @@ impl SettingsHelpers for SettingsApp {
                             },
                             Intent::Neutral,
                             Length::Fill,
-                            false, // is_compact
+                            Length::Shrink, // height
+                            false,          // is_compact
                             context,
                         )
                     })
@@ -1070,7 +1080,7 @@ impl SettingsHelpers for SettingsApp {
                                         Alignment::Start,
                                         context,
                                     ),
-                                    B::space(Length::Fill, Length::Shrink),
+                                    B::space(Length::Fill, Length::Shrink, context),
                                     if self.current_shell_style == s {
                                         B::text(
                                             "Active".into(),
@@ -1085,7 +1095,7 @@ impl SettingsHelpers for SettingsApp {
                                             context,
                                         )
                                     } else {
-                                        B::space(Length::Shrink, Length::Shrink)
+                                        B::space(Length::Shrink, Length::Shrink, context)
                                     },
                                 ],
                                 0.0,
@@ -1104,7 +1114,8 @@ impl SettingsHelpers for SettingsApp {
                             },
                             Intent::Neutral,
                             Length::Fill,
-                            false, // is_compact
+                            Length::Shrink, // height
+                            false,          // is_compact
                             context,
                         )
                     })
@@ -1134,7 +1145,7 @@ impl SettingsHelpers for SettingsApp {
                     context,
                 ),
                 mode_card,
-                B::space(Length::Shrink, Length::Fixed(16.0)),
+                B::space(Length::Shrink, Length::Fixed(16.0), context),
                 B::text(
                     "Interface Style".into(),
                     14.0,
