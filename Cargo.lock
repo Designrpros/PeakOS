@@ -6355,6 +6355,7 @@ dependencies = [
  "unic-langid",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "wasmtimer",
  "web-sys",
  "window-vibrancy",
 ]

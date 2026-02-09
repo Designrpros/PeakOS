@@ -223,7 +223,7 @@ where
         // Describe Current Tab Content
         children.push(peak_ui::core::SemanticNode {
             role: "main".into(),
-            label: Some(format!("{:?} Settings", app.current_tab)),
+            label: Some(format!("{:?} Settings", app.current_tab).into()),
             content: Some(match app.current_tab {
                 SettingsTab::WiFi => if app.wifi_enabled {
                     "WiFi On"
@@ -237,7 +237,7 @@ where
                     "Bluetooth Off"
                 }
                 .into(),
-                SettingsTab::Sound => format!("Volume: {:.0}%", app.volume * 100.0),
+                SettingsTab::Sound => format!("Volume: {:.0}%", app.volume * 100.0).into(),
                 _ => "".into(),
             }),
             ..Default::default()

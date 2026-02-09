@@ -271,9 +271,9 @@ impl peak_ui::core::View<DesktopMessage, peak_ui::core::IcedBackend> for Desktop
             .iter()
             .map(|item| {
                 SemanticNode {
-                    role: "button".to_string(),
-                    label: Some(item.name.clone()),
-                    content: Some(format!("Desktop item: {}", item.name)),
+                    role: "button".into(),
+                    label: Some(item.name.clone().into()),
+                    content: Some(format!("Desktop item: {}", item.name).into()),
                     // No actions/value/bounds/id in SemanticNode
                     children: vec![],
                     ..Default::default()
@@ -282,8 +282,8 @@ impl peak_ui::core::View<DesktopMessage, peak_ui::core::IcedBackend> for Desktop
             .collect();
 
         SemanticNode {
-            role: "grid".to_string(),
-            label: Some("Desktop".to_string()),
+            role: "grid".into(),
+            label: Some("Desktop".into()),
             children,
             ..Default::default()
         }
