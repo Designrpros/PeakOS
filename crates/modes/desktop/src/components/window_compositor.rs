@@ -2,7 +2,7 @@ use crate::app::Message;
 use iced::widget::{container, stack, text};
 use iced::{padding, Element};
 
-use peak_ui::window_chrome;
+use peak_ui::shell::window_chrome;
 
 pub struct WindowCompositor<'a> {
     window_manager: &'a crate::systems::window_manager::WindowManager,

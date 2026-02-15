@@ -812,14 +812,14 @@ impl SettingsHelpers for SettingsApp {
                                         Some(SettingsMessage::ModelDownload(m.id.clone()))
                                     },
                                     if m.is_active {
-                                        peak_ui::modifiers::Variant::Soft
+                                        Variant::Soft
                                     } else {
-                                        peak_ui::modifiers::Variant::Ghost
+                                        Variant::Ghost
                                     },
                                     if m.is_active {
-                                        peak_ui::modifiers::Intent::Success
+                                        Intent::Success
                                     } else {
-                                        peak_ui::modifiers::Intent::Neutral
+                                        Intent::Neutral
                                     },
                                     iced::Length::Shrink, // width
                                     iced::Length::Shrink, // height

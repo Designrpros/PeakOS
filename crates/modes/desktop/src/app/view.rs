@@ -20,7 +20,7 @@ impl PeakNative {
         if let Some((title, body)) = &self.alert {
             iced::widget::stack![
                 content,
-                iced::widget::container(peak_ui::alert::SystemAlert::view(
+                iced::widget::container(peak_ui::elements::alert::SystemAlert::view(
                     title.clone(),
                     body.clone(),
                     Message::CloseAlert,
@@ -64,7 +64,7 @@ impl PeakNative {
             ui_mode,
             ui_tokens,
             self.window_manager.screen_size,
-            peak_ui::localization::Localization::default(),
+            peak_ui::prelude::Localization::default(),
         )
         .with_safe_area(iced::Padding::default());
 
@@ -99,7 +99,7 @@ impl PeakNative {
             ui_mode,
             ui_tokens,
             self.window_manager.screen_size,
-            peak_ui::localization::Localization::default(),
+            peak_ui::prelude::Localization::default(),
         )
         .with_safe_area(iced::Padding::default());
 

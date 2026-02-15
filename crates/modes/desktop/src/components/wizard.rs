@@ -14,7 +14,7 @@ impl WizardView {
 
 impl<Message, B> View<Message, B> for WizardView
 where
-    Message: Clone + 'static + From<WizardMessage>,
+    Message: Clone + 'static + Send + Sync + From<WizardMessage>,
     B: peak_ui::core::Backend,
 {
     fn view(&self, context: &Context) -> B::AnyView<Message> {
@@ -88,7 +88,7 @@ where
 impl WizardView {
     fn render_step<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
-        Message: Clone + 'static + From<WizardMessage>,
+        Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         match self.state.current_step {
@@ -103,7 +103,7 @@ impl WizardView {
 
     fn render_welcome<Message, B>(&self, _context: &Context) -> Box<dyn View<Message, B>>
     where
-        Message: Clone + 'static + From<WizardMessage>,
+        Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         Box::new(
@@ -137,7 +137,7 @@ impl WizardView {
 
     fn render_identity<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
-        Message: Clone + 'static + From<WizardMessage>,
+        Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         let content = vstack![
@@ -170,7 +170,7 @@ impl WizardView {
 
     fn render_security<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
-        Message: Clone + 'static + From<WizardMessage>,
+        Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         let content = vstack![
@@ -212,7 +212,7 @@ impl WizardView {
 
     fn render_wifi<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
-        Message: Clone + 'static + From<WizardMessage>,
+        Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         let content = vstack![
@@ -250,7 +250,7 @@ impl WizardView {
 
     fn render_theme_selection<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
     where
-        Message: Clone + 'static + From<WizardMessage>,
+        Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         let content = vstack![
@@ -340,7 +340,7 @@ impl WizardView {
         context: &Context,
     ) -> Box<dyn View<Message, B>>
     where
-        Message: Clone + 'static + From<WizardMessage>,
+        Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         let error_view = if let Some(err) = &self.state.error_message {
@@ -389,7 +389,7 @@ impl WizardView {
 
     fn render_complete<Message, B>(&self) -> Box<dyn View<Message, B>>
     where
-        Message: Clone + 'static + From<WizardMessage>,
+        Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
     {
         Box::new(

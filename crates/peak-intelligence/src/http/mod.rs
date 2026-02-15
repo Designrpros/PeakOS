@@ -75,23 +75,20 @@ impl HttpClient {
         client::post_json_with_headers(url, body, headers).await
     }
 
-    /// Perform a POST request with JSON body and custom headers, returning a stream
-    #[cfg(not(target_arch = "wasm32"))]
-    pub async fn post_json_stream<T: Serialize>(
+    /// Perform a POST request and return a stream of text chunks
+    pub fn post_json_stream<T: Serialize + 'static>(
         url: &str,
         body: &T,
         headers: std::collections::HashMap<String, String>,
-    ) -> Result<impl futures::Stream<Item = Result<bytes::Bytes, reqwest::Error>>, HttpError> {
-        native::post_json_stream(url, body, headers).await
-    }
-
-    #[cfg(target_arch = "wasm32")]
-    pub async fn post_json_stream<T: Serialize>(
-        url: &str,
-        body: &T,
-        headers: std::collections::HashMap<String, String>,
-    ) -> Result<impl futures::Stream<Item = Result<bytes::Bytes, String>>, HttpError> {
-        web::post_json_stream(url, body, headers).await
+    ) -> impl futures::Stream<Item = Result<String, String>> {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            native::post_json_stream(url, body, headers)
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            web::post_json_stream(url, body, headers)
+        }
     }
 }
 

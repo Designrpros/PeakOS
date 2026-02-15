@@ -53,10 +53,16 @@ impl PeakApp for PeakUIApp {
         let tokens = peak_ui_theme::ThemeTokens::get(mode, tone);
         let catalog = self.catalog.clone();
 
-        responsive(mode, tokens, Localization::default(), move |context| {
-            // Render the shared Catalog View
-            catalog.view(&context).map(Message::Catalog)
+        responsive(move |_device_type| {
+            let catalog = catalog.clone();
+            ProxyView::new(move |ctx| catalog.view(ctx).map(Message::Catalog)).into_box()
         })
+        .view(&Context::new(
+            mode,
+            tokens,
+            Size::new(1024.0, 768.0),
+            Localization::default(),
+        ))
     }
 
     fn subscription(&self) -> iced::Subscription<Self::Message> {

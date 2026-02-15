@@ -118,24 +118,23 @@ impl PeakApp for DesktopTerminalApp {
         let content = self.0.content.clone();
         let input_buffer = self.0.input_buffer.clone();
 
-        responsive(
+        responsive(move |_device_type| {
+            let input = TextInput::new(
+                input_buffer.clone(),
+                "Type a command...",
+                TerminalMessage::InputChanged,
+            )
+            .on_submit(TerminalMessage::InputSubmitted)
+            .font(iced::Font::MONOSPACE);
+
+            Console::new(content.clone()).input(input).into_box()
+        })
+        .view(&Context::new(
             mode,
             tokens,
-            peak_ui::localization::Localization::default(),
-            move |ctx| {
-                let input = TextInput::new(
-                    input_buffer.clone(),
-                    "Type a command...",
-                    TerminalMessage::InputChanged,
-                )
-                .on_submit(TerminalMessage::InputSubmitted)
-                .font(iced::Font::MONOSPACE);
-
-                let console = Console::new(content.clone()).input(input);
-
-                console.view(&ctx)
-            },
-        )
+            Size::new(1024.0, 768.0),
+            Localization::default(),
+        ))
     }
 
     fn subscription(&self) -> iced::Subscription<Self::Message> {

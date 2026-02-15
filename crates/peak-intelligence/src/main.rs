@@ -245,6 +245,23 @@ async fn handle_request(req: JsonRpcRequest, tx: mpsc::Sender<String>) -> JsonRp
                         "required": ["text"]
                     }),
                 },
+                Tool {
+                    name: "web_search".into(),
+                    description: "Search the web for real-time information.".into(),
+                    input_schema: json!({
+                        "type": "object",
+                        "properties": {
+                            "query": { "type": "string" }
+                        },
+                        "required": ["query"]
+                    }),
+                },
+                Tool {
+                    name: "get_system_snapshot".into(),
+                    description: "Get a comprehensive snapshot of system health and metrics."
+                        .into(),
+                    input_schema: json!({ "type": "object", "properties": {} }),
+                },
             ];
 
             JsonRpcResponse::success(
@@ -457,6 +474,16 @@ async fn handle_request(req: JsonRpcRequest, tx: mpsc::Sender<String>) -> JsonRp
                                     .await
                                     .map(|samples| json!({ "samples": samples }))
                             }
+                            "web_search" => {
+                                let query = p
+                                    .arguments
+                                    .as_ref()
+                                    .and_then(|a| a.get("query"))
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("");
+                                tools::web_search_routed(query).await
+                            }
+                            "get_system_snapshot" => tools::get_system_snapshot(),
                             _ => {
                                 return JsonRpcResponse::error(
                                     req.id,

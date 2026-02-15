@@ -53,25 +53,32 @@ pub async fn post_json_with_headers<T: Serialize>(
     })
 }
 
-pub async fn post_json_stream<T: Serialize>(
+pub fn post_json_stream<T: Serialize + 'static>(
     url: &str,
     body: &T,
     headers: std::collections::HashMap<String, String>,
-) -> Result<impl futures::Stream<Item = Result<bytes::Bytes, reqwest::Error>>, HttpError> {
-    let client = reqwest::Client::new();
-    let mut request = client.post(url).json(body);
+) -> impl futures::Stream<Item = Result<String, String>> {
+    let url = url.to_string();
+    let headers = headers.clone();
+    let body_json = serde_json::to_string(body).unwrap_or_default();
 
-    for (key, value) in headers {
-        request = request.header(key, value);
+    async_stream::try_stream! {
+        let client = reqwest::Client::new();
+        let mut request = client.post(&url)
+            .header("Content-Type", "application/json")
+            .body(body_json);
+
+        for (key, value) in headers {
+            request = request.header(key, value);
+        }
+
+        let mut response = request.send().await
+            .map_err(|e| e.to_string())?;
+
+        while let Some(chunk) = response.chunk().await.map_err(|e| e.to_string())? {
+            if let Ok(text) = String::from_utf8(chunk.to_vec()) {
+                yield text;
+            }
+        }
     }
-
-    let response = request.send().await?;
-    if !response.status().is_success() {
-        return Err(HttpError::RequestFailed(format!(
-            "Streaming request failed with status: {}",
-            response.status()
-        )));
-    }
-
-    Ok(response.bytes_stream())
 }

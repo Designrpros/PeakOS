@@ -178,9 +178,7 @@ impl LlmClient {
         });
 
         let stream =
-            crate::http::HttpClient::post_json_stream(url, &body, std::collections::HashMap::new())
-                .await
-                .map_err(|e| e.to_string())?;
+            crate::http::HttpClient::post_json_stream(url, &body, std::collections::HashMap::new());
 
         use futures::StreamExt;
         let mapped = stream.map(|res| {
@@ -220,9 +218,7 @@ impl LlmClient {
         });
 
         let stream =
-            crate::http::HttpClient::post_json_stream(url, &body, std::collections::HashMap::new())
-                .await
-                .map_err(|e| e.to_string())?;
+            crate::http::HttpClient::post_json_stream(url, &body, std::collections::HashMap::new());
 
         use futures::StreamExt;
         let mapped = stream.map(|res| {
@@ -289,9 +285,7 @@ impl LlmClient {
             headers.insert("X-Title".to_string(), "PeakOS Intelligence".to_string());
         }
 
-        let stream = crate::http::HttpClient::post_json_stream(url, &body, headers)
-            .await
-            .map_err(|e| e.to_string())?;
+        let stream = crate::http::HttpClient::post_json_stream(url, &body, headers);
 
         use futures::StreamExt;
         let mapped = stream.map(|res| {
