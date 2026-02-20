@@ -4389,6 +4389,7 @@ version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e99fb7a497b1e3339bc746195567ed8d3e24945ecd636e3619d20b9de9e9149"
 dependencies = [
+ "cc",
  "pkg-config",
  "vcpkg",
 ]
@@ -6332,6 +6333,7 @@ name = "peak-ui"
 version = "0.1.0"
 dependencies = [
  "async-stream",
+ "chrono",
  "console_error_panic_hook",
  "console_log",
  "dotenvy",
@@ -6353,7 +6355,9 @@ dependencies = [
  "objc2-app-kit 0.2.2",
  "objc2-foundation 0.2.2",
  "once_cell",
+ "open",
  "peak-core",
+ "peak-db",
  "peak-icons",
  "peak-intelligence",
  "peak-theme",
@@ -6365,6 +6369,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "unic-langid",
+ "uuid",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasmtimer",

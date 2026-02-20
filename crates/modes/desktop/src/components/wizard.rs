@@ -86,7 +86,10 @@ where
 }
 
 impl WizardView {
-    fn render_step<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
+    fn render_step<Message, B>(
+        &self,
+        context: &Context,
+    ) -> Box<dyn View<Message, B> + Send + Sync + 'static>
     where
         Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
@@ -101,7 +104,10 @@ impl WizardView {
         }
     }
 
-    fn render_welcome<Message, B>(&self, _context: &Context) -> Box<dyn View<Message, B>>
+    fn render_welcome<Message, B>(
+        &self,
+        _context: &Context,
+    ) -> Box<dyn View<Message, B> + Send + Sync + 'static>
     where
         Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
@@ -135,7 +141,10 @@ impl WizardView {
         )
     }
 
-    fn render_identity<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
+    fn render_identity<Message, B>(
+        &self,
+        context: &Context,
+    ) -> Box<dyn View<Message, B> + Send + Sync + 'static>
     where
         Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
@@ -168,7 +177,10 @@ impl WizardView {
         self.render_layout::<Message, B>(content, context)
     }
 
-    fn render_security<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
+    fn render_security<Message, B>(
+        &self,
+        context: &Context,
+    ) -> Box<dyn View<Message, B> + Send + Sync + 'static>
     where
         Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
@@ -210,7 +222,10 @@ impl WizardView {
         self.render_layout::<Message, B>(content, context)
     }
 
-    fn render_wifi<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
+    fn render_wifi<Message, B>(
+        &self,
+        context: &Context,
+    ) -> Box<dyn View<Message, B> + Send + Sync + 'static>
     where
         Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
@@ -248,7 +263,10 @@ impl WizardView {
         self.render_layout::<Message, B>(content, context)
     }
 
-    fn render_theme_selection<Message, B>(&self, context: &Context) -> Box<dyn View<Message, B>>
+    fn render_theme_selection<Message, B>(
+        &self,
+        context: &Context,
+    ) -> Box<dyn View<Message, B> + Send + Sync + 'static>
     where
         Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
@@ -336,9 +354,9 @@ impl WizardView {
 
     fn render_layout<Message, B>(
         &self,
-        content: impl View<Message, B> + 'static,
+        content: impl View<Message, B> + Send + Sync + 'static,
         context: &Context,
-    ) -> Box<dyn View<Message, B>>
+    ) -> Box<dyn View<Message, B> + Send + Sync + 'static>
     where
         Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
@@ -387,7 +405,7 @@ impl WizardView {
         )
     }
 
-    fn render_complete<Message, B>(&self) -> Box<dyn View<Message, B>>
+    fn render_complete<Message, B>(&self) -> Box<dyn View<Message, B> + Send + Sync + 'static>
     where
         Message: Clone + 'static + Send + Sync + From<WizardMessage>,
         B: peak_ui::core::Backend,
